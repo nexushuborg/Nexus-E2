@@ -1,10 +1,10 @@
-# 🧠 Nexus-02: Project Arcanum  
+# 🧠 Nexus-E2: Project Arcanum  
 “Clarity, not chaos. Your academic essentials — verified, structured, personalized.”
 
 ---
 
 ## 🔍 Overview  
-Nexus-02: Project Arcanum is a purpose-driven academic platform designed to end the disarray students face during exams, submissions, and classes. It brings together notes, resources, schedules, and updates into one clean, reliable system — built for students, by students.
+Nexus-E2: Project Arcanum is a purpose-driven academic platform designed to end the disarray students face during exams, submissions, and classes. It brings together notes, resources, schedules, and updates into one clean, reliable system — built for students, by students.
 
 No more last-minute panic. No more digging through group chats. No more second-guessing your materials.
 
