@@ -6,11 +6,13 @@ import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 dotenv.config();
-
+import connectToDb from './db/db.js';
+import userRoutes from './routes/user.routes.js';
+connectToDb();
 
 const app = express();
 
-//Security middleware 
+//Security middleware
 app.use(helmet(
     {
         contentSecurityPolicy:false
@@ -22,7 +24,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded(
     {
-        urlencoded: true
+        extended: true  // Note: fixed 'urlencoded' to 'extended' here
     }
 ))
 
@@ -39,9 +41,10 @@ const limiter = rateLimit({
 })
 app.use(limiter);
 
-//Logging Middlware 
+//Logging Middlware
 app.use(morgan("dev"));
 
+app.use("/students", userRoutes);
 
 app.use("/",(req,res) => {
     res.status(200).json({
