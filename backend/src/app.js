@@ -6,9 +6,7 @@ import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 dotenv.config();
-import connectToDb from './db/db.js';
 import userRoutes from './routes/user.routes.js';
-connectToDb();
 
 const app = express();
 
@@ -24,7 +22,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded(
     {
-        extended: true  // Note: fixed 'urlencoded' to 'extended' here
+        extended: true  
     }
 ))
 
@@ -44,7 +42,15 @@ app.use(limiter);
 //Logging Middlware
 app.use(morgan("dev"));
 
-app.use("/students", userRoutes);
+//routes 
+import studentRoutes from "./routes/student.route.js"
+
+
+
+app.use("/api/v1/student",studentRoutes);
+
+
+
 
 app.use("/",(req,res) => {
     res.status(200).json({

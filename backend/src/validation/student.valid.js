@@ -1,0 +1,45 @@
+import { z } from "zod";
+
+export const registerStudentSchema = z.object({
+  full_name: z.string().trim().min(1, { message: "Name is required" }).max(100, { message: "Name is too long" }),
+
+  email: z.string().email({ message: "Please enter a valid email address" }),
+
+  phoneNo: z
+    .string()
+    .trim()
+    .regex(/^[6-9]\d{9}$/, {
+      message: "Phone number must be a valid 10-digit Indian number",
+    }),
+
+  gender: z.enum(["male", "female"], {
+    errorMessage: "Gender must be either 'male' or 'female'",
+  }),
+
+  reg_no: z
+    .string()
+    .trim()
+    .min(6, { message: "Registration number must be at least 6 characters long" })
+    .max(11, { message: "Registration number must be at most 11 characters long" })
+    .regex(/^[A-Za-z0-9]+$/, { message: "Registration number must be alphanumeric" }),
+
+  batch: z.coerce
+    .number()
+    .int()
+    .min(2022, { message: "Batch year must be an integer greater than or equal to 2022" })
+    .max(2030, { message: "Batch year cannot be in the future beyond 2030" }),
+
+  degree: z.string().trim().min(1, { message: "Degree is required" }).max(50, { message: "Degree is too long" }),
+
+  department: z.string().trim().min(1, { message: "Department is required" }).max(50, { message: "Department is too long" }),
+
+  section: z.string().trim().min(1, { message: "Section is required" }).max(10, { message: "Section is too long" }),
+
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .max(128, { message: "Password is too long" })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, {
+      message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+    }),
+});
