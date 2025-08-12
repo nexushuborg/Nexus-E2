@@ -1,4 +1,6 @@
 import mongoose,{Schema} from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 
 const studentSchema = new Schema({
@@ -28,12 +30,6 @@ const studentSchema = new Schema({
             message: props => `${props.value} is not a valid password!`
         }
     },
-    role:{
-        type:String,
-        enum :["student","teacher","admin"],
-        required :true,
-
-    },
     reg_no :{
         type: String,
         required: true,
@@ -47,7 +43,6 @@ const studentSchema = new Schema({
     section:{
       type:Schema.Types.ObjectId,
       ref: "Section",
-      required: true,
     },
     cr:{
        type:Boolean,
@@ -63,6 +58,10 @@ const studentSchema = new Schema({
         type: String,
         required: true,
         unique: true,
+    },
+    isVerified:{
+        type: Boolean,
+        default: false,
     },
     degree:{
         type: Schema.Types.ObjectId,
@@ -82,11 +81,6 @@ const studentSchema = new Schema({
     gender:{
         type: String,
         enum:["male","female"],
-        required: true,
-    },
-    user_id:{
-        type: Schema.Types.ObjectId,
-        ref: "User",
         required: true,
     },
     refreshToken:{
@@ -117,7 +111,6 @@ studentSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         {
             userId: this._id,
-            role: this.role,
         },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "1d" }
@@ -129,7 +122,6 @@ studentSchema.methods.generateRefreshToken = function () {
     return jwt.sign(
         {
             userId: this._id,
-            role: this.role,
         },
         process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: "7d" }
