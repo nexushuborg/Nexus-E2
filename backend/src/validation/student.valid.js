@@ -15,13 +15,17 @@ export const registerStudentSchema = z.object({
   gender: z.enum(["male", "female"], {
     errorMessage: "Gender must be either 'male' or 'female'",
   }),
+  slno: z
+    .number()
+    .int()
+    .min(1, { message: "Serial number must be a positive integer" })
+    .max(1000, { message: "Serial number cannot exceed 1000" }),
 
   reg_no: z
     .string()
     .trim()
     .min(6, { message: "Registration number must be at least 6 characters long" })
-    .max(11, { message: "Registration number must be at most 11 characters long" })
-    .regex(/^[A-Za-z0-9]+$/, { message: "Registration number must be alphanumeric" }),
+    .max(11, { message: "Registration number must be at most 11 characters long" }),
 
   batch: z.coerce
     .number()
@@ -31,7 +35,8 @@ export const registerStudentSchema = z.object({
 
   degree: z.string().trim().min(1, { message: "Degree is required" }).max(50, { message: "Degree is too long" }),
 
-  department: z.string().trim().min(1, { message: "Department is required" }).max(50, { message: "Department is too long" }),
+  branch:z.string().trim().min(1, { message: "Branch is required" }).max(50, { message: "Branch is too long" }),
+
 
   section: z.string().trim().min(1, { message: "Section is required" }).max(10, { message: "Section is too long" }),
 

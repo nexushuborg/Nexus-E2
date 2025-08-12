@@ -4,7 +4,7 @@ const degreeSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique
+        unique:true
     },
     short_name:{
         type: String,

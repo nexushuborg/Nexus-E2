@@ -6,7 +6,7 @@ import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 dotenv.config();
-import userRoutes from './routes/user.routes.js';
+
 
 const app = express();
 
@@ -43,16 +43,14 @@ app.use(limiter);
 app.use(morgan("dev"));
 
 //routes 
-import studentRoutes from "./routes/student.route.js"
+import studentRoutes from "./routes/student/user.route.js"
 
 
 
 app.use("/api/v1/student",studentRoutes);
 
 
-
-
-app.use("/",(req,res) => {
+app.get("/",(req,res) => {
     res.status(200).json({
         success: true,
         message: "Welcome to Nexus E2 Backend"

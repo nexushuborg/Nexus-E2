@@ -25,14 +25,12 @@ const sectionSchema = new Schema({
         {
             type: Schema.Types.ObjectId,
             ref: "Teacher",
-            required: true,
         }
     ],
     students:[
         {
             type: Schema.Types.ObjectId,
             ref: "Student",
-            required: true,
         }
     ],
     strength:{

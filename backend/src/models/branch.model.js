@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const degreeSchema = new mongoose.Schema({
+const branchSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -17,5 +17,5 @@ const degreeSchema = new mongoose.Schema({
 }, {
     timestamps: true,
 });
-const Branch = mongoose.model("Branch", degreeSchema);
+const Branch = mongoose.model("Branch", branchSchema);
 export default Branch;
