@@ -1,6 +1,6 @@
 # teacher_apk
 
-A new Flutter project.
+Teacher apk.
 
 ## Getting Started
 

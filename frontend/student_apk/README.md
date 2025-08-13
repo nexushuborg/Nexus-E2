@@ -1,6 +1,6 @@
 # student_apk
 
-A new Flutter project.
+Student_apk.
 
 ## Getting Started
 
