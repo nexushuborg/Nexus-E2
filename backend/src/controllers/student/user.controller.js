@@ -213,3 +213,70 @@ export const verifyAuthOtp = async (req, res) => {
         });
     }
 }
+
+export const loginController = async (req, res) => {
+    try {
+        const { email, reg_no, password } = req.body;
+
+        if (!email || !reg_no || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide email, registration number and password"
+            });
+        }
+
+        const student = await Student.findOne({
+            email: email.toLowerCase().trim(),
+            reg_no: reg_no.trim()
+        });
+
+        if (!student) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials"
+            });
+        }
+
+        const isPasswordValid = await student.comparePassword(password);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials"
+            });
+        }
+
+        if (!student.isVerified) {
+            return res.status(403).json({
+                success: false,
+                message: "Please verify your account first"
+            });
+        }
+
+        const accessToken = student.generateAccessToken();
+        const refreshToken = student.generateRefreshToken();
+
+        student.refreshToken = refreshToken;
+        await student.save();
+
+        const authenticatedUser = await Student.findById(student._id)
+            .select("-password -__v -refreshToken")
+            .populate("degree", "short_name name")
+            .populate("branch", "short_name name")
+            .populate("section", "section_name");
+
+        return res.cookie("refreshToken", refreshToken).status(200).json({
+            success: true,
+            message: "Login successful",
+            student: authenticatedUser,
+            accessToken,
+        });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
