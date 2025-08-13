@@ -12,7 +12,6 @@ import { loginValidation } from "../../middlewares/login.middleware.js";
 
 const router = Router();
 
-
 router.post("/register",validateRequest(registerStudentSchema), registerStudent);
 router.post("/verify-auth-otp",verifyAuthOtp);
 router.post("/upload-profile-image",verifyJWT,upload.single('profileImage'),uploadProfileImage)
