@@ -24,15 +24,26 @@ export const uploadProfileImage = async (req, res) => {
         }
 
         const updatedStudent = await Student.findByIdAndUpdate(
-            req.student._id,
+            req.user._id,
             {
-                $set: {
-                    'profile_picture.Image': cloudinaryResponse.secure_url,
-                    'profile_picture.publicId': cloudinaryResponse.public_id
+                profile_picture: {
+                    Image: cloudinaryResponse.secure_url,
+                    publicId: cloudinaryResponse.public_id
                 }
             },
-            { new: true }
-        ).select('profile_picture full_name reg_no');
+            { new: true, runValidators: true } // why we are using runValidators: true? because we want to validate the updated data
+
+        ).select('-password -refreshToken');
+        
+        if (!updatedStudent) {
+            if (req.file && fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
 
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
@@ -43,12 +54,11 @@ export const uploadProfileImage = async (req, res) => {
             message: "Profile image uploaded and updated successfully",
             data: {
                 url: cloudinaryResponse.secure_url,
-                publicId: cloudinaryResponse.public_id,
                 width: cloudinaryResponse.width,
                 height: cloudinaryResponse.height,
                 uploadedAt: new Date().toISOString(),
                 student: {
-                    full_name: updatedStudent.full_name,
+                    full_name: updatedStudent?.full_name,
                     reg_number: updatedStudent.reg_no,
                     profile_picture: updatedStudent.profile_picture.Image
                 }

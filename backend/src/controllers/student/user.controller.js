@@ -5,11 +5,14 @@ import Student from "../../models/student.model.js";
 import { redisClient } from "../../configs/connectRedis.js"
 import { sendOTP } from "../../services/sendmail.js"
 import blacklistTokenModel from "../../models/blacklisttoken.model.js";
+import jwt from "jsonwebtoken";
 
 
 
 export const registerStudent = async (req, res) => {
     try {
+        console.log("Register endpoint hit - Incoming cookies:", req.cookies);
+
         const { full_name, password, reg_no, slno, section, email, phoneNo, degree, branch, batch, gender } = req.body;
 
         if (!full_name || !password || !reg_no || !slno || !section || !email || !phoneNo || !degree || !branch || !batch || !gender) {
@@ -127,6 +130,7 @@ export const registerStudent = async (req, res) => {
         })
 
     } catch (error) {
+        console.log("Register endpoint error - Response cookies:", res.getHeaders());
         return res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -159,7 +163,7 @@ export const verifyAuthOtp = async (req, res) => {
             })
         }
 
-        if(otp.length !== 6 ){
+        if (otp.length !== 6) {
             return res.status(400).json({
                 success: false,
                 message: "OTP must be 6 digits long"
@@ -187,7 +191,7 @@ export const verifyAuthOtp = async (req, res) => {
         const refreshToken = student.generateRefreshToken();
 
         student.refreshToken = refreshToken;
-        await student.save();
+        await student.save({ validateBeforeSave: false });// why we are not validating here? because we already validated in register endpoint
 
         //clear otp from cache
         await redisClient.del(`otp:${email}`);
@@ -199,13 +203,13 @@ export const verifyAuthOtp = async (req, res) => {
             .populate("branch", "short_name name")
             .populate("section", "section_name");
 
-        return res.cookie("refreshToken",refreshToken,{
+        return res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax'//why we are using lax instead of strict? because we want to allow cross-site requests for this cookie
         }).status(200).json({
-            success:true,
-            message:"OTP verified successfully",
+            success: true,
+            message: "OTP verified successfully",
             student: authenticatedUser,
             accessToken,
         })
@@ -214,11 +218,12 @@ export const verifyAuthOtp = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error",
+            error: error.message
         });
     }
 }
 
-export const resendAuthOtp = async (req,res) => {
+export const resendAuthOtp = async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) {
@@ -261,7 +266,7 @@ export const resendAuthOtp = async (req,res) => {
             message: "Internal server error",
             error: error.message
         });
-        
+
     }
 }
 
@@ -269,22 +274,32 @@ export const loginController = async (req, res) => {
     try {
         const { email, reg_no, password } = req.body;
 
-        if (!email || !reg_no || !password) {
+        //email aur reg_no dono optional hai
+        if (!email && !reg_no) {
             return res.status(400).json({
                 success: false,
-                message: "Please provide email, registration number and password"
+                message: "Please provide email or registration number"
+            });
+        }
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide password"
             });
         }
 
         const student = await Student.findOne({
-            email: email.toLowerCase().trim(),
-            reg_no: reg_no.trim()
+            $or: [
+                { email: email },
+                { reg_no: reg_no }
+            ]
         });
 
         if (!student) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid credentials"
+                message: "Invalid credentials mark1"
             });
         }
 
@@ -293,7 +308,7 @@ export const loginController = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid credentials"
+                message: "Invalid credentials mark2"
             });
         }
 
@@ -308,7 +323,7 @@ export const loginController = async (req, res) => {
         const refreshToken = student.generateRefreshToken();
 
         student.refreshToken = refreshToken;
-        await student.save();
+        await student.save({ validateBeforeSave: false }); // why we are not validating here? because we already validated in register endpoint
 
         const authenticatedUser = await Student.findById(student._id)
             .select("-password -__v -refreshToken")
@@ -316,7 +331,7 @@ export const loginController = async (req, res) => {
             .populate("branch", "short_name name")
             .populate("section", "section_name");
 
-        return res.cookie("refreshToken", refreshToken,{
+        return res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax'//why we are using lax instead of strict? because we want to allow cross-site requests for this cookie
@@ -332,6 +347,7 @@ export const loginController = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error",
+            message: error.message
         });
     }
 };
@@ -487,3 +503,67 @@ export const logoutAllController = async (req, res) => {
         });
     }
 };
+
+
+export const regenrateAccessToken = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshToken) {
+            return res.status(401).json({
+                success: false,
+                message: "Refresh token is required"
+            });
+        }
+
+
+        // Check if the refresh token is blacklisted
+        const isBlacklisted = await blacklistTokenModel.findOne({ token: refreshToken });
+        if (isBlacklisted) {
+            return res.status(401).json({
+                success: false,
+                message: "Token is revoked"
+            })
+        }
+
+        const userSentAccessToken = req.cookies.accessToken || req.headers?.authorization?.split(' ')[1];
+        console.log("dedewd",userSentAccessToken)
+        if(userSentAccessToken){
+            await blacklistTokenModel.create({
+                token: userSentAccessToken
+            })
+        }
+        let decoded;
+        try {
+            decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+            console.log("Decoded refresh token:", decoded);
+        } catch (error) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid refresh token"
+            });
+        }
+
+        const student = await Student.findById(decoded.userId);
+        console.log("studnet ",student)
+        if (!student || student.refreshToken !== refreshToken) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid refresh token"
+            });
+        }
+        const accessToken = student.generateAccessToken();
+        return res.status(200).json({
+            success: true,
+            message: "Access token regenerated successfully",
+            accessToken
+        });
+
+    } catch (error) {
+        console.error("Regenerate access token error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error during access token regeneration"
+        });
+
+    }
+}

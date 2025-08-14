@@ -5,6 +5,7 @@ import blacklistTokenModel from '../models/blacklisttoken.model.js';
 export const authStudentMiddleware = async (req,res,next) => {
     try {
         const accessToken = req.headers.authorization?.split(" ")[1] || req.cookies.accessToken;
+        console.log("Access Token:", accessToken);
         if (!accessToken) {
             return res.status(401).json({
                 success: false,
@@ -19,11 +20,11 @@ export const authStudentMiddleware = async (req,res,next) => {
             });
         }
         const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-        const student = await Student.findById(decoded._id).select('-password -refreshToken');
+        const student = await Student.findById(decoded.userId).select('-password -refreshToken');
         if (!student) {
             return res.status(404).json({
                 success: false,
-                message: "Student not found"
+                message: "Student not found 1"
             });
         }
         req.user = student;
