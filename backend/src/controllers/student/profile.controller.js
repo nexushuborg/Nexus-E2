@@ -29,7 +29,7 @@ const getOrdinalSuffix = (num) => {
 
 export const profileController = async (req, res) => {
     try {
-        const student = await Student.findById(req.student._id)
+        const student = await Student.findById(req.user._id)
             .populate('degree', 'name duration') // Assuming degree has name and duration fields
             .populate('branch', 'name code') // Assuming branch has name and code fields
             .populate('section', 'name') // Assuming section has name field

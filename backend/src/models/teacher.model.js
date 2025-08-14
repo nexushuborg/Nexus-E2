@@ -1,4 +1,6 @@
 import mongoose,{Schema} from "mongoose";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const teacherSchema = new Schema({
     full_name:{
@@ -20,7 +22,7 @@ const teacherSchema = new Schema({
         {
             type:Schema.Types.ObjectId,
             ref: "Section",
-            required: true,
+           
         }
     ],
     email:{
@@ -28,6 +30,20 @@ const teacherSchema = new Schema({
         required: true,
         unique: true,
         trim: true,
+        //mail must end wuth @soa.du.in
+        match: [/^[a-zA-Z0-9._%+-]+@soa\.du\.in$/, "Please enter a valid SOA email address"]
+    },
+    password:{
+        type: String,
+        required: true,
+        minlength: 8,
+         //password should contain at least one uppercase letter, one lowercase letter, one number, and one special character
+        validate: {
+            validator: function(v) {
+                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(v);
+            },
+            message: props => `${props.value} is not a valid password!`
+        }
     },
     phoneNo:{
         type: String,
@@ -37,11 +53,11 @@ const teacherSchema = new Schema({
     department:{
         type: Schema.Types.ObjectId,
         ref: "Department",
-        required: true,
+        
     },
     designation:{
         type: String,
-        required: true,
+       
         trim: true,
     },
     gender:{
@@ -59,11 +75,40 @@ const teacherSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true,
+    },
+    refreshToken :{
+        type: String,
+        default: null,
     }
 
 },{
     timestamps: true,
 })
 
+
+teacherSchema.pre("save",async function(next){
+    if(!this.isModified("password")){
+        return next();
+    }
+    
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+})
+
+teacherSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+}
+
+teacherSchema.methods.generateAccessToken = function() {
+    return jwt.sign({ id: this._id, email: this.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
+}
+
+teacherSchema.methods.generateRefreshToken = function() {
+    return jwt.sign({ id: this._id, email: this.email }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+}
+
 const Teacher = mongoose.model("Teacher", teacherSchema);
 export default Teacher;
+
+

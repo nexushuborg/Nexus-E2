@@ -199,7 +199,11 @@ export const verifyAuthOtp = async (req, res) => {
             .populate("branch", "short_name name")
             .populate("section", "section_name");
 
-        return res.cookie("refreshToken",refreshToken).status(200).json({
+        return res.cookie("refreshToken",refreshToken,{
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'//why we are using lax instead of strict? because we want to allow cross-site requests for this cookie
+        }).status(200).json({
             success:true,
             message:"OTP verified successfully",
             student: authenticatedUser,
@@ -211,6 +215,53 @@ export const verifyAuthOtp = async (req, res) => {
             success: false,
             message: "Internal server error",
         });
+    }
+}
+
+export const resendAuthOtp = async (req,res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide email"
+            })
+        }
+        const otpLimit = await redisClient.get(`otp_limit:${email}`);
+        if (otpLimit) {
+            return res.status(429).json({
+                success: false,
+                message: "Please wait before requesting a new OTP"
+            })
+        }
+
+        let otp = await redisClient.get(`otp:${email}`);
+        if (!otp) {
+            otp = Math.floor(100000 + Math.random() * 900000).toString();
+            await redisClient.set(`otp:${email}`, otp, "EX", 300); //5 minutes expiry
+        }
+        //send otp to email
+        const response = await sendOTP(email, otp);
+        if (!response.success) {
+            return res.status(500).json({
+                success: false,
+                message: "Failed to send OTP , please try again later"
+            })
+        }
+        //To cool down otp request for 60s means next otp will called after 60s
+        await redisClient.set(`otp_limit:${email}`, "sent", "EX", 60);
+
+        return res.status(200).json({
+            success: true,
+            message: "OTP sent successfully",
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+        
     }
 }
 
@@ -265,7 +316,11 @@ export const loginController = async (req, res) => {
             .populate("branch", "short_name name")
             .populate("section", "section_name");
 
-        return res.cookie("refreshToken", refreshToken).status(200).json({
+        return res.cookie("refreshToken", refreshToken,{
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'//why we are using lax instead of strict? because we want to allow cross-site requests for this cookie
+        }).status(200).json({
             success: true,
             message: "Login successful",
             student: authenticatedUser,
@@ -297,7 +352,7 @@ const cleanupExpiredTokens = async () => {
 export const logoutController = async (req, res) => {
     try {
         const accessToken = req.headers.authorization?.split(' ')[1];
-        const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+        const refreshToken = req.cookies.refreshToken // user cannot send refresh token in body because use sameSite lax for cookie
 
         if (!accessToken) {
             return res.status(400).json({
@@ -340,7 +395,7 @@ export const logoutController = async (req, res) => {
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict'
+            sameSite: 'lax'
         });
 
         if (Math.random() < 0.1) {
@@ -412,7 +467,7 @@ export const logoutAllController = async (req, res) => {
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict'
+            sameSite: 'lax'
         });
 
         if (Math.random() < 0.1) {
