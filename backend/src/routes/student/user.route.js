@@ -1,25 +1,27 @@
 import {Router} from "express";
 import {registerStudent,verifyAuthOtp} from "../../controllers/student/user.controller.js"
 import {validateRequest} from "../../middlewares/validationRequest.js"
-import {registerStudentSchema} from "../../validation/student.valid.js"
+import {loginStudentSchema, registerStudentSchema} from "../../validation/student.valid.js"
 import { upload } from "../../middlewares/multer.middleware.js";
 import { uploadProfileImage } from "../../controllers/student/upload.controller.js";
-import { verifyJWT } from "../../middlewares/auth.middleware.js";
-import {profileAuthentication} from "../../middlewares/profile.middleware.js";
+import { authStudentMiddleware } from "../../middlewares/auth.middleware.js";
 import {profileController} from "../../controllers/student/profile.controller.js";
 import { loginController } from "../../controllers/student/user.controller.js";
-import { loginValidation } from "../../middlewares/login.middleware.js";
-import { logoutController,logoutAllController } from "../../controllers/student/user.controller.js";
-import { authenticateToken } from "../../middlewares/auth.middleware.js";
+import { logoutController,logoutAllController,resendAuthOtp } from "../../controllers/student/user.controller.js";
 
 const router = Router();
 
+
+//Routes related to authentication 
 router.post("/register",validateRequest(registerStudentSchema), registerStudent);
+router.post("/login",validateRequest(loginStudentSchema),loginController)
+router.post("/logout",authStudentMiddleware,logoutController)
+router.post("/logout-all",authStudentMiddleware,logoutAllController)
 router.post("/verify-auth-otp",verifyAuthOtp);
-router.post("/upload-profile-image",verifyJWT,upload.single('profileImage'),uploadProfileImage)
-router.get("/profile",profileAuthentication,profileController)
-router.post("/login",loginValidation,loginController)
-router.post("/logout",authenticateToken,logoutController)
-router.post("/logout-all",authenticateToken,logoutAllController)
+router.post("/resend-auth-otp",resendAuthOtp);
+
+
+router.post("/upload-profile-image",authStudentMiddleware,upload.single('profileImage'),uploadProfileImage)
+router.get("/profile",authStudentMiddleware,profileController)
 
 export default router;
