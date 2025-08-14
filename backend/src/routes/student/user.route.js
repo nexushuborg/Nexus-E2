@@ -7,7 +7,7 @@ import { uploadProfileImage } from "../../controllers/student/upload.controller.
 import { authStudentMiddleware } from "../../middlewares/auth.middleware.js";
 import {profileController} from "../../controllers/student/profile.controller.js";
 import { loginController } from "../../controllers/student/user.controller.js";
-import { logoutController,logoutAllController,resendAuthOtp } from "../../controllers/student/user.controller.js";
+import { logoutController,logoutAllController,resendAuthOtp ,regenrateAccessToken} from "../../controllers/student/user.controller.js";
 
 const router = Router();
 
@@ -19,6 +19,7 @@ router.post("/logout",authStudentMiddleware,logoutController)
 router.post("/logout-all",authStudentMiddleware,logoutAllController)
 router.post("/verify-auth-otp",verifyAuthOtp);
 router.post("/resend-auth-otp",resendAuthOtp);
+router.get("/regenerate-access-token",regenrateAccessToken);
 
 
 router.post("/upload-profile-image",authStudentMiddleware,upload.single('profileImage'),uploadProfileImage)

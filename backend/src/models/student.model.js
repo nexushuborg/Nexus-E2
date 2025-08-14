@@ -25,6 +25,11 @@ const studentSchema = new Schema({
         //password should contain at least one uppercase letter, one lowercase letter, one number, and one special character
         validate: {
             validator: function(v) {
+                // Skip validation if password is already hashed (starts with $2b$)
+                if (v.startsWith('$2b$')) {
+                    return true;
+                }
+
                 return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(v);
             },
             message: props => `${props.value} is not a valid password!`
@@ -75,6 +80,10 @@ const studentSchema = new Schema({
     },
     //we will have i mean 2027 batch means they will graduate in 2027
     batch:{
+        type: Number,
+        required: true,
+    },
+    currentYear:{
         type: Number,
         required: true,
     },

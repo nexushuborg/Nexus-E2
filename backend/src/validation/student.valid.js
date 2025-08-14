@@ -77,7 +77,8 @@ export const registerStudentSchema = z.object({
 export const loginStudentSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address",
-  }),
+  }).optional(),
+
   reg_no: z
     .string()
     .trim()
@@ -86,7 +87,9 @@ export const loginStudentSchema = z.object({
     })
     .max(11, {
       message: "Registration number must be at most 11 characters long",
-    }),
+    })
+    .optional(),
+
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters long" })
@@ -98,4 +101,10 @@ export const loginStudentSchema = z.object({
           "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
       }
     ),
-});
+}).refine(
+  (data) => data.email || data.reg_no,
+  {
+    message: "Either email or registration number is required",
+    path: ["email"], // can set path to ["reg_no"] or leave as ["email"]
+  }
+);
