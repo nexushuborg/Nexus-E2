@@ -127,7 +127,7 @@ class _LoginHeader extends StatelessWidget {
         const Text(
           'Account Login',
           style: TextStyle(
-            color: Color(0xFF4A148C),
+            color: Color(0xFF4A148C), // Colors.purple.shade900
             fontSize: 40,
             fontFamily: 'Poppins',
             fontWeight: FontWeight.bold,
@@ -137,7 +137,7 @@ class _LoginHeader extends StatelessWidget {
         const Text(
           'Academic Management\nSimplified',
           style: TextStyle(
-            color: Color(0xFF7E57C2),
+            color: Color(0xFF7E57C2), // Colors.purple.shade700
             fontSize: 18,
             fontFamily: 'Poppins',
           ),
@@ -162,15 +162,15 @@ class _EmailTextField extends StatelessWidget {
         filled: true,
         fillColor: Colors.white.withAlpha(204),
         hintText: 'Email or Username',
-        hintStyle: const TextStyle(color: Color(0xFF757575)),
-        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF7E57C2)),
+        hintStyle: const TextStyle(color: Color(0xFF757575)), // Colors.grey.shade600
+        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF7E57C2)), // Colors.purple.shade700
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(50),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF4A148C), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF4A148C), width: 2), // Colors.purple.shade900
         ),
         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       ),
