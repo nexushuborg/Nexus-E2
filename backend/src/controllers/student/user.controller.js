@@ -4,7 +4,7 @@ import Degree from "../../models/degree.model.js"
 import Student from "../../models/student.model.js";
 import { redisClient } from "../../configs/connectRedis.js"
 import { sendOTP } from "../../services/sendmail.js"
-
+import blacklistTokenModel from "../../models/blacklisttoken.model.js";
 
 
 
@@ -277,6 +277,158 @@ export const loginController = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error",
+        });
+    }
+};
+
+const cleanupExpiredTokens = async () => {
+    try {
+        const result = await blacklistTokenModel.deleteMany({
+            createdAt: { $lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } // 24 hours ago
+        });
+        if (result.deletedCount > 0) {
+            console.log(`Cleaned up ${result.deletedCount} expired blacklisted tokens`);
+        }
+    } catch (error) {
+        console.error('Error cleaning up expired tokens:', error);
+    }
+};
+
+export const logoutController = async (req, res) => {
+    try {
+        const accessToken = req.headers.authorization?.split(' ')[1];
+        const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+
+        if (!accessToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Access token is required for logout"
+            });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+        } catch (error) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid access token"
+            });
+        }
+
+        const student = await Student.findById(decoded.id);
+        if (student) {
+            student.refreshToken = null;
+            await student.save();
+        }
+
+        await blacklistTokenModel.create({
+            token: accessToken
+        });
+
+        if (refreshToken) {
+            try {
+                jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+                await blacklistTokenModel.create({
+                    token: refreshToken
+                });
+            } catch (error) {
+                console.log("Invalid refresh token during logout:", error.message);
+            }
+        }
+
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+
+        if (Math.random() < 0.1) {
+            cleanupExpiredTokens().catch(err => console.error('Background cleanup failed:', err));
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Logout successful"
+        });
+
+    } catch (error) {
+        console.error("Logout error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error during logout"
+        });
+    }
+};
+
+export const logoutAllController = async (req, res) => {
+    try {
+        const accessToken = req.headers.authorization?.split(' ')[1];
+
+        if (!accessToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Access token is required"
+            });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+        } catch (error) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid access token"
+            });
+        }
+
+        const student = await Student.findById(decoded.id);
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
+        await blacklistTokenModel.create({
+            token: accessToken
+        });
+
+        const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+        if (refreshToken) {
+            try {
+                jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+                await blacklistTokenModel.create({
+                    token: refreshToken
+                });
+            } catch (error) {
+                console.log("Invalid refresh token during logout all:", error.message);
+            }
+        }
+
+        student.refreshToken = null;
+        await student.save();
+
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+
+        if (Math.random() < 0.1) {
+            cleanupExpiredTokens().catch(err => console.error('Background cleanup failed:', err));
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Logged out from all devices successfully"
+        });
+
+    } catch (error) {
+        console.error("Logout all error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error during logout"
         });
     }
 };
