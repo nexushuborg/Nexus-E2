@@ -582,6 +582,8 @@ export const regenrateAccessToken = async (req, res) => {
     }
 }
 
+
+// Password Reset Functions
 export const requestPasswordReset = async (req, res) => {
     try {
         const student = req.user;
@@ -831,6 +833,8 @@ export const resetPassword = async (req, res) => {
     }
 };
 
+
+// Forgot Password Functions
 export const requestForgotPasswordOtp = async (req, res) => {
     try {
         const { email } = req.body;

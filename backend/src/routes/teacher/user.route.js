@@ -1,25 +1,39 @@
-import {Router} from "express";
-import {getAllSections,getAllSubjectsAndDepartment,registerTeacher,verifyAuthOtp,resendAuthOtp} from "../../controllers/teacher/user.controller.js"
+import { Router } from "express";
+import { getAllSections, getAllSubjectsAndDepartment, registerTeacher, verifyAuthOtp, resendAuthOtp } from "../../controllers/teacher/user.controller.js"
 import { authTeacherMiddleware } from "../../middlewares/auth.middleware.js";
-import { teacherLogoutController, teacherLogoutAllController,teacherProfileController,requestPasswordReset,verifyPasswordResetOtp,resetPassword,requestForgotPasswordOtp,verifyForgotPasswordOtp,resetForgotPassword,resendForgotPasswordOtp } from "../../controllers/teacher/user.controller.js";
+import {
+    teacherLogoutController,
+    teacherLogoutAllController,
+    teacherProfileController,
+    requestPasswordReset,
+    verifyPasswordResetOtp,
+    resetPassword,
+    requestForgotPasswordOtp,
+    verifyForgotPasswordOtp,
+    resetForgotPassword,
+    resendForgotPasswordOtp,
+    login
+} from "../../controllers/teacher/user.controller.js";
+import { upload } from "../../middlewares/multer.middleware.js";
+import {uploadProfileImage} from "../../controllers/teacher/upload.controller.js"
 
 const router = Router();
 
-router.post("/register",registerTeacher);
-router.get("/get-all-subjects-and-department",getAllSubjectsAndDepartment);
-router.get("/get-all-sections",getAllSections);
+router.post("/register", registerTeacher);
+router.get("/get-all-subjects-and-department", getAllSubjectsAndDepartment);
+router.get("/get-all-sections", getAllSections);
 router.post("/verify-auth-otp", verifyAuthOtp);
 router.post("/resend-auth-otp", resendAuthOtp)
-
+router.post('/login', login);
 router.post('/logout', authTeacherMiddleware, teacherLogoutController);
 router.post('/logout-all', authTeacherMiddleware, teacherLogoutAllController);
-
-router.get("/profile", authTeacherMiddleware,teacherProfileController);
+router.get("/profile", authTeacherMiddleware, teacherProfileController);
+router.post("/upload-profile-image",authTeacherMiddleware,upload.single('profileImage'),uploadProfileImage)
 
 //Routes related to reset-password for Teachers
 //FLOW: Teacher is logged in → Goes to Profile/Settings → Clicks "Reset Password" button
 //1: Teacher will request to reset-password and backend will send an OTP + 60 sec countdown
-router.post('/reset-password/request', authTeacherMiddleware, requestPasswordReset);
+router.patch('/reset-password/request', authTeacherMiddleware, requestPasswordReset);
 //2: Teacher enters the OTP received in the email and backend will verify the OTP and send a resetToken if the OTP is valid
 router.post('/reset-password/verify-otp', authTeacherMiddleware, verifyPasswordResetOtp);
 //3: Teacher enters the new password, frontend sends the resetToken and new password to the backend

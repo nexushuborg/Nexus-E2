@@ -6,19 +6,20 @@ import { sendOTP } from "../../services/sendmail.js";
 import redisClient from "../../configs/connectRedis.js";
 import blacklistTokenModel from "../../models/blacklisttoken.model.js";
 
-export const getAllSubjectsAndDepartment = async (req,res) => {
+
+export const getAllSubjectsAndDepartment = async (req, res) => {
     try {
         const subject = await Subject.find().select("-class_notes -subj_faculty -__v -createdAt -updatedAt");
-        if(!subject || subject.length === 0) {
+        if (!subject || subject.length === 0) {
             return res.status(404).json({
-                success:false,
+                success: false,
                 message: "No subjects found"
             })
         }
         const department = await Department.find().select("-__v -createdAt -updatedAt");
-        if(!department || department.length === 0) {
+        if (!department || department.length === 0) {
             return res.status(404).json({
-                success:false,
+                success: false,
                 message: "No departments found"
             })
         }
@@ -76,10 +77,10 @@ export const registerTeacher = async (req, res) => {
     let updatedSubjects = [];
 
     try {
-        const {full_name, gender, email, password, department, designation, sectionWithSubject} = req.body;
+        const { full_name, gender, email, password, department, designation, sectionWithSubject } = req.body;
 
         // Validate required fields
-        if(!full_name || !gender || !email || !password || !department || !designation || !sectionWithSubject){
+        if (!full_name || !gender || !email || !password || !department || !designation || !sectionWithSubject) {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
@@ -87,7 +88,7 @@ export const registerTeacher = async (req, res) => {
         }
 
         // Validate sectionWithSubject array
-        if(!Array.isArray(sectionWithSubject) || sectionWithSubject.length === 0) {
+        if (!Array.isArray(sectionWithSubject) || sectionWithSubject.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: "sectionWithSubject must be a non-empty array"
@@ -95,8 +96,8 @@ export const registerTeacher = async (req, res) => {
         }
 
         // Check if teacher already exists
-        const existingTeacher = await Teacher.findOne({email});
-        if(existingTeacher){
+        const existingTeacher = await Teacher.findOne({ email });
+        if (existingTeacher) {
             return res.status(400).json({
                 success: false,
                 message: "Faculty Already Exists"
@@ -105,7 +106,7 @@ export const registerTeacher = async (req, res) => {
 
         // Validate department exists
         const departmentByUser = await Department.findById(department);
-        if(!departmentByUser){
+        if (!departmentByUser) {
             return res.status(404).json({
                 success: false,
                 message: "Department Not Found"
@@ -117,8 +118,8 @@ export const registerTeacher = async (req, res) => {
         const sectionIds = [...new Set(sectionWithSubject.map(item => item.section))];
 
         const [existingSubjects, existingSections] = await Promise.all([
-            Subject.find({_id: {$in: subjectIds}}).select('_id'),
-            Section.find({_id: {$in: sectionIds}}).select('_id')
+            Subject.find({ _id: { $in: subjectIds } }).select('_id'),
+            Section.find({ _id: { $in: sectionIds } }).select('_id')
         ]);
 
         const foundSubjectIds = existingSubjects.map(s => s._id.toString());
@@ -126,7 +127,7 @@ export const registerTeacher = async (req, res) => {
 
         // Check for missing subjects
         const missingSubjects = subjectIds.filter(id => !foundSubjectIds.includes(id));
-        if(missingSubjects.length > 0) {
+        if (missingSubjects.length > 0) {
             return res.status(404).json({
                 success: false,
                 message: `Subject(s) do not exist: ${missingSubjects.join(', ')}`
@@ -135,7 +136,7 @@ export const registerTeacher = async (req, res) => {
 
         // Check for missing sections
         const missingSections = sectionIds.filter(id => !foundSectionIds.includes(id));
-        if(missingSections.length > 0) {
+        if (missingSections.length > 0) {
             return res.status(404).json({
                 success: false,
                 message: `Section(s) do not exist: ${missingSections.join(', ')}`
@@ -152,7 +153,7 @@ export const registerTeacher = async (req, res) => {
             designation
         });
 
-        if(!teacher){
+        if (!teacher) {
             return res.status(500).json({
                 success: false,
                 message: "Failed to create teacher"
@@ -160,7 +161,7 @@ export const registerTeacher = async (req, res) => {
         }
 
         // Process sections and subjects updates
-        for(const {section: sectionId, subject: subjectId} of sectionWithSubject) {
+        for (const { section: sectionId, subject: subjectId } of sectionWithSubject) {
             try {
                 // Update Section with teacher and subject
                 const existingFaculty = await Section.findOne({
@@ -168,7 +169,7 @@ export const registerTeacher = async (req, res) => {
                     "faculty.teacher": teacher._id
                 });
 
-                if(existingFaculty) {
+                if (existingFaculty) {
                     // Teacher exists - ADD subject to existing subjects array
                     await Section.findOneAndUpdate(
                         { _id: sectionId, "faculty.teacher": teacher._id },
@@ -211,7 +212,7 @@ export const registerTeacher = async (req, res) => {
                     "subj_faculty.teacher": teacher._id
                 });
 
-                if(existingSubjectTeacher) {
+                if (existingSubjectTeacher) {
                     // Teacher exists - ADD section to existing sections array
                     await Subject.findOneAndUpdate(
                         { _id: subjectId, "subj_faculty.teacher": teacher._id },
@@ -252,7 +253,7 @@ export const registerTeacher = async (req, res) => {
 
         // Send OTP email
         const otpResult = await sendOTP(email, otp);
-        if(!otpResult.success){
+        if (!otpResult.success) {
             throw new Error("Failed to send OTP email");
         }
 
@@ -266,10 +267,10 @@ export const registerTeacher = async (req, res) => {
         console.error("Teacher registration error:", error);
 
         // Rollback operations
-        if(teacher) {
+        if (teacher) {
             try {
                 // Remove teacher from all updated sections
-                if(updatedSections.length > 0) {
+                if (updatedSections.length > 0) {
                     await Section.updateMany(
                         { _id: { $in: updatedSections } },
                         {
@@ -281,7 +282,7 @@ export const registerTeacher = async (req, res) => {
                 }
 
                 // Remove teacher from all updated subjects
-                if(updatedSubjects.length > 0) {
+                if (updatedSubjects.length > 0) {
                     await Subject.updateMany(
                         { _id: { $in: updatedSubjects } },
                         {
@@ -314,9 +315,10 @@ export const registerTeacher = async (req, res) => {
 }
 
 
-export const verifyAuthOtp =async (req, res) => {
-    const {email, otp} = req.body;
-    if(!email || !otp) {
+export const verifyAuthOtp = async (req, res) => {
+    const { email, otp, teacherId } = req.body;
+    console.log("mark1 ")
+    if (!email || !otp) {
         return res.status(400).json({
             success: false,
             message: "Email and OTP are required"
@@ -324,21 +326,22 @@ export const verifyAuthOtp =async (req, res) => {
     }
 
     //otp length
-    if(otp.length !== 6) {
+    if (otp.length !== 6) {
         return res.status(400).json({
             success: false,
             message: "OTP must be 6 digits long"
         });
     }
 
-    const cachedOtp = redisClient.get(`otp_teacher_${email}`);
-    if(!cachedOtp) {
+    const cachedOtp = await redisClient.get(`otp_teacher_${teacherId}`);
+    console.log(cachedOtp)
+    if (!cachedOtp) {
         return res.status(400).json({
             success: false,
             message: "OTP has expired or does not exist"
         });
     }
-    if(cachedOtp !== otp) {
+    if (cachedOtp !== otp) {
         return res.status(400).json({
             success: false,
             message: "Invalid OTP"
@@ -354,20 +357,19 @@ export const verifyAuthOtp =async (req, res) => {
     const refreshToken = user.generateRefreshToken();
     user.refreshToken = refreshToken;
     user.isVerified = true;
-    await user.save({validateBeforeSave: false});
+    await user.save({ validateBeforeSave: false });
 
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lex",
-        maxAge: 24 * 60 * 60 * 1000
+        sameSite: "lax",
     })
 
     const loggedUser = await Teacher.findById(user._id)
-    .populate('department', 'name')
-    .populate('section', 'name batch')
-    .populate('subjects', 'name code')
-    .select("-password -refreshToken -__v -createdAt -updatedAt")
+        .populate('department', 'name')
+        .populate('section', 'section_name batch')
+        .populate('subjects', 'subject_code subject_name')
+        .select("-password -refreshToken -__v -createdAt -updatedAt")
 
 
     return res.status(200).json({
@@ -379,29 +381,29 @@ export const verifyAuthOtp =async (req, res) => {
 }
 
 export const resendAuthOtp = async (req, res) => {
-    const {email} = req.body;
-    if(!email) {
+    const { email, teacherId } = req.body;
+    if (!email) {
         return res.status(400).json({
             success: false,
             message: "Email is required"
         });
     }
 
-    const otpLimit = await redisClient.get(`otp_cooldown_teacher_${email}`);
-    if(otpLimit) {
+    const otpLimit = await redisClient.get(`otp_cooldown_teacher_${teacherId}`);
+    if (otpLimit) {
         return res.status(429).json({
             success: false,
             message: "Please wait before requesting a new OTP"
         });
     }
-    let otp  = await redisClient.get(`otp_teacher_${email}`);
-    if(!otp){
+    let otp = await redisClient.get(`otp_teacher_${teacherId}`);
+    if (!otp) {
         otp = Math.floor(100000 + Math.random() * 900000);
-        await redisClient.set(`otp_teacher_${email}`, otp, "EX", 300); // 5 minutes
+        await redisClient.set(`otp_teacher_${teacherId}`, otp, "EX", 300); // 5 minutes
     }
-    await redisClient.set(`otp_cooldown_teacher_${email}`, true, "EX", 60); // 1 minute cooldown
+    await redisClient.set(`otp_cooldown_teacher_${teacherId}`, true, "EX", 60); // 1 minute cooldown
     const otpResult = await sendOTP(email, otp);
-    if(!otpResult.success){
+    if (!otpResult.success) {
         return res.status(500).json({
             success: false,
             message: "Failed to send OTP email"
@@ -412,6 +414,70 @@ export const resendAuthOtp = async (req, res) => {
         message: "OTP sent successfully",
         otp: otp
     });
+}
+
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required"
+            });
+        }
+
+        const teacher = await Teacher.findOne({ email });
+        if (!teacher) {
+            return res.status(404).json({
+                success: false,
+                message: "Invalid Creadentials"
+            })
+        }
+
+        const isMatch = await teacher.comparePassword(password);
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Creadentials"
+            });
+        }
+
+        if (!teacher.isVerified) {
+            return res.status(403).json({
+                success: false,
+                message: "Please verify your account first"
+            });
+        }
+        const accessToken = teacher.generateAccessToken();
+        const refreshToken = teacher.generateRefreshToken();
+        teacher.refreshToken = refreshToken;
+        await teacher.save({ validateBeforeSave: false });
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        });
+        const loggedUser = await Teacher.findById(teacher._id)
+            .select("-password -refreshToken -__v -createdAt -updatedAt")
+            .populate('department', 'name')
+            .populate('section', 'section_name batch')
+            .populate('subjects', 'subject_code subject_name');
+        return res.status(200).json({
+            success: true,
+            message: "Login successful",
+            accessToken,
+            teacher: loggedUser
+        })
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+
+    }
 }
 
 const cleanupExpiredTokens = async () => {
@@ -436,6 +502,11 @@ export const teacherLogoutController = async (req, res) => {
         console.log("Authorization header:", req.headers.authorization);
 
         if (!accessToken) {
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax'
+            });
             return res.status(400).json({
                 success: false,
                 message: "Access token is required for logout"
@@ -640,22 +711,6 @@ export const teacherProfileController = async (req, res) => {
     try {
         const teacher = await Teacher.findById(req.user._id)
             .populate('department', 'name short_name')
-            .populate('subjects', 'subject_code subject_name')
-            .populate({
-                path: 'section',
-                select: 'section_name batch',
-                populate: [
-                    {
-                        path: 'degree',
-                        select: 'name short_name duration_years'
-                    },
-                    {
-                        path: 'branch',
-                        select: 'name short_name'
-                    }
-                ]
-            })
-            .select('-password -refreshToken');
 
         if (!teacher) {
             return res.status(404).json({
@@ -664,24 +719,53 @@ export const teacherProfileController = async (req, res) => {
             });
         }
 
-        const sectionsWithDetails = teacher.section.map(section => ({
-            section_name: section.section_name,
-            batch: section.batch,
-            degree: {
-                name: section.degree?.name || null,
-                short_name: section.degree?.short_name || null,
-                duration_years: section.degree?.duration_years || null
-            },
-            branch: {
-                name: section.branch?.name || null,
-                short_name: section.branch?.short_name || null
-            }
-        }));
+       let sectionsWithThereSubject = [];
 
-        const subjectsData = teacher.subjects.map(subject => ({
-            subject_code: subject.subject_code,
-            subject_name: subject.subject_name
-        }));
+       //we will use Promise.all to get all sections and their subjects
+        if (teacher.section && teacher.section.length > 0) {
+            sectionsWithThereSubject = await Promise.all(
+                teacher.section.map(
+                    async(section) => {
+                        // Fetch populated subjects
+                        const sectionDetails =await Section.findById(section._id)
+                        .select("section_name batch degree branch faculty")
+                        .populate("faculty.subjects","subject_code subject_name")
+                        .populate("degree","name short_name duration_years")
+                        .populate("branch","name short_name");
+                        if (!sectionDetails) {
+                            return null; // Skip if section not found
+                        }
+                        const obj = {
+                            section_name : sectionDetails.section_name,
+                            batch: sectionDetails.batch,
+                            degree: {
+                                name: sectionDetails.degree?.name || null,
+                                short_name: sectionDetails.degree?.short_name || null,
+                                duration_years: sectionDetails.degree?.duration_years || null
+                            },
+                            branch: {
+                                name: sectionDetails.branch?.name || null,
+                                short_name: sectionDetails.branch?.short_name || null
+                            },
+
+                            subjects: sectionDetails.faculty.reduce((acc, faculty) => {
+                                if (faculty.teacher.toString() === teacher._id.toString()) {
+                                    acc.push(...faculty.subjects.map(subj => ({
+                                        subject_code: subj.subject_code,
+                                        subject_name: subj.subject_name
+                                    })));
+                                }
+                                return acc;
+                            }, [])
+
+
+                        }
+                        return obj;
+                    }
+                )
+            )
+        }
+        
 
         const profileData = {
             profile_picture: teacher.profile_picture?.Image || null,
@@ -692,10 +776,9 @@ export const teacherProfileController = async (req, res) => {
                 short_name: teacher.department?.short_name || null
             },
             designation: teacher.designation || null,
-            subjects: subjectsData,
             total_subjects: teacher.subjects.length,
-            sections: sectionsWithDetails,
-            total_sections: teacher.section.length
+            total_sections: teacher.section.length,
+            sections: sectionsWithThereSubject,
         };
 
         return res.status(200).json({
@@ -714,6 +797,9 @@ export const teacherProfileController = async (req, res) => {
     }
 };
 
+
+
+//Password Reset Controllers
 export const requestPasswordReset = async (req, res) => {
     try {
         const teacher = req.user;
@@ -962,6 +1048,9 @@ export const resetPassword = async (req, res) => {
     }
 };
 
+
+
+// Forgot Password Controller for Teachers
 export const requestForgotPasswordOtp = async (req, res) => {
     try {
         const { email } = req.body;
@@ -1090,21 +1179,15 @@ export const verifyForgotPasswordOtp = async (req, res) => {
 
 export const resetForgotPassword = async (req, res) => {
     try {
-        const { resetToken, newPassword, confirmPassword } = req.body;
+        const { resetToken, newPassword} = req.body;
 
-        if (!resetToken || !newPassword || !confirmPassword) {
+        if (!resetToken || !newPassword ) {
             return res.status(400).json({
                 success: false,
                 message: "Please provide reset token, new password and confirm password"
             });
         }
 
-        if (newPassword !== confirmPassword) {
-            return res.status(400).json({
-                success: false,
-                message: "Passwords do not match"
-            });
-        }
 
         if (newPassword.length < 8) {
             return res.status(400).json({
@@ -1142,7 +1225,6 @@ export const resetForgotPassword = async (req, res) => {
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
             });
         }
-
         return res.status(200).json({
             success: true,
             message: "Password reset successful. Please login with your new password."
