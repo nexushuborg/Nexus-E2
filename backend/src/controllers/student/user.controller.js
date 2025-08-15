@@ -81,6 +81,11 @@ export const registerStudent = async (req, res) => {
         //     })
         // }
 
+        // Calculate current year based on batch
+        const currentYear = new Date().getFullYear();
+        const yearOfAdmission = batch - 4; // Assuming 4-year course
+        const currentYearOfStudy = Math.min(4, Math.max(1, currentYear - yearOfAdmission));
+
         const student = await Student.create({
             full_name,
             password,
@@ -93,7 +98,7 @@ export const registerStudent = async (req, res) => {
             branch: existingBranch._id,
             batch,
             gender,
-
+            currentYear: currentYearOfStudy
         })
 
 
@@ -340,7 +345,7 @@ export const loginController = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error",
-            message: error.message
+            error: error.message
         });
     }
 };
@@ -361,7 +366,10 @@ const cleanupExpiredTokens = async () => {
 export const logoutController = async (req, res) => {
     try {
         const accessToken = req.headers.authorization?.split(' ')[1];
-        const refreshToken = req.cookies.refreshToken // user cannot send refresh token in body because use sameSite lax for cookie
+        const refreshToken = req.cookies.refreshToken; // user cannot send refresh token in body because use sameSite lax for cookie
+
+        console.log("Full headers:", req.headers);
+        console.log("Authorization header:", req.headers.authorization);
 
         if (!accessToken) {
             return res.status(400).json({
@@ -380,16 +388,19 @@ export const logoutController = async (req, res) => {
             });
         }
 
-        const student = await Student.findById(decoded.id);
-        if (student) {
-            student.refreshToken = null;
-            await student.save();
-        }
+        // Use findByIdAndUpdate to avoid validation issues
+        await Student.findByIdAndUpdate(
+            decoded.userId,
+            { refreshToken: null },
+            { new: true }
+        );
 
+        // Blacklist the access token
         await blacklistTokenModel.create({
             token: accessToken
         });
 
+        // Handle refresh token blacklisting if it exists
         if (refreshToken) {
             try {
                 jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
@@ -401,12 +412,14 @@ export const logoutController = async (req, res) => {
             }
         }
 
+        // Clear the refresh token cookie
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax'
         });
 
+        // Random cleanup of expired tokens (10% chance)
         if (Math.random() < 0.1) {
             cleanupExpiredTokens().catch(err => console.error('Background cleanup failed:', err));
         }
@@ -446,7 +459,8 @@ export const logoutAllController = async (req, res) => {
             });
         }
 
-        const student = await Student.findById(decoded.id);
+        // Check if student exists before proceeding
+        const student = await Student.findById(decoded.userId);
         if (!student) {
             return res.status(404).json({
                 success: false,
@@ -454,10 +468,12 @@ export const logoutAllController = async (req, res) => {
             });
         }
 
+        // Blacklist the current access token
         await blacklistTokenModel.create({
             token: accessToken
         });
 
+        // Handle refresh token blacklisting
         const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
         if (refreshToken) {
             try {
@@ -470,15 +486,21 @@ export const logoutAllController = async (req, res) => {
             }
         }
 
-        student.refreshToken = null;
-        await student.save();
+        // Use findByIdAndUpdate to clear refresh token and avoid validation issues
+        await Student.findByIdAndUpdate(
+            decoded.userId,
+            { refreshToken: null },
+            { new: true }
+        );
 
+        // Clear the refresh token cookie
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax'
         });
 
+        // Random cleanup of expired tokens (10% chance)
         if (Math.random() < 0.1) {
             cleanupExpiredTokens().catch(err => console.error('Background cleanup failed:', err));
         }
@@ -496,7 +518,6 @@ export const logoutAllController = async (req, res) => {
         });
     }
 };
-
 
 export const regenrateAccessToken = async (req, res) => {
     try {
@@ -537,7 +558,7 @@ export const regenrateAccessToken = async (req, res) => {
         }
 
         const student = await Student.findById(decoded.userId);
-        console.log("studnet ",student)
+        console.log("student ",student)
         if (!student || student.refreshToken !== refreshToken) {
             return res.status(401).json({
                 success: false,
@@ -560,3 +581,507 @@ export const regenrateAccessToken = async (req, res) => {
 
     }
 }
+
+export const requestPasswordReset = async (req, res) => {
+    try {
+        const student = req.user;
+        const { email } = student;
+
+        const otpLimit = await redisClient.get(`reset_otp_limit:${email}`);
+        if (otpLimit) {
+            return res.status(429).json({
+                success: false,
+                message: "Please wait before requesting a new password reset OTP"
+            });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        await redisClient.set(`reset_otp:${email}`, otp, "EX", 300);
+
+        await redisClient.set(`reset_otp_limit:${email}`, "sent", "EX", 60);
+
+        const response = await sendOTP(email, otp);
+        if (!response.success) {
+            await redisClient.del(`reset_otp:${email}`);
+            await redisClient.del(`reset_otp_limit:${email}`);
+
+            return res.status(500).json({
+                success: false,
+                message: "Failed to send password reset OTP, please try again later"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset OTP sent successfully to your registered email"
+        });
+
+    } catch (error) {
+        console.error("Request password reset error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+export const verifyPasswordResetOtp = async (req, res) => {
+    try {
+        const student = req.user;
+        const { email } = student;
+        const { otp } = req.body;
+
+        if (!otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide OTP"
+            });
+        }
+
+        if (typeof otp !== 'string') {
+            return res.status(400).json({
+                success: false,
+                message: "OTP must be a string"
+            });
+        }
+
+        if (otp.length !== 6) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP must be 6 digits long"
+            });
+        }
+
+        if (!/^\d{6}$/.test(otp)) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP must contain only numbers"
+            });
+        }
+
+        const otpFromCache = await redisClient.get(`reset_otp:${email}`);
+        if (!otpFromCache) {
+            return res.status(400).json({
+                success: false,
+                message: "Password reset OTP expired or not found"
+            });
+        }
+
+        if (otpFromCache !== otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid password reset OTP"
+            });
+        }
+
+        const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+        await redisClient.set(`reset_verified:${email}`, verificationToken, "EX", 600); // 10 minutes validity
+
+        await redisClient.del(`reset_otp:${email}`);
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset OTP verified successfully",
+            resetToken: verificationToken
+        });
+
+    } catch (error) {
+        console.error("Verify password reset OTP error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const student = req.user;
+        const { email } = student;
+        const { newPassword, resetToken } = req.body;
+
+        if (!newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "New password is required"
+            });
+        }
+
+        if (typeof newPassword !== 'string') {
+            return res.status(400).json({
+                success: false,
+                message: "New password must be a string"
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 6 characters long"
+            });
+        }
+
+        if (newPassword.length > 50) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must not exceed 50 characters"
+            });
+        }
+
+        if (newPassword.trim() !== newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Password cannot start or end with whitespace"
+            });
+        }
+
+        if (!resetToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Reset token is required"
+            });
+        }
+
+        if (typeof resetToken !== 'string') {
+            return res.status(400).json({
+                success: false,
+                message: "Reset token must be a string"
+            });
+        }
+
+        if (resetToken.length !== 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Reset token must be 6 characters long"
+            });
+        }
+
+        if (!/^\d{6}$/.test(resetToken)) {
+            return res.status(400).json({
+                success: false,
+                message: "Reset token must contain only numbers"
+            });
+        }
+
+        const verificationToken = await redisClient.get(`reset_verified:${email}`);
+        if (!verificationToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Reset token expired. Please verify OTP again."
+            });
+        }
+
+        if (verificationToken !== resetToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid reset token. Please verify OTP again."
+            });
+        }
+
+        const updatedStudent = await Student.findById(student._id);
+        if (!updatedStudent) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
+        const isSamePassword = await updatedStudent.comparePassword(newPassword);
+        if (isSamePassword) {
+            return res.status(400).json({
+                success: false,
+                message: "New password cannot be the same as current password"
+            });
+        }
+
+        updatedStudent.password = newPassword;
+        await updatedStudent.save();
+
+        await redisClient.del(`reset_verified:${email}`);
+        await redisClient.del(`reset_otp_limit:${email}`);
+
+        updatedStudent.refreshToken = undefined;
+        await updatedStudent.save({ validateBeforeSave: false });
+
+        const currentAccessToken = req.headers.authorization?.split(" ")[1] || req.cookies.accessToken;
+        if (currentAccessToken) {
+            try {
+                await blacklistTokenModel.create({ token: currentAccessToken });
+            } catch (blacklistError) {
+                console.error("Error blacklisting token:", blacklistError);
+                // Don't fail the password reset if blacklisting fails
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successfully. Please login with your new password."
+        });
+
+    } catch (error) {
+        console.error("Reset password error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+export const requestForgotPasswordOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide email address"
+            });
+        }
+
+        // Check if student exists
+        const student = await Student.findOne({ email });
+        if (!student) {
+            // For security, don't reveal if email exists or not
+            return res.status(200).json({
+                success: true,
+                message: "If the email exists, an OTP has been sent"
+            });
+        }
+
+        const otpLimit = await redisClient.get(`forgot_password_limit:${email}`);
+        if (otpLimit) {
+            return res.status(429).json({
+                success: false,
+                message: "Please wait before requesting a new OTP"
+            });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        await redisClient.set(`forgot_password_otp:${email}`, otp, "EX", 600);
+
+        await redisClient.set(`forgot_password_limit:${email}`, "sent", "EX", 120);
+
+        const response = await sendOTP(email, otp, "forgot-password");
+        if (!response.success) {
+            return res.status(500).json({
+                success: false,
+                message: "Failed to send OTP, please try again later"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "If the email exists, an OTP has been sent"
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
+export const verifyForgotPasswordOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide email and OTP"
+            });
+        }
+
+        if (otp.length !== 6) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP must be 6 digits long"
+            });
+        }
+
+        const student = await Student.findOne({ email });
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
+        const storedOtp = await redisClient.get(`forgot_password_otp:${email}`);
+        if (!storedOtp) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP expired or not found"
+            });
+        }
+
+        if (storedOtp !== otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP"
+            });
+        }
+
+        const generateSecureToken = () => {
+            const timestamp = Date.now().toString(36);
+            const randomPart1 = Math.random().toString(36).substring(2);
+            const randomPart2 = Math.random().toString(36).substring(2);
+            const randomPart3 = Math.random().toString(36).substring(2);
+            return `${timestamp}${randomPart1}${randomPart2}${randomPart3}`.substring(0, 64);
+        };
+
+        const resetToken = generateSecureToken();
+
+        await redisClient.set(`password_reset_token:${resetToken}`, email, "EX", 900);
+
+        await redisClient.del(`forgot_password_otp:${email}`);
+        await redisClient.del(`forgot_password_limit:${email}`);
+
+        return res.status(200).json({
+            success: true,
+            message: "OTP verified successfully",
+            resetToken
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
+export const resetForgotPassword = async (req, res) => {
+    try {
+        const { resetToken, newPassword, confirmPassword } = req.body;
+
+        if (!resetToken || !newPassword || !confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide reset token, new password and confirm password"
+            });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Passwords do not match"
+            });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 8 characters long"
+            });
+        }
+
+        const email = await redisClient.get(`password_reset_token:${resetToken}`);
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid or expired reset token"
+            });
+        }
+
+        const student = await Student.findOne({ email });
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
+        student.password = newPassword;
+        student.refreshToken = undefined;
+        await student.save();
+
+        await redisClient.del(`password_reset_token:${resetToken}`);
+
+        const tokens = await Student.findById(student._id).select('refreshToken');
+        if (tokens.refreshToken) {
+            await blacklistTokenModel.create({
+                token: tokens.refreshToken,
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successful. Please login with your new password."
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
+export const resendForgotPasswordOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide email address"
+            });
+        }
+
+        const otpLimit = await redisClient.get(`forgot_password_limit:${email}`);
+        if (otpLimit) {
+            return res.status(429).json({
+                success: false,
+                message: "Please wait before requesting a new OTP"
+            });
+        }
+
+        const student = await Student.findOne({ email });
+        if (!student) {
+            return res.status(200).json({
+                success: true,
+                message: "If the email exists, an OTP has been sent"
+            });
+        }
+
+        let otp = await redisClient.get(`forgot_password_otp:${email}`);
+        if (!otp) {
+            // Generate new OTP if none exists
+            otp = Math.floor(100000 + Math.random() * 900000).toString();
+            await redisClient.set(`forgot_password_otp:${email}`, otp, "EX", 600);
+        }
+
+        const response = await sendOTP(email, otp, "forgot-password");
+        if (!response.success) {
+            return res.status(500).json({
+                success: false,
+                message: "Failed to send OTP, please try again later"
+            });
+        }
+
+        await redisClient.set(`forgot_password_limit:${email}`, "sent", "EX", 120);
+
+        return res.status(200).json({
+            success: true,
+            message: "OTP sent successfully"
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};

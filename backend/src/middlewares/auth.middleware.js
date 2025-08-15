@@ -5,6 +5,8 @@ import blacklistTokenModel from '../models/blacklisttoken.model.js';
 export const authStudentMiddleware = async (req,res,next) => {
     try {
         const accessToken = req.headers.authorization?.split(" ")[1] || req.cookies.accessToken;
+        console.log("Full headers:", req.headers);
+        console.log("Authorization header:", req.headers.authorization);
         console.log("Access Token:", accessToken);
         if (!accessToken) {
             return res.status(401).json({
@@ -30,7 +32,7 @@ export const authStudentMiddleware = async (req,res,next) => {
         req.user = student;
         next();
     } catch (error) {
-        
+
         console.error("Authentication error:", error);
         return res.status(401).json({
             success: false,
