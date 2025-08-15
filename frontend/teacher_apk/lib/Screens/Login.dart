@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:teacher_apk/theme.dart';
+import '../widgets/arcanum_logo.dart'; // Added ArcanumLogo import
 
 // Main widget for the Arcanum Login screen.
 // It's a StatefulWidget because its state (like text field inputs, password visibility) can change.
@@ -43,8 +45,8 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
 
   // Handles the login button press event.
   void _onLoginPressed() {
-    String email = _emailController.text;
-    String password = _passwordController.text;
+    // String email = _emailController.text;
+    // String password = _passwordController.text;
     // TODO: Implement actual login authentication here.
     // Navigate to Dashboard after successful login
     Navigator.pushReplacementNamed(context, 'dashboard');
@@ -71,13 +73,15 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
         backgroundColor: Colors.transparent, // Makes scaffold background transparent to show container's gradient.
         body: SingleChildScrollView( // Allows the content to be scrollable if it exceeds screen height.
           child: Padding(
-            padding: const EdgeInsets.only(left: 35, top: 150, right: 35), // Overall padding for the content.
+            padding: const EdgeInsets.only(left: 35, top: 80, right: 35), // Adjusted top padding for logo
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start (left).
               mainAxisSize: MainAxisSize.min, // Column takes up minimum vertical space.
               children: <Widget>[
+                const Center(child: ArcanumLogo(color: AppTheme.primaryColor, fontSize: 25)), // Centered ArcanumLogo
+                const SizedBox(height: 80), // Spacing after logo
                 const _LoginHeader(), // Reusable widget for the login screen header.
-                const SizedBox(height: 130), // Spacing.
+                const SizedBox(height: 90), // Adjusted Spacing after header
                 _EmailTextField(controller: _emailController), // Reusable widget for the email input field.
                 const SizedBox(height: 20), // Spacing.
                 _PasswordTextField( // Reusable widget for the password input field.
@@ -95,7 +99,7 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
                 _LoginButton(onPressed: _onLoginPressed), // Reusable widget for the login button.
                 const SizedBox(height: 30), // Spacing before "Or" divider
                 const _OrDivider(),
-                const SizedBox(height: 30), // Spacing after "Or" divider
+                const SizedBox(height: 15), // Spacing after "Or" divider
                 Row( // Center the sign up link
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -113,11 +117,11 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
 
   // Helper method to create the background gradient decoration.
   BoxDecoration _buildBackgroundDecoration() {
-    return BoxDecoration(
+    return const BoxDecoration(
       gradient: LinearGradient(
         colors: [
-          Colors.white,
-          Colors.purple.shade500,
+          AppTheme.backgroundGradientStart,
+          AppTheme.backgroundGradientEnd,
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -142,9 +146,8 @@ class _LoginHeader extends StatelessWidget {
         Text(
           'Account Login',
           style: TextStyle(
-            color: Colors.purple.shade800,
+            color: AppTheme.primaryColor,
             fontSize: 50,
-            fontFamily: 'Poppins',
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -152,9 +155,8 @@ class _LoginHeader extends StatelessWidget {
         Text(
           'Academic Management\nSimplified',
           style: TextStyle(
-            color: Colors.purple.shade800,
+            color: AppTheme.primaryColor,
             fontSize: 22,
-            fontFamily: 'Poppins',
           ),
         ),
       ],
@@ -172,23 +174,15 @@ class _EmailTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      style: const TextStyle(color: Colors.black87),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white.withAlpha(204),
-        hintText: 'Enter your registered mail id',
-        hintStyle: const TextStyle(color: Color(0xFF757575)),
-        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF7E57C2)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(50),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF4A148C), width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      ),
+      style: const TextStyle(color: Colors.black87), // Or use Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textColor)
+      decoration: InputDecoration( // Uses the theme's inputDecorationTheme as a base
+            hintText: 'Enter your registered mail id',
+            hintStyle: TextStyle(color: Colors.grey.shade600), // Or use Theme.of(context).inputDecorationTheme.hintStyle
+            prefixIcon: Icon(Icons.person_outline, color: AppTheme.primaryColor),
+          ).copyWith(
+            // Apply specific overrides if the theme's defaults aren't enough
+            // e.g., border: AppTheme.inputBorder (if you defined a specific border style)
+          ),
       keyboardType: TextInputType.emailAddress,
     );
   }
@@ -210,31 +204,22 @@ class _PasswordTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      style: const TextStyle(color: Colors.black87),
+      style: const TextStyle(color: Colors.black87), // Or use Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textColor)
       obscureText: isObscured,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white.withAlpha(204),
-        hintText: 'Enter your Password',
-        hintStyle: const TextStyle(color: Color(0xFF757575)),
-        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF7E57C2)),
-        suffixIcon: IconButton(
-          icon: Icon(
-            isObscured ? Icons.visibility_off : Icons.visibility,
-            color: const Color(0xFF7E57C2),
+      decoration: InputDecoration( // Uses the theme's inputDecorationTheme as a base
+            hintText: 'Enter your Password',
+            hintStyle: TextStyle(color: Colors.grey.shade600), // Or use Theme.of(context).inputDecorationTheme.hintStyle
+            prefixIcon: Icon(Icons.lock_outline, color: AppTheme.primaryColor),
+            suffixIcon: IconButton(
+              icon: Icon(
+                isObscured ? Icons.visibility_off : Icons.visibility,
+                color: AppTheme.primaryColor,
+              ),
+              onPressed: onToggleVisibility,
+            ),
+          ).copyWith(
+             // Apply specific overrides if the theme's defaults aren't enough
           ),
-          onPressed: onToggleVisibility,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(50),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF4A148C), width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      ),
     );
   }
 }
@@ -261,8 +246,8 @@ class _RememberMeForgotPasswordRow extends StatelessWidget {
             Checkbox(
               value: rememberMe,
               onChanged: onRememberMeChanged,
-              activeColor: Colors.purple.shade800,
-              checkColor: Colors.white,
+              activeColor: AppTheme.primaryColor,
+              checkColor: Colors.white, // Or AppTheme.checkboxCheckColor if defined
               shape: const CircleBorder(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
@@ -272,8 +257,7 @@ class _RememberMeForgotPasswordRow extends StatelessWidget {
               child: Text(
                 'Remember Me',
                 style: TextStyle(
-                  color: Colors.purple.shade800,
-                  fontFamily: 'Poppins',
+                  color: AppTheme.primaryColor,
                   fontSize: 14,
                 ),
               ),
@@ -291,8 +275,7 @@ class _RememberMeForgotPasswordRow extends StatelessWidget {
           child: Text(
             'Forgot Password?',
             style: TextStyle(
-              color: Colors.purple.shade800,
-              fontFamily: 'Poppins',
+              color: AppTheme.primaryColor,
               fontSize: 14,
             ),
           ),
@@ -311,19 +294,17 @@ class _LoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.purple.shade800,
-        foregroundColor: Colors.white,
-        minimumSize: const Size(double.infinity, 50),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
-        ),
-        textStyle: const TextStyle(
-          fontSize: 18,
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+            minimumSize: WidgetStateProperty.all(const Size(double.infinity, 50)),
+            textStyle: WidgetStateProperty.all(
+              const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            // Ensure backgroundColor is also applied if not inherited from the theme
+            backgroundColor: WidgetStateProperty.all(AppTheme.primaryColor),
+          ),
       onPressed: onPressed,
       child: const Text('LOGIN'),
     );
@@ -342,7 +323,7 @@ class _OrDivider extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: Divider(
-              color: Colors.purple.shade800,
+              color: AppTheme.primaryColor,
               thickness: 1,
             ),
           ),
@@ -352,14 +333,13 @@ class _OrDivider extends StatelessWidget {
               'Or',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.purple.shade800,
-                fontFamily: 'Poppins',
+                color: AppTheme.primaryColor,
               ),
             ),
           ),
           Expanded(
             child: Divider(
-              color: Colors.purple.shade800,
+              color: AppTheme.primaryColor,
               thickness: 1,
             ),
           ),
@@ -377,24 +357,25 @@ class _SignUpLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
+    return TextButton(
+      onPressed: onPressed,
       child: RichText(
-        textAlign: TextAlign.center,
         text: TextSpan(
-          style: TextStyle(
-            fontFamily: 'Poppins',
+          style: TextStyle( // Default style for all spans
+            color: AppTheme.primaryColor,
             fontSize: 14,
-            color: Colors.purple.shade800, // Default color
           ),
           children: <TextSpan>[
-            const TextSpan(text: "Don't have an account? "),
             TextSpan(
-              text: 'Sign up',
+              text: 'Don\'t have an account? ',
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.purple.shade900, // Kept shade900 as it was, or should this be 800?
-                fontFamily: 'Poppins',
+                fontWeight: FontWeight.normal, // Make this part normal
+              ),
+            ),
+            TextSpan(
+              text: 'Sign Up',
+              style: TextStyle(
+                fontWeight: FontWeight.bold, // Keep this part bold
               ),
             ),
           ],

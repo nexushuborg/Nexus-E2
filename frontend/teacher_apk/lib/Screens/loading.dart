@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:teacher_apk/theme.dart'; // Import AppTheme
+import 'package:teacher_apk/widgets/triangle_logo.dart'; // Import TriangleLogo
+import 'package:teacher_apk/widgets/arcanum_logo.dart'; // Import ArcanumLogo
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -22,31 +25,38 @@ class _LoadingScreenState extends State<LoadingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: Container( // Wrap body with Container for gradient
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppTheme.backgroundGradientStart, AppTheme.backgroundGradientEnd],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Stack(
           children: <Widget>[
-            const Text(
-              'ARCANUM',
-              style: TextStyle(
-                fontSize: 48.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
-              ),
+            Align(
+              alignment: Alignment.center,
+              child: const TriangleLogo(size: 100, isWhite: true), // Changed to white
             ),
-            const SizedBox(height: 10),
-            const Text(
-              'Teach Smarter. Manage Faster',
-              style: TextStyle(
-                fontSize: 18.0,
-                letterSpacing: 1.5,
-                color: Colors.purple,
+            Align(
+              alignment: Alignment.center, // This centers the Column horizontally
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // So it only takes needed vertical space
+                children: <Widget>[
+                  const SizedBox(height: (80 / 2) + 380), // 40 + 380 = 420. Should be (100/2) + new_spacing
+                  const ArcanumLogo(fontSize: 40, color: AppTheme.primaryColor),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Teach smarter. Manage faster",
+                    style: TextStyle(fontSize: 14, fontFamily: 'Poppins', color: AppTheme.primaryColor), // Added text with small font
+                  ),
+                  const SizedBox(height: 50), // Spacing after text, consistent with previous layout
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor), // Use primaryColor
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 50),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
             ),
           ],
         ),

@@ -1,13 +1,160 @@
 // Get Started screen shown after loading
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets/glass_frame.dart';
 
-class GetStartedPage extends StatelessWidget {
+class CardData {
+  final String title;
+  final String prominentTitle;
+  final String description;
+
+  CardData({
+    required this.title,
+    required this.prominentTitle,
+    required this.description,
+  });
+}
+
+class GetStartedPage extends StatefulWidget {
   const GetStartedPage({super.key});
 
   @override
+  State<GetStartedPage> createState() => _GetStartedPageState();
+}
+
+class _GetStartedPageState extends State<GetStartedPage> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  Timer? _timer;
+
+  final List<CardData> _cardData = [
+    CardData(
+      title: "Welcome to",
+      prominentTitle: "Arcanum!",
+      description:
+          "Your all-in-one platform for class updates and student management. Teach more, manage less!",
+    ),
+    CardData(
+      title: "Your Digital",
+      prominentTitle: "Briefcase!",
+      description:
+          "Easily upload and share notes, keeping all your teaching materials organized and accessible to students anytime, anywhere.",
+    ),
+    CardData(
+      title: "Classroom",
+      prominentTitle: "Commander!",
+      description:
+          "Access student details, share important notices instantly, and empower your class by appointing Class Representatives with just a few taps.",
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(() {
+      if (mounted) {
+        setState(() {
+          _currentPage = _pageController.page?.round() ?? 0;
+        });
+      }
+    });
+    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+      if (!mounted) return;
+      // Directly get the current page from the controller for decision making
+      int pageForDecision = _pageController.page?.round() ?? 0;
+      if (pageForDecision < _cardData.length - 1) {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        _pageController.animateToPage(
+          0, // Loop to the first page
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildPageIndicator() {
+    List<Widget> indicators = [];
+    for (int i = 0; i < _cardData.length; i++) {
+      indicators.add(
+        Container(
+          width: 8,
+          height: 8,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: _currentPage == i ? AppTheme.primaryColor : Colors.white,
+            shape: BoxShape.circle,
+          ),
+        ),
+      );
+    }
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: indicators,
+    );
+  }
+
+  Widget _buildCardItem(BuildContext context, int index) {
+    final card = _cardData[index];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 40, 32, 0), // Reduced bottom padding
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // To ensure column doesn't expand excessively
+        children: [
+          Text(
+            card.title,
+            style: TextStyle(
+              color: AppTheme.primaryColor,
+              fontSize: 25,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            card.prominentTitle,
+            style: TextStyle(
+              color: AppTheme.primaryColor,
+              fontSize: 60,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            card.description,
+            style: TextStyle(
+              color: AppTheme.primaryColor,
+              fontSize: 16,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.start,
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Calculate the height for the PageView content area
+    // This is an estimate, you might need to adjust it based on actual content height
+    // Or use a more dynamic way to calculate height if cards have varying content.
+    // For now, estimating based on typical content height.
+    final screenHeight = MediaQuery.of(context).size.height;
+    final contentHeight = screenHeight * 0.45; // Approx 45% of screen for text content
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -20,7 +167,7 @@ class GetStartedPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            // Main content at bottom
+            // Main content area, including PageView, page indicator and button
             Positioned(
               left: 0,
               right: 0,
@@ -28,98 +175,57 @@ class GetStartedPage extends StatelessWidget {
               child: GlassFrame(
                 borderRadius: 32,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 40, 32, 40),
+                  // Overall padding for the GlassFrame content
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min, // Important for Column in Positioned
                     children: [
-                      // Welcome Text
-                      Text(
-                        'Welcome to',
-                        style: TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        'Arcanum!',
-                        style: TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Description
-                      Text(
-                        'All your class updates and student management tools in one place—quick, organized, and effortless, so you teach more and manage less',
-                        style: TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      // Page Indicator
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      // Get Started Button
                       SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pushReplacementNamed(context, 'login'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Get Started',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        height: contentHeight, // Provide a height for PageView
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: _cardData.length,
+                          itemBuilder: (context, index) {
+                            return _buildCardItem(context, index);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 24), // Spacing before page indicator
+                      _buildPageIndicator(),
+                      const SizedBox(height: 32),
+                      // Get Started Button - padding moved here for better control
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              _timer?.cancel(); // Stop timer on navigation
+                              Navigator.pushReplacementNamed(context, 'login');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(32),
                               ),
-                              const SizedBox(width: 8),
-                              const Icon(Icons.arrow_forward, color: Colors.white),
-                            ],
+                              elevation: 0,
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Get Started',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(Icons.arrow_forward, color: Colors.white),
+                              ],
+                            ),
                           ),
                         ),
                       ),
