@@ -16,7 +16,7 @@ void main() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     theme: AppTheme.themeData,
-    initialRoute: 'loading',
+    initialRoute: 'signupStep1',
     routes: {
       'loading': (context) => const LoadingScreen(),
       'getStarted': (context) => const GetStartedPage(),

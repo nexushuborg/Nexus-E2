@@ -26,7 +26,7 @@ class ArcanumLogo extends StatelessWidget {
           child: CustomPaint(
             painter: TrianglePainter(
               color: whiteTriangle ? Colors.white : color,
-              strokeWidth: fontSize * 0.08,
+              strokeWidth: fontSize * 0.04,
             ),
           ),
         ),
@@ -36,7 +36,7 @@ class ArcanumLogo extends StatelessWidget {
           'RCANUM',
           style: TextStyle(
             fontSize: fontSize,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w200,
             letterSpacing: fontSize * 0.1,
             color: color,
             fontFamily: 'Montserrat',
