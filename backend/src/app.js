@@ -44,10 +44,11 @@ app.use(morgan("dev"));
 
 //routes 
 import studentRoutes from "./routes/student/user.route.js"
-
-
+import teacherRoutes from "./routes/teacher/user.route.js"
 
 app.use("/api/v1/student",studentRoutes);
+app.use("/api/v1/teacher",teacherRoutes);
+
 
 
 app.get("/",(req,res) => {

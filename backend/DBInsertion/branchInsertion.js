@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 async function insertBranches() {
-  await mongoose.connect("mongodb+srv://arcanum25official:bXNZUPXkcViNBOqZ@cluster0.6cqhixh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"); 
+  await mongoose.connect(); 
   try {
     const btech = await Degree.findOne({ short_name: "BTech" });
     if (!btech) {

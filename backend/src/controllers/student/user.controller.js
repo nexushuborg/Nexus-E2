@@ -13,9 +13,9 @@ export const registerStudent = async (req, res) => {
     try {
         console.log("Register endpoint hit - Incoming cookies:", req.cookies);
 
-        const { full_name, password, reg_no, slno, section, email, phoneNo, degree, branch, batch, gender } = req.body;
+        const { full_name, password, reg_no, slno,email, phoneNo, degree, branch, batch, gender } = req.body;
 
-        if (!full_name || !password || !reg_no || !slno || !section || !email || !phoneNo || !degree || !branch || !batch || !gender) {
+        if (!full_name || !password || !reg_no || !slno || !email || !phoneNo || !degree || !branch || !batch || !gender) {
             return res.status(400).json({
                 success: false,
                 message: "Please fill all the fields"
@@ -65,28 +65,28 @@ export const registerStudent = async (req, res) => {
             })
         }
 
-        let checkedSection = await Section.findOne({
-            section_name: section,
-            batch,
-            degree: existingDegree._id,
-            branch: existingBranch._id
-        })
+        // let checkedSection = await Section.findOne({
+        //     section_name: section,
+        //     batch,
+        //     degree: existingDegree._id,
+        //     branch: existingBranch._id
+        // })
 
-        if (!checkedSection) {
-            checkedSection = await Section.create({
-                section_name: section,
-                batch,
-                degree: existingDegree._id,
-                branch: existingBranch._id
-            })
-        }
+        // if (!checkedSection) {
+        //     checkedSection = await Section.create({
+        //         section_name: section,
+        //         batch,
+        //         degree: existingDegree._id,
+        //         branch: existingBranch._id
+        //     })
+        // }
 
         const student = await Student.create({
             full_name,
             password,
             reg_no,
             slno,
-            section: checkedSection._id,
+            // section: checkedSection._id,
             email,
             phoneNo,
             degree: existingDegree._id,
@@ -96,13 +96,6 @@ export const registerStudent = async (req, res) => {
 
         })
 
-        await Section.findByIdAndUpdate(
-            checkedSection?._id,
-            {
-                $inc: { strength: 1 },
-                $addToSet: { students: student._id }
-            }
-        );
 
 
         //generate otp and send that
