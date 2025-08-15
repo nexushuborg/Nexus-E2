@@ -6,7 +6,7 @@ import '../widgets/common_widgets.dart';
 import '../utils/ui_constants.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {

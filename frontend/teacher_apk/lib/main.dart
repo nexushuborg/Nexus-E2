@@ -19,8 +19,8 @@ void main() {
     initialRoute: 'loading',
     routes: {
       'loading': (context) => const LoadingScreen(),
-      'login': (context) => const ArcanumLogin(),
       'getStarted': (context) => const GetStartedPage(),
+      'login': (context) => const ArcanumLogin(),
       'signupStep1': (context) => const SignUpStep1Page(),
       'signupStep2': (context) => const SignUpStep2Page(),
       'signupStep3': (context) => const SignUpStep3Page(),

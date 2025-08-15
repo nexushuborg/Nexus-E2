@@ -9,12 +9,12 @@ class AvatarCircle extends StatelessWidget {
   final Widget? child;
 
   const AvatarCircle({
-    Key? key,
+    super.key,
     this.size = UIConstants.avatarSizeMedium,
     this.isPlaceholder = true,
     this.onTap,
     this.child,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +42,10 @@ class CameraButton extends StatelessWidget {
   final double size;
 
   const CameraButton({
-    Key? key,
+    super.key,
     this.onTap,
     this.size = 36,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -74,12 +74,12 @@ class GlassCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const GlassCard({
-    Key? key,
+    super.key,
     required this.child,
     this.padding,
     this.borderRadius,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -101,10 +101,10 @@ class NextButton extends StatelessWidget {
   final String label;
 
   const NextButton({
-    Key? key,
+    super.key,
     required this.onPressed,
     this.label = 'Next',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -10,35 +10,36 @@ import 'screens/profile_page.dart';
 import 'screens/settings_page.dart';
 
 class Routes {
-  static const String getStarted = '/';
-  static const String login = '/login';
-  static const String signUpStep1 = '/signup/step1';
-  static const String signUpStep2 = '/signup/step2';
-  static const String signUpStep3 = '/signup/step3';
-  static const String verification = '/verification';
-  static const String dashboard = '/dashboard';
-  static const String profile = '/profile';
-  static const String accountSettings = '/settings';
+  static const String loading = 'loading';
+  static const String getStarted = 'getStarted';
+  static const String login = 'login';
+  static const String signUpStep1 = 'signupStep1';
+  static const String signUpStep2 = 'signupStep2';
+  static const String signUpStep3 = 'signupStep3';
+  static const String verification = 'verificationComplete';
+  static const String dashboard = 'dashboard';
+  static const String profile = 'profile';
+  static const String settings = 'settings';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case getStarted:
+      case 'getStarted':
         return MaterialPageRoute(builder: (_) => const GetStartedPage());
-      case login:
+      case 'login':
         return MaterialPageRoute(builder: (_) => const ArcanumLogin());
-      case signUpStep1:
+      case 'signupStep1':
         return MaterialPageRoute(builder: (_) => const SignUpStep1Page());
-      case signUpStep2:
+      case 'signupStep2':
         return MaterialPageRoute(builder: (_) => const SignUpStep2Page());
-      case signUpStep3:
+      case 'signupStep3':
         return MaterialPageRoute(builder: (_) => const SignUpStep3Page());
-      case verification:
+      case 'verificationComplete':
         return MaterialPageRoute(builder: (_) => const VerificationCompletePage());
-      case dashboard:
+      case 'dashboard':
         return MaterialPageRoute(builder: (_) => const DashboardPage());
-      case profile:
+      case 'profile':
         return MaterialPageRoute(builder: (_) => const ProfilePage());
-      case accountSettings:
+      case 'settings':
         return MaterialPageRoute(builder: (_) => const SettingsPage());
       default:
         return MaterialPageRoute(

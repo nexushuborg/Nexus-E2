@@ -5,7 +5,7 @@ import '../widgets/arcanum_logo.dart';
 import '../utils/ui_constants.dart';
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

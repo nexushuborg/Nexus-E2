@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 
 class SignUpStep2Page extends StatefulWidget {
-  const SignUpStep2Page({Key? key}) : super(key: key);
+  const SignUpStep2Page({super.key});
 
   @override
   State<SignUpStep2Page> createState() => _SignUpStep2PageState();
@@ -12,7 +12,7 @@ class SignUpStep2Page extends StatefulWidget {
 class _SignUpStep2PageState extends State<SignUpStep2Page> {
   String? _department;
   String? _designation;
-  List<String> _sections = [];
+  final List<String> _sections = [];
 
   void _showAddSectionDialog() {
     showDialog(

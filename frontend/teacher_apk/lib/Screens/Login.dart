@@ -46,7 +46,8 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
     String email = _emailController.text;
     String password = _passwordController.text;
     // TODO: Implement actual login authentication here.
-    // Remove print statement for production.
+    // Navigate to Dashboard after successful login
+    Navigator.pushReplacementNamed(context, 'dashboard');
   }
 
   // Handles the "Forgot Password?" text press event.
@@ -57,9 +58,7 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
 
   // Handles the "Sign Up" text press event.
   void _onSignUpPressed() {
-    // TODO: Implement navigation to the Sign Up screen.
-    // Remove print statement for production.
-    print('Sign Up pressed');
+    Navigator.pushNamed(context, 'signupStep1');
   }
 
   // Builds the UI for the login screen.

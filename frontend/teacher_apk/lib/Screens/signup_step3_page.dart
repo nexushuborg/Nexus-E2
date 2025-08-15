@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../theme.dart';
 
 class SignUpStep3Page extends StatefulWidget {
-  const SignUpStep3Page({Key? key}) : super(key: key);
+  const SignUpStep3Page({super.key});
 
   @override
   State<SignUpStep3Page> createState() => _SignUpStep3PageState();
