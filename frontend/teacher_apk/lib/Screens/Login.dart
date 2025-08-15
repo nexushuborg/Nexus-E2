@@ -55,6 +55,13 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
     // Remove print statement for production.
   }
 
+  // Handles the "Sign Up" text press event.
+  void _onSignUpPressed() {
+    // TODO: Implement navigation to the Sign Up screen.
+    // Remove print statement for production.
+    print('Sign Up pressed');
+  }
+
   // Builds the UI for the login screen.
   @override
   Widget build(BuildContext context) {
@@ -71,7 +78,7 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
               mainAxisSize: MainAxisSize.min, // Column takes up minimum vertical space.
               children: <Widget>[
                 const _LoginHeader(), // Reusable widget for the login screen header.
-                const SizedBox(height: 150), // Spacing.
+                const SizedBox(height: 130), // Spacing.
                 _EmailTextField(controller: _emailController), // Reusable widget for the email input field.
                 const SizedBox(height: 20), // Spacing.
                 _PasswordTextField( // Reusable widget for the password input field.
@@ -87,7 +94,16 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
                 ),
                 const SizedBox(height: 30), // Spacing.
                 _LoginButton(onPressed: _onLoginPressed), // Reusable widget for the login button.
-                const SizedBox(height: 20), // Spacing.
+                const SizedBox(height: 30), // Spacing before "Or" divider
+                const _OrDivider(),
+                const SizedBox(height: 30), // Spacing after "Or" divider
+                Row( // Center the sign up link
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _SignUpLink(onPressed: _onSignUpPressed),
+                  ],
+                ),
+                const SizedBox(height: 50), // Added some bottom padding for scroll view
               ],
             ),
           ),
@@ -124,21 +140,21 @@ class _LoginHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Account Login',
           style: TextStyle(
-            color: Color(0xFF4A148C),
-            fontSize: 40,
+            color: Colors.purple.shade800,
+            fontSize: 50,
             fontFamily: 'Poppins',
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Academic Management\nSimplified',
           style: TextStyle(
-            color: Color(0xFF7E57C2),
-            fontSize: 18,
+            color: Colors.purple.shade800,
+            fontSize: 22,
             fontFamily: 'Poppins',
           ),
         ),
@@ -161,7 +177,7 @@ class _EmailTextField extends StatelessWidget {
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white.withAlpha(204),
-        hintText: 'Email or Username',
+        hintText: 'Enter your registered mail id',
         hintStyle: const TextStyle(color: Color(0xFF757575)),
         prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF7E57C2)),
         border: OutlineInputBorder(
@@ -200,7 +216,7 @@ class _PasswordTextField extends StatelessWidget {
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white.withAlpha(204),
-        hintText: 'Password',
+        hintText: 'Enter your Password',
         hintStyle: const TextStyle(color: Color(0xFF757575)),
         prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF7E57C2)),
         suffixIcon: IconButton(
@@ -243,25 +259,21 @@ class _RememberMeForgotPasswordRow extends StatelessWidget {
       children: <Widget>[
         Row(
           children: <Widget>[
-            const SizedBox(
-              height: 24.0,
-              width: 24.0,
-              child: null,
-            ),
             Checkbox(
               value: rememberMe,
               onChanged: onRememberMeChanged,
-              activeColor: const Color(0xFF7E57C2),
+              activeColor: Colors.purple.shade800,
               checkColor: Colors.white,
               shape: const CircleBorder(),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
             ),
-            const SizedBox(width: 4),
             GestureDetector(
               onTap: () => onRememberMeChanged(!rememberMe),
-              child: const Text(
+              child: Text(
                 'Remember Me',
                 style: TextStyle(
-                  color: Color(0xFF7E57C2),
+                  color: Colors.purple.shade800,
                   fontFamily: 'Poppins',
                   fontSize: 14,
                 ),
@@ -277,10 +289,10 @@ class _RememberMeForgotPasswordRow extends StatelessWidget {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             alignment: Alignment.centerRight,
           ),
-          child: const Text(
+          child: Text(
             'Forgot Password?',
             style: TextStyle(
-              color: Color(0xFF7E57C2),
+              color: Colors.purple.shade800,
               fontFamily: 'Poppins',
               fontSize: 14,
             ),
@@ -301,7 +313,7 @@ class _LoginButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF7E57C2),
+        backgroundColor: Colors.purple.shade800,
         foregroundColor: Colors.white,
         minimumSize: const Size(double.infinity, 50),
         shape: RoundedRectangleBorder(
@@ -315,6 +327,80 @@ class _LoginButton extends StatelessWidget {
       ),
       onPressed: onPressed,
       child: const Text('LOGIN'),
+    );
+  }
+}
+
+// Widget for the "Or" divider.
+class _OrDivider extends StatelessWidget {
+  const _OrDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30.0), // This controls the length of the dividers
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Divider(
+              color: Colors.purple.shade800,
+              thickness: 1,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0), // This is the existing padding for the "Or" text
+            child: Text(
+              'Or',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.purple.shade800,
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ),
+          Expanded(
+            child: Divider(
+              color: Colors.purple.shade800,
+              thickness: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Widget for the "Sign Up" link.
+class _SignUpLink extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _SignUpLink({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 14,
+            color: Colors.purple.shade800, // Default color
+          ),
+          children: <TextSpan>[
+            const TextSpan(text: "Don't have an account? "),
+            TextSpan(
+              text: 'Sign up',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.purple.shade900, // Kept shade900 as it was, or should this be 800?
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
