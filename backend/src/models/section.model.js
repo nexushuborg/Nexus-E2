@@ -1,3 +1,5 @@
+import mongoose,{Schema} from "mongoose";
+
 const sectionSchema = new Schema({
   section_name: {
     type: String,
@@ -16,7 +18,7 @@ const sectionSchema = new Schema({
   branch: {
     type: Schema.Types.ObjectId,
     ref: "Branch",
-    required: true,
+    // required: true,
   },
   faculty: [
     {

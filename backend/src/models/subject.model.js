@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const subjectSchema = new mongoose.Schema({
   subject_code: {
     type: String,
@@ -14,7 +16,6 @@ const subjectSchema = new mongoose.Schema({
       teacher: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Teacher",
-        required: true,
       },
       sections: [
         {
