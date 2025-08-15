@@ -4,7 +4,7 @@ import '../theme.dart';
 import '../widgets/glass_frame.dart';
 
 class GetStartedPage extends StatelessWidget {
-  const GetStartedPage({Key? key}) : super(key: key);
+  const GetStartedPage({super.key});
 
   @override
   Widget build(BuildContext context) {

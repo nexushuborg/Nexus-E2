@@ -15,13 +15,13 @@ class GlassFrame extends StatelessWidget {
   final Color? color;
 
   const GlassFrame({
-    Key? key,
+    super.key,
     required this.child,
     this.borderRadius = 24,
     this.blur = 16,
     this.padding,
     this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -6,11 +6,11 @@ class ArcanumLogo extends StatelessWidget {
   final bool whiteTriangle;
 
   const ArcanumLogo({
-    Key? key,
+    super.key,
     required this.color,
     this.fontSize = 20,
     this.whiteTriangle = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

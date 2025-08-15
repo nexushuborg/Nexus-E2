@@ -14,7 +14,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
     super.initState();
     Timer(const Duration(seconds: 5), () {
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('login');
+        Navigator.of(context).pushReplacementNamed('getStarted');
       }
     });
   }

@@ -4,7 +4,7 @@ import '../theme.dart';
 import '../widgets/arcanum_logo.dart';
 
 class VerificationCompletePage extends StatefulWidget {
-  const VerificationCompletePage({Key? key}) : super(key: key);
+  const VerificationCompletePage({super.key});
 
   @override
   State<VerificationCompletePage> createState() => _VerificationCompletePageState();

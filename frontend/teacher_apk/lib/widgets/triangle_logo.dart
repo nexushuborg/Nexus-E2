@@ -6,10 +6,10 @@ class TriangleLogo extends StatelessWidget {
   final bool isWhite;
 
   const TriangleLogo({
-    Key? key,
+    super.key,
     required this.size,
     this.isWhite = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
