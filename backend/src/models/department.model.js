@@ -14,7 +14,6 @@ const departmentSchema = new mongoose.Schema({
     hod:{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Teacher",
-        required: true,
     }
 },{
     timestamps: true,

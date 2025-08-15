@@ -29,9 +29,9 @@ const teacherSchema = new Schema({
         type: String,
         required: true,
         unique: true,
-        trim: true,
+        trim: true
         //mail must end wuth @soa.du.in
-        match: [/^[a-zA-Z0-9._%+-]+@soa\.du\.in$/, "Please enter a valid SOA email address"]
+        // match: [/^[a-zA-Z0-9._%+-]+@soa\.du\.in$/, "Please enter a valid SOA email address"]
     },
     password:{
         type: String,
@@ -47,23 +47,21 @@ const teacherSchema = new Schema({
     },
     phoneNo:{
         type: String,
-        required: true,
+        // required: true,
         unique: true,
     },
     department:{
         type: Schema.Types.ObjectId,
         ref: "Department",
-        
     },
     designation:{
         type: String,
-       
         trim: true,
     },
     gender:{
         type: String,
         enum :["male","female"],
-        reqyuired: true,
+        required: true,
     },
     subjects:[
         {
@@ -71,11 +69,6 @@ const teacherSchema = new Schema({
             ref: "Subject",
         }
     ],
-    user_id:{
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-    },
     refreshToken :{
         type: String,
         default: null,

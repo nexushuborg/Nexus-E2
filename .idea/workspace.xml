@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8796f1ec-4215-4a56-85e6-c43a20e49f25" name="Changes" comment="" />
+    <list default="true" id="8796f1ec-4215-4a56-85e6-c43a20e49f25" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/test/widget_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/test/widget_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/screens/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/screens/login.dart" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,10 +22,10 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 8
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="31AlWXmoM1cWoH7mtTH0XmMgDDF" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -37,10 +43,16 @@
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "rohit/dev",
+    "last_opened_file_path": "E:/Flutter/Nexus-E2/frontend/student_apk/lib/screens",
     "settings.editor.selected.configurable": "AndroidSdkUpdater",
     "show.migrate.to.gradle.popup": "false"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\Flutter\Nexus-E2\frontend\student_apk\lib\screens" />
+    </key>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="8796f1ec-4215-4a56-85e6-c43a20e49f25" name="Changes" comment="" />

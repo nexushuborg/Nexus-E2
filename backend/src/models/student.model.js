@@ -85,7 +85,7 @@ const studentSchema = new Schema({
     },
     currentYear:{
         type: Number,
-        required: true,
+        // required: true,
     },
     gender:{
         type: String,

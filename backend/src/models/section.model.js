@@ -18,7 +18,7 @@ const sectionSchema = new Schema({
   branch: {
     type: Schema.Types.ObjectId,
     ref: "Branch",
-    required: true,
+    // required: true,
   },
   faculty: [
     {

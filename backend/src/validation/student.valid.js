@@ -59,7 +59,7 @@ export const registerStudentSchema = z.object({
     .string()
     .trim()
     .min(1, { message: "Section is required" })
-    .max(10, { message: "Section is too long" }),
+    .max(10, { message: "Section is too long" }).optional(),
 
   password: z
     .string()
