@@ -1,3 +1,5 @@
+import mongoose,{Schema} from "mongoose";
+
 const sectionSchema = new Schema({
   section_name: {
     type: String,

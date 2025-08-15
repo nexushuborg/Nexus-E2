@@ -15,8 +15,14 @@ export const profileController = async (req, res) => {
             });
         }
 
-        const academicYear = calculateAcademicYear(student.batch);
-        console.log(student.section.section_name)
+        // Calculate academic year based on batch
+        const currentYear = new Date().getFullYear();
+        const yearOfAdmission = student.batch - 4; // Assuming 4-year course
+        const academicYear = Math.min(4, Math.max(1, currentYear - yearOfAdmission));
+
+        if (student.section) {
+            console.log(student.section.section_name);
+        }
 
         const profileData = {
             profile_picture: student.profile_picture?.Image || null,
