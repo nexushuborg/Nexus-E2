@@ -45,6 +45,10 @@ const teacherSchema = new Schema({
             message: props => `${props.value} is not a valid password!`
         }
     },
+    isVerified:{
+        type: Boolean,
+        default: false,
+    },
     phoneNo:{
         type: String,
         // required: true,
