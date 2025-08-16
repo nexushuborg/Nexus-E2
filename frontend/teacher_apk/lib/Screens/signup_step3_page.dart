@@ -100,7 +100,7 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
                             Text(
                               "We've sent a verification code to your registered email address teachname@soa.du.in",
                               style: TextStyle(
-                                color: AppTheme.primaryColor.withOpacity(0.7),
+                                color: AppTheme.primaryColor.withAlpha(178),
                                 fontSize: 14,
                               ),
                             ),

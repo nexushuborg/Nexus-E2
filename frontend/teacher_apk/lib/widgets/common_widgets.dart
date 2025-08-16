@@ -54,13 +54,13 @@ class CameraButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor,
+          color: Colors.white, // Reverted to white
           shape: BoxShape.circle,
         ),
         child: Icon(
           Icons.camera_alt,
-          color: Colors.white,
-          size: size * 0.5,
+          color: AppTheme.primaryColor, 
+          size: size * 0.55, // Icon size remains increased
         ),
       ),
     );

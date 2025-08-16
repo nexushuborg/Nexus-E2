@@ -3,9 +3,39 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets/arcanum_logo.dart';
 import '../utils/ui_constants.dart';
+import 'Login.dart'; // Added for ArcanumLogin navigation
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
+
+  // Helper method to show logout confirmation dialog
+  Future<bool?> _showLogoutConfirmationDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppTheme.backgroundGradientStart, // Fixed: Used AppTheme.backgroundGradientStart
+          shape: RoundedRectangleBorder(borderRadius: UIConstants.circularRadius(UIConstants.glassRadius)), // Fixed: Used UIConstants.circularRadius
+          title: Text('Confirm Logout', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
+          content: Text('Are you sure you want to log out?', style: TextStyle(color: AppTheme.primaryColor.withAlpha(204))), // Fixed: withAlpha
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel', style: TextStyle(color: AppTheme.primaryColor.withAlpha(153))), // Fixed: withAlpha
+              onPressed: () {
+                Navigator.of(context).pop(false); // User cancelled
+              },
+            ),
+            TextButton(
+              child: Text('Logout', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.of(context).pop(true); // User confirmed
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +92,7 @@ class SettingsPage extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(UIConstants.spacingSmall),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withAlpha(51), // Fixed: withAlpha
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -88,14 +118,14 @@ class SettingsPage extends StatelessWidget {
                                   Text(
                                     '+91 - 90300 20398',
                                     style: TextStyle(
-                                      color: AppTheme.primaryColor.withOpacity(0.7),
+                                      color: AppTheme.primaryColor.withAlpha(178), // Fixed: withAlpha
                                       fontSize: 14,
                                     ),
                                   ),
                                   Text(
                                     'Santkumar@gmail.com',
                                     style: TextStyle(
-                                      color: AppTheme.primaryColor.withOpacity(0.7),
+                                      color: AppTheme.primaryColor.withAlpha(178), // Fixed: withAlpha
                                       fontSize: 14,
                                     ),
                                   ),
@@ -132,7 +162,7 @@ class SettingsPage extends StatelessWidget {
                             Text(
                               'v23.2.12',
                               style: TextStyle(
-                                color: AppTheme.primaryColor.withOpacity(0.7),
+                                color: AppTheme.primaryColor.withAlpha(178), // Fixed: withAlpha
                                 fontSize: 14,
                               ),
                             ),
@@ -175,7 +205,20 @@ class SettingsPage extends StatelessWidget {
                       _SettingsOption(
                         icon: Icons.logout,
                         label: 'Logout',
-                        onTap: () {},
+                        onTap: () async {
+                          final confirmed = await _showLogoutConfirmationDialog(context);
+                          if (confirmed == true) {
+                            // Perform actual logout logic here (e.g., clearing session, tokens)
+                            // For now, just navigating
+                            if (context.mounted) { // Fixed: Added context.mounted check
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (context) => const ArcanumLogin()), // Corrected to ArcanumLogin
+                                (Route<dynamic> route) => false, // Remove all previous routes
+                              );
+                            }
+                          }
+                        },
                       ),
                       const SizedBox(height: UIConstants.spacingSmall),
                       _SettingsOption(
@@ -192,7 +235,7 @@ class SettingsPage extends StatelessWidget {
               // Logo
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: UIConstants.spacingLarge),
-                child: ArcanumLogo(color: AppTheme.primaryColor),
+                child: ArcanumLogo(color: Colors.white),
               ),
             ],
           ),
