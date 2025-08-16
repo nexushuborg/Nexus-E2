@@ -29,9 +29,9 @@ const teacherSchema = new Schema({
         type: String,
         required: true,
         unique: true,
-        trim: true
+        trim: true,
         //mail must end wuth @soa.du.in
-        // match: [/^[a-zA-Z0-9._%+-]+@soa\.du\.in$/, "Please enter a valid SOA email address"]
+        match: [/^[a-zA-Z0-9._%+-]+@soa\.du\.in$/, "Please enter a valid SOA email address"]
     },
     password:{
         type: String,
