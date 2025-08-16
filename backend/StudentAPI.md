@@ -7,6 +7,20 @@
 | Server Port | 8000 |
 | Route Prefix | `/api/v1/student` |
 
+## Documentation Sections Overview
+
+| Section | Route(s) | Authentication | Description |
+|---------|----------|----------------|-------------|
+| **[1. Register Student](#1-register-student)** | `POST /register` | None | Register new student account |
+| **[2. Verify OTP](#2-verify-otp)** | `POST /verify-auth-otp` | None | Verify registration email OTP |
+| **[3. Login Student](#3-login-student)** | `POST /login` | None | Student login with credentials |
+| **[4. Reset Password](#4-reset-password-3-step-process)** | `POST /reset-password/*` | Bearer Token | Reset password for logged-in users (3 steps) |
+| **[5. Forgot Password](#5-forgot-password-4-step-process)** | `POST /forgot-password/*` | None | Reset password for non-logged users (4 steps) |
+| **[6. Logout Current Session](#6-logout-current-session)** | `POST /logout` | Bearer Token | Logout from current device |
+| **[7. Logout From All Devices](#7-logout-from-all-devices)** | `POST /logout-all` | Bearer Token | Logout from all devices |
+| **[8. Get Profile](#8-get-profile)** | `GET /profile` | Bearer Token | Retrieve student profile data |
+| **[9. Upload Profile Image](#9-upload-profile-image)** | `POST /upload-profile-image` | Bearer Token | Upload student profile picture |
+
 ## API Endpoints Overview
 
 | Endpoint | Method | Authentication | Purpose |
@@ -19,8 +33,95 @@
 | `/reset-password/request` | POST | Bearer Token | Request password reset OTP |
 | `/reset-password/verify-otp` | POST | Bearer Token | Verify password reset OTP |
 | `/reset-password` | POST | Bearer Token | Reset password with new password |
+| `/forgot-password/request` | POST | None | Request forgot password OTP |
+| `/forgot-password/verify-otp` | POST | None | Verify forgot password OTP |
+| `/forgot-password/reset` | POST | None | Reset password with resetToken |
+| `/forgot-password/resend-otp` | POST | None | Resend forgot password OTP |
 | `/profile` | GET | Bearer Token | Get student profile |
 | `/upload-profile-image` | POST | Bearer Token | Upload profile image |
+
+# Access Token and Refresh Token Definitions
+
+## Access Token
+
+An **Access Token** is a short-lived security credential that grants authenticated access to protected API resources. It serves as a digital key that proves the user's identity and authorization to access specific endpoints.
+
+### Key Characteristics:
+- **Purpose**: Authenticates and authorizes API requests
+- **Format**: JSON Web Token (JWT) containing user information and permissions
+- **Usage**: Sent in the `Authorization: Bearer <token>` header with each API request
+- **Security**: Contains encoded user data, permissions, and expiration timestamp
+- **Validation**: Server validates the token's signature and expiration on each request
+- **Scope**: Grants access to specific API endpoints and user resources
+
+### When Access Tokens are Used:
+- Making requests to protected API endpoints
+- Accessing user-specific data and resources
+- Performing authenticated operations (profile updates, password changes, etc.)
+- Validating user permissions for specific actions
+
+### Access Token Lifecycle:
+1. **Generation**: Created upon successful login or OTP verification
+2. **Storage**: Stored securely in client-side storage (localStorage, sessionStorage)
+3. **Transmission**: Included in HTTP headers for authenticated requests
+4. **Validation**: Verified by server on each protected endpoint access
+5. **Expiration**: Automatically becomes invalid after predetermined time
+6. **Renewal**: Must be refreshed using refresh token when expired
+
+---
+
+## Refresh Token
+
+A **Refresh Token** is a long-lived security credential used to obtain new access tokens without requiring the user to re-authenticate. It provides a secure way to maintain user sessions while keeping access tokens short-lived for security.
+
+### Key Characteristics:
+- **Purpose**: Generates new access tokens when current ones expire
+- **Format**: Secure random string or JWT with longer expiration
+- **Storage**: Stored as HTTP-only cookie for enhanced security
+- **Security**: Cannot be accessed by client-side JavaScript, preventing XSS attacks
+- **Validation**: Verified against server-side whitelist or database records
+- **Single Use**: Some implementations invalidate refresh token after each use
+
+### When Refresh Tokens are Used:
+- Automatically obtaining new access tokens when they expire
+- Maintaining user sessions without requiring re-login
+- Seamless user experience during extended application usage
+- Background token renewal in single-page applications
+
+### Refresh Token Lifecycle:
+1. **Generation**: Created alongside access token during authentication
+2. **Storage**: Set as secure HTTP-only cookie by the server
+3. **Automatic Usage**: Client automatically uses refresh token for token renewal
+4. **Validation**: Server validates refresh token against stored records
+5. **Token Exchange**: Exchanges valid refresh token for new access token
+6. **Rotation**: New refresh token may be issued with each token refresh
+7. **Revocation**: Invalidated during logout or security events
+
+---
+
+## Token Relationship
+
+### How They Work Together:
+1. **Initial Authentication**: User logs in → Server issues both access and refresh tokens
+2. **API Requests**: Client uses access token for authenticated requests
+3. **Token Expiration**: Access token expires → Client automatically uses refresh token
+4. **Token Renewal**: Refresh token exchanges for new access token + optionally new refresh token
+5. **Seamless Experience**: User continues using application without re-authentication
+
+### Security Benefits:
+- **Reduced Risk**: Short-lived access tokens limit exposure if compromised
+- **Secure Storage**: Refresh tokens stored in HTTP-only cookies prevent client-side access
+- **Automatic Renewal**: Maintains security while providing smooth user experience
+- **Revocation Control**: Both tokens can be invalidated during logout or security breaches
+
+### Token Flow Example:
+```
+1. Login → Access Token (short-lived) + Refresh Token (long-lived)
+2. API Call → Use Access Token in Authorization header
+3. Token Expires → Client detects expiration
+4. Token Refresh → Use Refresh Token to get new Access Token
+5. Continue → Use new Access Token for subsequent requests
+```
 
 ## 1. Register Student
 
@@ -241,7 +342,137 @@
 }
 ```
 
-## 5. Logout Current Session
+## 5. Forgot Password (4-Step Process)
+
+> **Note**: Forgot password is for **non-authenticated users**. User is NOT logged in and has forgotten their password. This is accessed from the login page via "Forgot Password" link.
+
+### Forgot Password Flow Overview:
+
+• **Step 1 - Request OTP**: User on login page clicks "Forgot Password" → Send **email** in body `{"email": "user@example.com"}` to `POST /forgot-password/request` → Backend checks if email exists, generates 6-digit OTP, stores in Redis (10min expiry), sends OTP to email, returns generic success message (doesn't reveal if email exists) with 120-second rate limit
+
+• **Step 2 - Verify OTP**: User enters **email** + **OTP from email** in body `{"email": "user@example.com", "otp": "123456"}` to `POST /forgot-password/verify-otp` → Backend validates email exists and OTP matches Redis cache, generates secure **resetToken** (64-char, 15min expiry), stores in Redis, clears OTP data, returns `{"resetToken": "abc123..."}` which must be saved for next step
+
+• **Step 3 - Reset Password**: User enters **new password** + **confirm password** + **resetToken from step 2** in body `{"resetToken": "abc123...", "newPassword": "newPass123", "confirmPassword": "newPass123"}` to `POST /forgot-password/reset` → Backend validates passwords match, resetToken exists, updates password, **logs out user from all devices**, blacklists existing refresh tokens, clears Redis entries, returns success message → **User must login with new password**
+
+• **Step 4 - Resend OTP (Optional)**: If user didn't receive OTP, send **email** in body `{"email": "user@example.com"}` to `POST /forgot-password/resend-otp` → Backend resends existing OTP or generates new one if expired, applies same 120-second rate limit
+
+### 5.1 Request Forgot Password OTP
+
+| Property | Value |
+|----------|-------|
+| **Method** | POST |
+| **Endpoint** | `/forgot-password/request` |
+| **Authentication** | None |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Content-Type | application/json |
+
+#### Request Body
+```json
+{
+  "email": "john.doe@example.com"
+}
+```
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "If the email exists, an OTP has been sent"
+}
+```
+
+### 5.2 Verify Forgot Password OTP
+
+| Property | Value |
+|----------|-------|
+| **Method** | POST |
+| **Endpoint** | `/forgot-password/verify-otp` |
+| **Authentication** | None |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Content-Type | application/json |
+
+#### Request Body
+```json
+{
+  "email": "john.doe@example.com",
+  "otp": "123456"
+}
+```
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "OTP verified successfully",
+  "resetToken": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yzab567cdef890ghij123"
+}
+```
+
+### 5.3 Reset Forgot Password
+
+| Property | Value |
+|----------|-------|
+| **Method** | POST |
+| **Endpoint** | `/forgot-password/reset` |
+| **Authentication** | None |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Content-Type | application/json |
+
+#### Request Body
+```json
+{
+  "resetToken": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yzab567cdef890ghij123",
+  "newPassword": "newPassword123",
+  "confirmPassword": "newPassword123"
+}
+```
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Password reset successful. Please login with your new password."
+}
+```
+
+### 5.4 Resend Forgot Password OTP
+
+| Property | Value |
+|----------|-------|
+| **Method** | POST |
+| **Endpoint** | `/forgot-password/resend-otp` |
+| **Authentication** | None |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Content-Type | application/json |
+
+#### Request Body
+```json
+{
+  "email": "john.doe@example.com"
+}
+```
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "OTP sent successfully"
+}
+```
+
+## 6. Logout Current Session
 
 | Property | Value |
 |----------|-------|
@@ -284,7 +515,7 @@
 | 4 | Body can be empty or raw JSON |
 | 5 | Send request |
 
-## 6. Logout From All Devices
+## 7. Logout From All Devices
 
 | Property | Value |
 |----------|-------|
@@ -321,7 +552,7 @@
 | 4 | Leave body empty or use empty JSON object |
 | 5 | Send request |
 
-## 7. Get Profile
+## 8. Get Profile
 
 | Property | Value |
 |----------|-------|
@@ -358,7 +589,7 @@
 }
 ```
 
-## 8. Upload Profile Image
+## 9. Upload Profile Image
 
 | Property | Value |
 |----------|-------|
@@ -436,6 +667,27 @@
 | **7** | `GET /profile` | - | 401 - Token revoked | Previous token invalid |
 | **8** | `POST /login` | `{"email": "user@example.com", "reg_no": "21CS001", "password": "newPassword123"}` | 200 - New session | Login with new password |
 
+## Forgot Password Testing Flow (Step-by-Step)
+
+| Step | Endpoint | Body | Expected Response | Notes |
+|------|----------|------|------------------|-------|
+| **1** | `POST /forgot-password/request` | `{"email": "user@example.com"}` | 200 - Generic success | Check email for OTP |
+| **2** | `POST /forgot-password/request` | `{"email": "user@example.com"}` | 429 - Rate limited | Before 120 seconds |
+| **3** | Wait 120 seconds | - | - | Rate limiting cooldown |
+| **4** | `POST /forgot-password/verify-otp` | `{"email": "user@example.com", "otp": "123456"}` | 200 - Reset token | **Save resetToken** |
+| **5** | `POST /forgot-password/reset` | `{"resetToken": "abc123...", "newPassword": "newPass123", "confirmPassword": "newPass123"}` | 200 - Password reset | User logged out from all devices |
+| **6** | `POST /login` | `{"email": "user@example.com", "reg_no": "21CS001", "password": "oldPassword"}` | 401 - Invalid credentials | Old password doesn't work |
+| **7** | `POST /login` | `{"email": "user@example.com", "reg_no": "21CS001", "password": "newPass123"}` | 200 - New session | Login with new password |
+
+## Alternative Flow: Resend OTP
+
+| Step | Endpoint | Body | Expected Response | Notes |
+|------|----------|------|------------------|-------|
+| **1** | `POST /forgot-password/request` | `{"email": "user@example.com"}` | 200 - Generic success | Initial OTP request |
+| **2** | Wait 120+ seconds | - | - | Rate limit expires |
+| **3** | `POST /forgot-password/resend-otp` | `{"email": "user@example.com"}` | 200 - OTP sent | Resends same OTP if valid, or new OTP if expired |
+| **4** | `POST /forgot-password/verify-otp` | `{"email": "user@example.com", "otp": "123456"}` | 200 - Reset token | Continue with reset flow |
+
 ## Authentication States Testing
 
 | Scenario | Expected Status | Response Message |
@@ -447,16 +699,45 @@
 | Blacklisted token (after logout) | 401 | "Token has been revoked. Please login again." |
 | Unverified account | 403 | "Account not verified" |
 
+## Password Reset vs Forgot Password Comparison
+
+| Feature | Reset Password | Forgot Password |
+|---------|----------------|-----------------|
+| **User State** | Logged in (has access token) | Not logged in (no access token) |
+| **Access From** | Inside app (profile/settings) | Login page ("Forgot Password" link) |
+| **Authentication** | Bearer Token Required | No Authentication |
+| **OTP Expiry** | 5 minutes | 10 minutes |
+| **Rate Limit** | 60 seconds | 120 seconds |
+| **Reset Token** | 6-digit numeric | 64-character secure string |
+| **Reset Token Expiry** | 10 minutes | 15 minutes |
+| **Email Security** | Uses authenticated user's email | Validates email exists before proceeding |
+| **Password Confirmation** | Single password field | Requires password + confirm password |
+| **Steps** | 3 steps | 3 steps + optional resend |
+
 ## Password Reset Security Features
+
+| Feature | Reset Password | Forgot Password |
+|---------|----------------|-----------------|
+| **Rate Limiting** | 60-second cooldown between OTP requests | 120-second cooldown between OTP requests |
+| **OTP Expiry** | OTP valid for 5 minutes only | OTP valid for 10 minutes only |
+| **Reset Token Expiry** | Reset token valid for 10 minutes | Reset token valid for 15 minutes |
+| **Session Invalidation** | All sessions logged out after password reset | All sessions logged out after password reset |
+| **Same Password Check** | Prevents setting same password | Prevents setting same password |
+| **Authentication Required** | Only logged-in users can reset password | No authentication required (for forgot scenarios) |
+| **Email Privacy** | Uses authenticated user's email | Generic response (doesn't reveal if email exists) |
+
+## Forgot Password Security Features
 
 | Feature | Description | Implementation |
 |---------|-------------|----------------|
-| **Rate Limiting** | 60-second cooldown between OTP requests | Redis cache with expiry |
-| **OTP Expiry** | OTP valid for 5 minutes only | Redis TTL |
-| **Reset Token Expiry** | Reset token valid for 10 minutes | Redis TTL |
-| **Session Invalidation** | All sessions logged out after password reset | Refresh token clearing + token blacklisting |
-| **Same Password Check** | Prevents setting same password | Password comparison |
-| **Authentication Required** | Only logged-in users can reset password | Bearer token validation |
+| **Email Privacy Protection** | Generic response whether email exists or not | Returns same message for valid/invalid emails |
+| **Rate Limiting** | 120-second cooldown between OTP requests | Redis cache with TTL |
+| **OTP Expiry** | OTP valid for 10 minutes only | Redis TTL |
+| **Reset Token Security** | 64-character secure token with timestamp | Generated with crypto-random components |
+| **Reset Token Expiry** | Reset token valid for 15 minutes | Redis TTL |
+| **Password Confirmation** | Requires matching password confirmation | Frontend and backend validation |
+| **Session Invalidation** | All existing sessions terminated | Refresh token clearing + blacklisting |
+| **OTP Reuse** | Same OTP resent if still valid | Efficient Redis caching |
 
 ## Password Reset Error Scenarios
 
@@ -471,6 +752,23 @@
 | **Invalid reset token** | 400 | "Invalid or expired reset token. Please verify OTP again." |
 | **Same as current password** | 400 | "New password cannot be the same as current password" |
 
+## Forgot Password Error Scenarios
+
+| Scenario | HTTP Status | Response Message |
+|----------|-------------|------------------|
+| **Missing email** | 400 | "Please provide email address" |
+| **Request OTP too soon** | 429 | "Please wait before requesting a new OTP" |
+| **Missing email or OTP** | 400 | "Please provide email and OTP" |
+| **Invalid OTP format** | 400 | "OTP must be 6 digits long" |
+| **Student not found (verify)** | 404 | "Student not found" |
+| **Expired OTP** | 400 | "OTP expired or not found" |
+| **Wrong OTP** | 400 | "Invalid OTP" |
+| **Missing reset fields** | 400 | "Please provide reset token, new password and confirm password" |
+| **Password mismatch** | 400 | "Passwords do not match" |
+| **Password too short** | 400 | "Password must be at least 8 characters long" |
+| **Invalid reset token** | 400 | "Invalid or expired reset token" |
+| **Student not found (reset)** | 404 | "Student not found" |
+
 ## Logout Scenarios Testing
 
 | Test Case | Setup | Expected Result |
@@ -481,6 +779,7 @@
 | **Invalid Token Logout** | POST `/logout` with invalid token | 401 - Invalid token |
 | **Logout Without Token** | POST `/logout` without Authorization | 401 - Token required |
 | **Auto Logout After Password Reset** | Reset password → Try old token | 401 - Token revoked |
+| **Auto Logout After Forgot Password** | Reset via forgot password → Try old token | 401 - Token revoked |
 
 ## Token Management Flow
 
@@ -489,6 +788,7 @@
 | **Login** | Store access token, set refresh cookie | 200 - Tokens provided |
 | **Access Protected Route** | Send Bearer token in header | 200/401 based on token |
 | **Reset Password** | Clear stored token after reset | 200 - All sessions ended |
+| **Forgot Password Reset** | No token needed, redirect to login after reset | 200 - All sessions ended |
 | **Logout** | Clear stored token, call logout API | 200 - Token blacklisted |
 | **Logout All** | Clear all stored tokens | 200 - All sessions ended |
 | **Token Expired** | Redirect to login page | 401 - Need new login |
@@ -531,6 +831,15 @@
 | newPassword | String | Yes (Step 3) | New password (6-50 characters) |
 | resetToken | String | Yes (Step 3) | Reset token from OTP verification |
 
+### Forgot Password Fields
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| email | String | Yes | Registered email address |
+| otp | String | Yes (Step 2) | 6-digit OTP from email |
+| resetToken | String | Yes (Step 3) | 64-character reset token from OTP verification |
+| newPassword | String | Yes (Step 3) | New password (8+ characters) |
+| confirmPassword | String | Yes (Step 3) | Confirm new password (must match newPassword) |
+
 ### Logout Fields
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -545,15 +854,22 @@
 | **Registration OTP Cooldown** | 60 seconds between requests |
 | **Password Reset OTP Expiry** | 5 minutes after generation |
 | **Password Reset OTP Cooldown** | 60 seconds between requests |
-| **Reset Token Expiry** | 10 minutes after OTP verification |
+| **Forgot Password OTP Expiry** | 10 minutes after generation |
+| **Forgot Password OTP Cooldown** | 120 seconds between requests |
+| **Reset Token Expiry (Password Reset)** | 10 minutes after OTP verification |
+| **Reset Token Expiry (Forgot Password)** | 15 minutes after OTP verification |
 | **Token Storage** | Store access token securely in localStorage/sessionStorage |
 | **Token Transmission** | Always use Authorization header for protected routes |
 | **Password Reset Behavior** | User is logged out from all devices after password reset |
+| **Forgot Password Behavior** | User is logged out from all devices after forgot password reset |
 | **Session Management** | `/logout-all` invalidates all user sessions |
 | **File Formats** | Supports common image formats (jpg, png, gif) |
 | **Response Format** | All endpoints return JSON |
 | **Refresh Tokens** | Automatically set as HTTP-only cookies |
 | **Password Reset Auth** | User must be logged in to reset password (not "forgot password") |
+| **Forgot Password Auth** | No authentication required (for users who forgot password) |
+| **Email Privacy** | Forgot password doesn't reveal if email exists |
+| **OTP Resend** | Available for forgot password flow if needed |
 
 ## Security Features
 
@@ -565,5 +881,10 @@
 | **HTTP-Only Cookies** | Refresh tokens stored securely |
 | **Bearer Token Auth** | Standard JWT implementation |
 | **Password Reset Security** | OTP + Reset Token double verification |
+| **Forgot Password Security** | Email privacy protection + secure reset tokens |
 | **Rate Limiting** | Prevents OTP spam and brute force attacks |
 | **Session Invalidation** | Complete session cleanup after password reset |
+| **Email Privacy Protection** | Generic responses in forgot password flow |
+| **Secure Token Generation** | 64-character crypto-secure reset tokens for forgot password |
+| **Password Confirmation** | Required for forgot password reset |
+| **Different Timeouts** | Longer timeouts for non-authenticated flows |
