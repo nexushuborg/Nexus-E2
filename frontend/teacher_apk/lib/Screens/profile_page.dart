@@ -34,6 +34,15 @@ class ProfilePage extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
+                    const SizedBox(width: UIConstants.spacingMedium), // Added space
+                    Text(
+                      'Your Profile',
+                      style: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const Spacer(),
                     IconButton(
                       icon: Icon(Icons.settings, color: AppTheme.primaryColor),
@@ -45,17 +54,31 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
 
+              const SizedBox(height: UIConstants.spacingXLarge), // Added spacing
+
               // Avatar and Name
               Stack(
                 clipBehavior: Clip.none,
+                alignment: Alignment.center, // Center the AvatarCircle within the border Container
                 children: [
+                  Container(
+                    width: 190.0 + 0.0 * 2, // avatar size + border width * 2
+                    height: 190.0 + 4.0 * 2,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppTheme.primaryColor.withAlpha(128), // Semi-transparent violet
+                        width: 8.0,
+                      ),
+                    ),
+                  ),
                   AvatarCircle(
-                    size: UIConstants.avatarSizeLarge,
+                    size: 190.0, // Increased size
                     onTap: () {},
                   ),
                   Positioned(
-                    right: -4,
-                    bottom: -4,
+                    right: 15.0, 
+                    bottom: 15.0, 
                     child: CameraButton(onTap: () {}),
                   ),
                 ],
@@ -69,7 +92,15 @@ class ProfilePage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: UIConstants.spacingXLarge),
+              const SizedBox(height: UIConstants.spacingSmall), 
+              Text(
+                'Professor', 
+                style: TextStyle(
+                  color: AppTheme.primaryColor.withAlpha(204), 
+                  fontSize: 16, // Smaller font size
+                ),
+              ),
+              const SizedBox(height: UIConstants.spacingXLarge), 
 
               // Profile Details Card
               Padding(
@@ -133,7 +164,7 @@ class ProfilePage extends StatelessWidget {
               // Logo at bottom
               Padding(
                 padding: const EdgeInsets.only(bottom: UIConstants.spacingLarge),
-                child: ArcanumLogo(color: AppTheme.primaryColor),
+                child: ArcanumLogo(color: Colors.white),
               ),
             ],
           ),
@@ -166,7 +197,7 @@ class _ProfileDetailRow extends StatelessWidget {
           child: Text(
             value,
             style: TextStyle(
-              color: AppTheme.primaryColor.withOpacity(0.8),
+              color: AppTheme.primaryColor.withAlpha(204), // Fixed: Replaced withOpacity with withAlpha
             ),
           ),
         ),

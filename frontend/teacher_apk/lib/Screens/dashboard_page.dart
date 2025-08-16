@@ -31,7 +31,7 @@ class DashboardPage extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withAlpha(51),
                           borderRadius: BorderRadius.circular(32),
                         ),
                         child: Row(
@@ -41,7 +41,7 @@ class DashboardPage extends StatelessWidget {
                             Text(
                               'Search',
                               style: TextStyle(
-                                color: AppTheme.primaryColor.withOpacity(0.5),
+                                color: AppTheme.primaryColor.withAlpha(127),
                                 fontSize: 16,
                               ),
                             ),
@@ -51,26 +51,16 @@ class DashboardPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 16),
                     // Action Buttons
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.notifications_none, color: AppTheme.primaryColor),
-                        onPressed: () {},
-                      ),
+                    IconButton(
+                      iconSize: 35.0,
+                      icon: Icon(Icons.notifications_none, color: AppTheme.primaryColor),
+                      onPressed: () {},
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.settings, color: AppTheme.primaryColor),
-                        onPressed: () => Navigator.pushNamed(context, 'settings'),
-                      ),
+                    IconButton(
+                      iconSize: 35.0,
+                      icon: Icon(Icons.settings, color: Colors.grey.shade900),
+                      onPressed: () => Navigator.pushNamed(context, 'settings'),
                     ),
                   ],
                 ),
@@ -84,17 +74,18 @@ class DashboardPage extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withAlpha(51),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Row(
                       children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor,
-                            shape: BoxShape.circle,
+                        CircleAvatar(
+                          radius: 24, // Which makes the diameter 48
+                          backgroundColor: AppTheme.primaryColor,
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 28, // Slightly smaller than the avatar radius for padding
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -113,7 +104,7 @@ class DashboardPage extends StatelessWidget {
                             Text(
                               'Welcome Back',
                               style: TextStyle(
-                                color: AppTheme.primaryColor.withOpacity(0.7),
+                                color: AppTheme.primaryColor.withAlpha(178),
                                 fontSize: 14,
                               ),
                             ),
@@ -128,7 +119,7 @@ class DashboardPage extends StatelessWidget {
               // Dashboard Grid
               Expanded(
                 child: GridView.count(
-                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+                  padding: const EdgeInsets.fromLTRB(24, 50, 24, 16),
                   crossAxisCount: 2,
                   mainAxisSpacing: 20,
                   crossAxisSpacing: 20,
@@ -159,8 +150,8 @@ class DashboardPage extends StatelessWidget {
 
               // Logo
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: ArcanumLogo(color: AppTheme.primaryColor),
+                padding: const EdgeInsets.symmetric(vertical: 60),
+                child: ArcanumLogo(color: Colors.white),
               ),
             ],
           ),
@@ -189,13 +180,21 @@ class _DashboardCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 24),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withAlpha(51),
           borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(25), // Shadow color (30% opacity)
+              offset: const Offset(-2, 10),    // Offset mostly downwards, slightly to the left
+              blurRadius: 8,                  // Blur radius
+              spreadRadius: 1,                // Spread radius
+            ),
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: AppTheme.primaryColor),
+            Icon(icon, size: 40, color: Colors.grey.shade900), // Changed to Colors.black
             const SizedBox(height: 16),
             Text(
               label,
@@ -203,7 +202,7 @@ class _DashboardCard extends StatelessWidget {
               style: TextStyle(
                 color: AppTheme.primaryColor,
                 fontSize: 16,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w400,
                 height: 1.2,
               ),
             ),

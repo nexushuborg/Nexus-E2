@@ -15,8 +15,10 @@ class _VerificationCompletePageState extends State<VerificationCompletePage> {
   void initState() {
     super.initState();
     // Auto-navigate to dashboard after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacementNamed(context, 'dashboard');
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) { // Add this check
+        Navigator.pushReplacementNamed(context, 'dashboard');
+      }
     });
   }
 
@@ -59,34 +61,39 @@ class _VerificationCompletePageState extends State<VerificationCompletePage> {
                 ),
               ),
 
-              // Center Content
-              Center(
+              // Content Card
+              Positioned(
+                top: 170,
+                bottom: 170,
+                left: 5,
+                right: 5,
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 32),
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32), // Adjusted padding
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(24),
+                    color: Colors.white.withAlpha(51), // Changed from withOpacity(0.2)
+                    borderRadius: BorderRadius.circular(50),
                   ),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center, // Center content vertically
+                    // mainAxisSize: MainAxisSize.min, // Removed: Column will now expand
                     children: [
                       // Success Message
                       Text(
                         'Verification Complete!',
                         style: TextStyle(
                           color: AppTheme.primaryColor,
-                          fontSize: 24,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 40),
                       // Check Icon with Circle
                       Container(
-                        width: 80,
-                        height: 80,
+                        width: 100,
+                        height: 100,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withAlpha(51), // Changed from withOpacity(0.2)
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -95,11 +102,17 @@ class _VerificationCompletePageState extends State<VerificationCompletePage> {
                           color: AppTheme.primaryColor,
                         ),
                       ),
-                      const SizedBox(height: 40),
-                      // Logo
-                      ArcanumLogo(color: AppTheme.primaryColor),
                     ],
                   ),
+                ),
+              ),
+              // Logo at the bottom
+              Positioned(
+                bottom: 60, // Adjust as needed
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: ArcanumLogo(color: Colors.white),
                 ),
               ),
             ],
