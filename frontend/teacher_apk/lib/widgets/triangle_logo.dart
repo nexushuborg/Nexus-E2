@@ -20,7 +20,7 @@ class TriangleLogo extends StatelessWidget {
         child: CustomPaint(
           painter: TrianglePainter(
             color: isWhite ? Colors.white : AppTheme.primaryColor,
-            strokeWidth: 5.0,
+            strokeWidth: 2.0, // Changed from 5.0 to 2.0
           ),
         ),
       ),

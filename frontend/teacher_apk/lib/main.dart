@@ -11,12 +11,15 @@ import 'screens/verification_complete_page.dart';
 import 'screens/dashboard_page.dart';
 import 'screens/profile_page.dart';
 import 'screens/settings_page.dart';
+import 'screens/forgot_password_otp.dart'; // Changed import
+import 'screens/forgot_password_email.dart'; // Added import
+import 'screens/new_password.dart'; // Added import for new password screen
 
 void main() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     theme: AppTheme.themeData,
-    initialRoute: 'profile',
+    initialRoute: 'settings',
     routes: {
       'loading': (context) => const LoadingScreen(),
       'getStarted': (context) => const GetStartedPage(),
@@ -28,6 +31,9 @@ void main() {
       'dashboard': (context) => const DashboardPage(),
       'profile': (context) => const ProfilePage(),
       'settings': (context) => const SettingsPage(),
+      'forgotPasswordOtp': (context) => const OtpVerificationScreen(),
+      'forgotPasswordEmail': (context) => const ForgotPasswordEmailScreen(), // Added route
+      'newPassword': (context) => const NewPasswordScreen(), // Added route for new password
     },
   ));
 }

@@ -54,8 +54,7 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
 
   // Handles the "Forgot Password?" text press event.
   void _onForgotPasswordPressed() {
-    // TODO: Implement navigation to the Forgot Password screen.
-    // Remove print statement for production.
+    Navigator.pushNamed(context, 'forgotPasswordEmail');
   }
 
   // Handles the "Sign Up" text press event.
