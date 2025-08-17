@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import '../theme.dart';
+import '../routes.dart';
 
-// Main widget for the Arcanum Login screen.
-// It's a StatefulWidget because its state (like text field inputs, password visibility) can change.
 class ArcanumLogin extends StatefulWidget {
   const ArcanumLogin({super.key});
 
@@ -9,312 +9,221 @@ class ArcanumLogin extends StatefulWidget {
   State<ArcanumLogin> createState() => _ArcanumLoginState();
 }
 
-// State class for ArcanumLogin. Manages the mutable state of the login screen.
 class _ArcanumLoginState extends State<ArcanumLogin> {
-  // Controllers for handling the text input in email and password fields.
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _rememberMe = false;
 
-  // State variables for UI interactions.
-  bool _isPasswordObscured = true; // Tracks whether the password text is hidden.
-  bool _rememberMe = false; // Tracks the state of the "Remember Me" checkbox.
-
-  // Dispose of controllers when the widget is removed from the widget tree to free up resources.
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  // Toggles the visibility of the password text.
-  void _togglePasswordVisibility() {
-    setState(() {
-      _isPasswordObscured = !_isPasswordObscured;
-    });
-  }
-
-  // Updates the state when the "Remember Me" checkbox value changes.
-  void _onRememberMeChanged(bool? value) {
-    setState(() {
-      _rememberMe = value ?? false; // Defaults to false if value is null.
-    });
-  }
-
-  // Handles the login button press event.
-  void _onLoginPressed() {
-    String email = _emailController.text;
-    String password = _passwordController.text;
-    // TODO: Implement actual login authentication here.
-    // Remove print statement for production.
-  }
-
-  // Handles the "Forgot Password?" text press event.
-  void _onForgotPasswordPressed() {
-    // TODO: Implement navigation to the Forgot Password screen.
-    // Remove print statement for production.
-  }
-
-  // Builds the UI for the login screen.
   @override
   Widget build(BuildContext context) {
     return Container(
-      // Applies a gradient background to the entire screen.
-      decoration: _buildBackgroundDecoration(),
+      decoration: const BoxDecoration(gradient: AppTheme.mainGradient),
       child: Scaffold(
-        backgroundColor: Colors.transparent, // Makes scaffold background transparent to show container's gradient.
-        body: SingleChildScrollView( // Allows the content to be scrollable if it exceeds screen height.
-          child: Padding(
-            padding: const EdgeInsets.only(left: 35, top: 150, right: 35), // Overall padding for the content.
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start (left).
-              mainAxisSize: MainAxisSize.min, // Column takes up minimum vertical space.
-              children: <Widget>[
-                const _LoginHeader(), // Reusable widget for the login screen header.
-                const SizedBox(height: 150), // Spacing.
-                _EmailTextField(controller: _emailController), // Reusable widget for the email input field.
-                const SizedBox(height: 20), // Spacing.
-                _PasswordTextField( // Reusable widget for the password input field.
-                  controller: _passwordController,
-                  isObscured: _isPasswordObscured,
-                  onToggleVisibility: _togglePasswordVisibility,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Logo
+                const Center(
+                  child: Text(
+                    'ARCANUM',
+                    style: TextStyle(
+                      color: AppTheme.textColor,
+                      fontSize: 28,
+                      fontFamily: 'MajorMonoDisplay',
+                      fontWeight: FontWeight.w300,
+                      letterSpacing: 4,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 15), // Spacing.
-                _RememberMeForgotPasswordRow( // Reusable widget for "Remember Me" and "Forgot Password?".
-                  rememberMe: _rememberMe,
-                  onRememberMeChanged: _onRememberMeChanged,
-                  onForgotPasswordPressed: _onForgotPasswordPressed,
+                const SizedBox(height: 100),
+
+                // Header
+                const Text(
+                  'Account Login',
+                  style: TextStyle(
+                    color: AppTheme.textColor,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                const SizedBox(height: 30), // Spacing.
-                _LoginButton(onPressed: _onLoginPressed), // Reusable widget for the login button.
-                const SizedBox(height: 20), // Spacing.
+                const SizedBox(height: 8),
+                const Text(
+                  'Academic Management simplified!',
+                  style: TextStyle(
+                    color: AppTheme.textColor,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 56),
+
+                // Email Field
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: TextField(
+                    style: const TextStyle(color: AppTheme.textColor2),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Enter your registered mail id',
+                      hintStyle: TextStyle(color: Colors.grey[600]),
+                      icon: const Icon(Icons.email_outlined, color: AppTheme.textColor2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Password Field
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: TextField(
+                    obscureText: _obscurePassword,
+                    style: const TextStyle(color: AppTheme.textColor2),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Enter your Password',
+                      hintStyle: TextStyle(color: Colors.grey[600]),
+                      icon: const Icon(Icons.lock_outline, color: AppTheme.textColor2),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          color: Colors.grey[600],
+                        ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Remember Me & Forgot Password
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: _rememberMe,
+                            onChanged: (value) => setState(() => _rememberMe = value ?? false),
+                            fillColor: WidgetStateProperty.resolveWith(
+                              (states) => states.contains(WidgetState.selected)
+                                  ? AppTheme.buttonBg
+                                  : Colors.transparent,
+                            ),
+                            checkColor: AppTheme.textColor2,
+                            side: const BorderSide(color: AppTheme.textColor),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Remember Me',
+                          style: TextStyle(
+                            color: AppTheme.textColor,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          color: AppTheme.textColor,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // Login Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pushReplacementNamed(context, Routes.dashboard),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.buttonBg,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                    ),
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(
+                        color: AppTheme.textColor2,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // Or Divider
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: AppTheme.textColor.withAlpha(76))),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Or',
+                        style: TextStyle(
+                          color: AppTheme.textColor,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: AppTheme.textColor.withAlpha(76))),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Sign Up Link
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Don't have an account?",
+                        style: TextStyle(
+                          color: AppTheme.textColor,
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pushReplacementNamed(context, Routes.signupStep1),
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            color: AppTheme.buttonBg,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  // Helper method to create the background gradient decoration.
-  BoxDecoration _buildBackgroundDecoration() {
-    return BoxDecoration(
-      gradient: LinearGradient(
-        colors: [
-          Colors.white,
-          Colors.purple.shade500,
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    );
-  }
-}
-
-// The following listed below are Reusable Widget Components >>>
-// These are private stateless widgets, indicated by the leading underscore,
-// meaning they are intended for use only within this file (login.dart).
-
-// Widget to display the header section of the login screen.
-class _LoginHeader extends StatelessWidget {
-  const _LoginHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Account Login',
-          style: TextStyle(
-            color: Color(0xFF4A148C), // Colors.purple.shade900
-            fontSize: 40,
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Academic Management\nSimplified',
-          style: TextStyle(
-            color: Color(0xFF7E57C2), // Colors.purple.shade700
-            fontSize: 18,
-            fontFamily: 'Poppins',
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// Widget for the email input text field.
-class _EmailTextField extends StatelessWidget {
-  final TextEditingController controller;
-
-  const _EmailTextField({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(color: Colors.black87),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white.withAlpha(204),
-        hintText: 'Email or Username',
-        hintStyle: const TextStyle(color: Color(0xFF757575)), // Colors.grey.shade600
-        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF7E57C2)), // Colors.purple.shade700
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(50),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF4A148C), width: 2), // Colors.purple.shade900
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      ),
-      keyboardType: TextInputType.emailAddress,
-    );
-  }
-}
-
-// Widget for the password input text field.
-class _PasswordTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final bool isObscured;
-  final VoidCallback onToggleVisibility;
-
-  const _PasswordTextField({
-    required this.controller,
-    required this.isObscured,
-    required this.onToggleVisibility,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(color: Colors.black87),
-      obscureText: isObscured,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white.withAlpha(204),
-        hintText: 'Password',
-        hintStyle: const TextStyle(color: Color(0xFF757575)),
-        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF7E57C2)),
-        suffixIcon: IconButton(
-          icon: Icon(
-            isObscured ? Icons.visibility_off : Icons.visibility,
-            color: const Color(0xFF7E57C2),
-          ),
-          onPressed: onToggleVisibility,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(50),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF4A148C), width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      ),
-    );
-  }
-}
-
-// Widget for the row containing the "Remember Me" checkbox and "Forgot Password?" text.
-class _RememberMeForgotPasswordRow extends StatelessWidget {
-  final bool rememberMe;
-  final ValueChanged<bool?> onRememberMeChanged;
-  final VoidCallback onForgotPasswordPressed;
-
-  const _RememberMeForgotPasswordRow({
-    required this.rememberMe,
-    required this.onRememberMeChanged,
-    required this.onForgotPasswordPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            const SizedBox(
-              height: 24.0,
-              width: 24.0,
-              child: null,
-            ),
-            Checkbox(
-              value: rememberMe,
-              onChanged: onRememberMeChanged,
-              activeColor: const Color(0xFF7E57C2),
-              checkColor: Colors.white,
-              shape: const CircleBorder(),
-            ),
-            const SizedBox(width: 4),
-            GestureDetector(
-              onTap: () => onRememberMeChanged(!rememberMe),
-              child: const Text(
-                'Remember Me',
-                style: TextStyle(
-                  color: Color(0xFF7E57C2),
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
-        ),
-        TextButton(
-          onPressed: onForgotPasswordPressed,
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(50, 30),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            alignment: Alignment.centerRight,
-          ),
-          child: const Text(
-            'Forgot Password?',
-            style: TextStyle(
-              color: Color(0xFF7E57C2),
-              fontFamily: 'Poppins',
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// Widget for the login button.
-class _LoginButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const _LoginButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF7E57C2),
-        foregroundColor: Colors.white,
-        minimumSize: const Size(double.infinity, 50),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
-        ),
-        textStyle: const TextStyle(
-          fontSize: 18,
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      onPressed: onPressed,
-      child: const Text('LOGIN'),
     );
   }
 }
