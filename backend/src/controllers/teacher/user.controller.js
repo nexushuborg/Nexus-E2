@@ -5,6 +5,7 @@ import Teacher from "../../models/teacher.model.js";
 import { sendOTP } from "../../services/sendmail.js";
 import redisClient from "../../configs/connectRedis.js";
 import blacklistTokenModel from "../../models/blacklisttoken.model.js";
+import jwt from "jsonwebtoken";
 
 
 export const getAllSubjectsAndDepartment = async (req, res) => {
