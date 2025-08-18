@@ -26,6 +26,7 @@
     "mongoose": "^8.17.1",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "node-telegram-bot-api": "^0.66.0",
     "nodemailer": "^7.0.5",
     "zod": "^4.0.17"
   },

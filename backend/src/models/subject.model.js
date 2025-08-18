@@ -11,6 +11,11 @@ const subjectSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  short_name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   subj_faculty: [
     {
       teacher: {
