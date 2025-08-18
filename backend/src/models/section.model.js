@@ -40,6 +40,12 @@ const sectionSchema = new Schema({
       ref: "Student",
     },
   ],
+  cr:[
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Student",
+    }
+  ],
   strength: {
     type: Number,
     default: 0,

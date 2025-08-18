@@ -52,7 +52,7 @@ const teacherSchema = new Schema({
     phoneNo:{
         type: String,
         // required: true,
-        unique: true,
+        // unique: true,
     },
     department:{
         type: Schema.Types.ObjectId,

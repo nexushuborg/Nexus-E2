@@ -2,10 +2,12 @@ import Subject from "../../models/subject.model.js"
 import Section from "../../models/section.model.js";
 import Department from "../../models/department.model.js";
 import Teacher from "../../models/teacher.model.js";
+import Branch from "../../models/branch.model.js";
+import Student from "../../models/student.model.js";
 import { sendOTP } from "../../services/sendmail.js";
 import redisClient from "../../configs/connectRedis.js";
 import blacklistTokenModel from "../../models/blacklisttoken.model.js";
-
+import mongoose from 'mongoose';
 
 export const getAllSubjectsAndDepartment = async (req, res) => {
     try {
@@ -765,7 +767,7 @@ export const teacherProfileController = async (req, res) => {
                 )
             )
         }
-        
+
 
         const profileData = {
             profile_picture: teacher.profile_picture?.Image || null,
@@ -796,7 +798,6 @@ export const teacherProfileController = async (req, res) => {
         });
     }
 };
-
 
 
 //Password Reset Controllers
@@ -1295,3 +1296,277 @@ export const resendForgotPasswordOtp = async (req, res) => {
         });
     }
 };
+
+//Making CR and Changing CR Controllers
+export const makeCRController = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        const { studentId } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(sectionId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid section ID"
+            });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(studentId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid student ID"
+            });
+        }
+
+        const section = await Section.findById(sectionId);
+        if (!section) {
+            return res.status(404).json({
+                success: false,
+                message: "Section not found"
+            });
+        }
+
+        const student = await Student.findById(studentId);
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
+        if (!section.students.includes(studentId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Student does not belong to this section"
+            });
+        }
+
+        if (student.is_cr) {
+            return res.status(400).json({
+                success: false,
+                message: "Student is already a CR"
+            });
+        }
+
+        if (section.cr.length >= 2) {
+            return res.status(400).json({
+                success: false,
+                message: "Section already has maximum CRs (2). Please change one of the existing CRs instead."
+            });
+        }
+
+        await Student.findByIdAndUpdate(studentId, { is_cr: true });
+
+        await Section.findByIdAndUpdate(sectionId, {
+            $push: { cr: studentId }
+        });
+
+        const updatedSection = await Section.findById(sectionId)
+            .populate('cr', 'full_name reg_no email')
+            .populate('students', 'full_name reg_no');
+
+        const updatedStudent = await Student.findById(studentId).select('full_name reg_no email is_cr');
+
+        return res.status(200).json({
+            success: true,
+            message: `CR assigned successfully. Section now has ${section.cr.length + 1} CR(s).`,
+            data: {
+                section: {
+                    _id: updatedSection._id,
+                    section_name: updatedSection.section_name,
+                    batch: updatedSection.batch,
+                    cr: updatedSection.cr,
+                    totalCRs: updatedSection.cr.length
+                },
+                newCR: updatedStudent
+            }
+        });
+
+    } catch (error) {
+        console.error("Error in makeCR:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
+export const changeCRController = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        const { newStudentId, oldStudentId } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(sectionId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid section ID"
+            });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(newStudentId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid new student ID"
+            });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(oldStudentId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid old student ID"
+            });
+        }
+
+        // Check if section exists
+        const section = await Section.findById(sectionId);
+        if (!section) {
+            return res.status(404).json({
+                success: false,
+                message: "Section not found"
+            });
+        }
+
+        const newStudent = await Student.findById(newStudentId);
+        const oldStudent = await Student.findById(oldStudentId);
+
+        if (!newStudent) {
+            return res.status(404).json({
+                success: false,
+                message: "New student not found"
+            });
+        }
+
+        if (!oldStudent) {
+            return res.status(404).json({
+                success: false,
+                message: "Old student not found"
+            });
+        }
+
+        if (!section.students.includes(newStudentId)) {
+            return res.status(400).json({
+                success: false,
+                message: "New student does not belong to this section"
+            });
+        }
+
+        if (!section.students.includes(oldStudentId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Old student does not belong to this section"
+            });
+        }
+
+        if (!section.cr.includes(oldStudentId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Old student is not one of the current CRs of this section"
+            });
+        }
+
+        if (newStudent.is_cr) {
+            return res.status(400).json({
+                success: false,
+                message: "New student is already a CR"
+            });
+        }
+
+        if (!oldStudent.is_cr) {
+            return res.status(400).json({
+                success: false,
+                message: "Old student is not marked as CR"
+            });
+        }
+
+        await Student.findByIdAndUpdate(oldStudentId, { is_cr: false });
+
+        await Student.findByIdAndUpdate(newStudentId, { is_cr: true });
+
+        await Section.findByIdAndUpdate(sectionId, {
+            $pull: { cr: oldStudentId },
+            $push: { cr: newStudentId }
+        });
+
+        const updatedSection = await Section.findById(sectionId)
+            .populate('cr', 'full_name reg_no email')
+            .populate('students', 'full_name reg_no');
+
+        const updatedNewStudent = await Student.findById(newStudentId).select('full_name reg_no email is_cr');
+        const updatedOldStudent = await Student.findById(oldStudentId).select('full_name reg_no email is_cr');
+
+        return res.status(200).json({
+            success: true,
+            message: `CR changed successfully. Section now has ${updatedSection.cr.length} CR(s).`,
+            data: {
+                section: {
+                    _id: updatedSection._id,
+                    section_name: updatedSection.section_name,
+                    batch: updatedSection.batch,
+                    cr: updatedSection.cr,
+                    totalCRs: updatedSection.cr.length
+                },
+                newCR: updatedNewStudent,
+                previousCR: updatedOldStudent
+            }
+        });
+
+    } catch (error) {
+        console.error("Error in changeCR:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
+export const getAllStudentsInYearAndBranchController = async (req, res) => {
+  try {
+    const { year, branch } = req.params;
+
+    const admissionYear = parseInt(year);
+    if (isNaN(admissionYear) || admissionYear < 2000 || admissionYear > new Date().getFullYear() + 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid year parameter. Please provide a valid admission year."
+      });
+    }
+
+    const branchDoc = await Branch.findOne({ short_name: branch.toUpperCase() });
+    if (!branchDoc) {
+      return res.status(404).json({
+        success: false,
+        message: `Branch with short_name '${branch}' not found.`
+      });
+    }
+
+    const students = await Student.find({
+      batch: admissionYear,
+      branch: branchDoc._id
+    })
+    .populate('section', 'section_name')
+    .populate('degree', 'name short_name')
+    .populate('branch', 'name short_name')
+    .select('-password -refreshToken')
+    .sort({ slno: 1 });
+
+    return res.status(200).json({
+      success: true,
+      message: `Found ${students.length} students for batch ${admissionYear} in ${branch} branch.`,
+      data: {
+        batch: admissionYear,
+        branch: branch.toUpperCase(),
+        totalStudents: students.length,
+        students: students
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching students:', error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while fetching students.",
+      error: error.message
+    });
+  }
+}
