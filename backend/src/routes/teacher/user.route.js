@@ -13,7 +13,8 @@ import {
     resetForgotPassword,
     resendForgotPasswordOtp,
     login,
-    regenerateTeacherAccessToken
+    regenerateTeacherAccessToken,
+    getUploadSectionNotesDetails
 } from "../../controllers/teacher/user.controller.js";
 import { upload } from "../../middlewares/multer.middleware.js";
 import {uploadProfileImage} from "../../controllers/teacher/upload.controller.js"
@@ -62,5 +63,7 @@ router.post('/make-cr/:sectionId',authTeacherMiddleware, makeCRController); //Th
 router.put('/change-cr/:sectionId',authTeacherMiddleware, changeCRController);
 
 router.get('/get-all-students/:year/:branch',getAllStudentsInYearAndBranchController); //Returns all the Students in a particular year and branch
+
+router.get("/get-upload-section-notes-details", authTeacherMiddleware, getUploadSectionNotesDetails); //Returns all the sections of the teacher and subjects
 
 export default router;

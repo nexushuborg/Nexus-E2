@@ -27,7 +27,7 @@ const notesSchema = new Schema({
         ref:"Subject",
         required:true
     },
-    tecaher:{
+    teacher:{
         type:Schema.Types.ObjectId,
         ref:"Teacher",
         required:true
