@@ -4,9 +4,12 @@ import Department from "../../models/department.model.js";
 import Teacher from "../../models/teacher.model.js";
 import Branch from "../../models/branch.model.js";
 import Student from "../../models/student.model.js";
+import Notes from "../../models/notes.model.js";
 import { sendOTP } from "../../services/sendmail.js";
 import redisClient from "../../configs/connectRedis.js";
 import blacklistTokenModel from "../../models/blacklisttoken.model.js";
+import fs from "fs"
+import { bot } from "./../../configs/connectTelegram.js"
 
 import mongoose from 'mongoose';
 
@@ -1643,4 +1646,122 @@ export const getUploadSectionNotesDetails = async (req, res) => {
         })
     }
 }
+
+export const uploadNotes = async (req, res) => {
+    try {
+        const uploadedFiles = [];
+        const CHAT_ID = process.env.CHAT_ID;
+        const {title,description,category,subject,section} = req.body;
+        const files = req.files;
+        if (!files || files.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "No files uploaded"
+            });
+        }
+
+        for (const file of files) {
+            const filePath = file.path;
+            if (!filePath) {
+                return res.status(400).json({
+                    success: false,
+                    message: "File path is missing"
+                });
+            }
+
+            const sentMsg = await bot.sendDocument(CHAT_ID, filePath, {
+                caption: file.originalname
+            });
+
+            uploadedFiles.push({
+                file_id: sentMsg.document.file_id,
+                message_id: sentMsg.message_id,
+                original_name: file.originalname,
+                mime_type: sentMsg.document.mime_type,
+                file_size: sentMsg.document.file_size,
+            });
+
+            fs.unlinkSync(filePath)
+        }
+
+        const newNote = await Notes.create({
+            title,
+            description,
+            files: uploadedFiles,
+            category,
+            subject,
+            teacher: req.user._id,
+            section,
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Notes uploaded successfully",
+            note:newNote
+        })
+    } catch (error) {
+        console.error("Error uploading notes:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while uploading notes",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+}
+
+const deleteUploadedFiles = async (req, res )=> {
+    try {
+        const {messageIds} = req.body;
+        if (!messageIds || !Array.isArray(messageIds) || messageIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "No message IDs provided"
+            });
+        }
+
+        for (const messageId of messageIds) {
+            if (!messageId) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid message ID"
+                });
+            }
+            try {
+                const notes = await Notes.findOne({ "files.message_id": messageId });
+                if (!notes) {
+                    return res.status(404).json({
+                        success: false,
+                        message: `No notes found with message ID ${messageId}`
+                    });
+                }
+
+                //remove the file from notes 
+                const fileIndex = notes.files.findIndex(file => file.message_id === messageId);
+               
+                await notes.save({ validateBeforeSave: false });
+                if( notes.files.length === 0) {
+                    await Notes.findByIdAndDelete(notes._id);
+                }
+                // Now delete the file from Telegram
+                await bot.deleteMessage(process.env.CHAT_ID, messageId);
+
+            } catch (error) {
+                console.error(`Error deleting message ${messageId}:`, error);
+                return res.status(500).json({
+                    success: false,
+                    message: `Failed to delete message ${messageId}`,
+                    error: process.env.NODE_ENV === 'development' ? error.message : undefined
+                });
+            }
+        }
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while deleting files",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+
 
