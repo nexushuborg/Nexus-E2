@@ -22,6 +22,9 @@
 | **[9. Get Profile](#9-get-profile)** | `GET /profile` | Bearer Token | Retrieve teacher profile data |
 | **[10. Upload Profile Image](#10-upload-profile-image)** | `POST /upload-profile-image` | Bearer Token | Upload teacher profile picture |
 | **[11. Get Reference Data](#11-get-reference-data)** | `GET /get-all-*` | None | Get subjects, departments, and sections |
+| **[12. Regenerate Access Token](#12-regenerate-access-token)** | `POST /regenerate-access-token` | None | Generate new access token using refresh token |
+| **[13. CR Management](#13-cr-management)** | `POST /make-cr/:sectionId` `PUT /change-cr/:sectionId` | Bearer Token | Manage Class Representatives |
+| **[14. Student List](#14-student-list)** | `GET /get-all-students/:year/:branch` | None | Get list of students by year and branch |
 
 ## API Endpoints Overview
 
@@ -1015,6 +1018,137 @@ GET /get-all-sections?year=2027
 | **Session Invalidation** | Complete session cleanup after password reset |
 | **Redis Cache** | Secure OTP and reset token storage with TTL |
 | **Automatic Cleanup** | Expired tokens and OTPs are cleaned periodically |
+
+## 12. Regenerate Access Token
+
+| Property | Value |
+|----------|-------|
+| **Method** | POST |
+| **Endpoint** | `/regenerate-access-token` |
+| **Authentication** | None |
+
+### Headers
+| Key | Value |
+|-----|-------|
+| Content-Type | application/json |
+
+### Request Body
+```json
+{}
+```
+
+### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Access token regenerated successfully",
+  "accessToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+## 13. CR Management
+
+> **Note**: Teacher can only create **2** student CRs belonging to the same section i.e there can be only 2 CR for one section, creating more than that will raise errors 
+
+### 13.1 Make CR
+
+| Property | Value |
+|----------|-------|
+| **Method** | POST |
+| **Endpoint** | `/make-cr/:sectionId` |
+| **Authentication** | Bearer Token Required |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+| Content-Type | application/json |
+
+#### Request Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| sectionId | String | ID of the section |
+
+#### Request Body
+```json
+{
+  "studentId": "64e8f0c2b5d1a2a3b4c5d6e7"
+}
+```
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Student assigned as CR successfully"
+}
+```
+
+### 13.2 Change CR
+
+| Property | Value |
+|----------|-------|
+| **Method** | PUT |
+| **Endpoint** | `/change-cr/:sectionId` |
+| **Authentication** | Bearer Token Required |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+| Content-Type | application/json |
+
+#### Request Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| sectionId | String | ID of the section |
+
+#### Request Body
+```json
+{
+  "oldCrId": "64e8f0c2b5d1a2a3b4c5d6e7",
+  "newCrId": "64e8f0c2b5d1a2a3b4c5d6e8"
+}
+```
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "CR changed successfully"
+}
+```
+
+## 14. Student List
+
+| Property | Value |
+|----------|-------|
+| **Method** | GET |
+| **Endpoint** | `/get-all-students/:year/:branch` |
+| **Authentication** | None |
+
+### Request Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| year | Number | Batch year (e.g., 2027) |
+| branch | String | Branch code or ID |
+
+### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Students fetched successfully",
+  "data": [
+    {
+      "id": "64e8f0c2b5d1a2a3b4c5d6e7",
+      "name": "Student Name",
+      "reg_no": "2023BTCSE00",
+      "section": "23411A1",
+      "isCR": false
+    }
+  ]
+}
+```
 
 ## Reference Data Testing
 

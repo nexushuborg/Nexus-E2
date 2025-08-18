@@ -139,17 +139,17 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 ### Request Body
 ```json
 {
-  "full_name": "John Doe",
-  "password": "password123",
+  "full_name": "janardhan nayak",
+  "password": "Password@123",
   "reg_no": "21CS001",
-  "slno": "123456",
+  "slno": 20,
   "section": "A",
-  "email": "john.doe@example.com",
-  "phoneNo": "9876543210",
+  "email": "janardhan@rockstar.com",
+  "phoneNo": "8763119702",
   "degree": "BTech",
   "branch": "CSE",
-  "batch": 2021,
-  "gender": "Male"
+  "batch": 2023,
+  "gender": "male"
 }
 ```
 

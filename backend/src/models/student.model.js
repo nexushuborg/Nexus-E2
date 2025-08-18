@@ -49,7 +49,7 @@ const studentSchema = new Schema({
       type:Schema.Types.ObjectId,
       ref: "Section",
     },
-    cr:{
+    is_cr:{
        type:Boolean,
        default: false,
     },

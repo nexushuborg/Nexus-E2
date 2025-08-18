@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAllSections, getAllSubjectsAndDepartment, registerTeacher, verifyAuthOtp, resendAuthOtp } from "../../controllers/teacher/user.controller.js"
+import { getAllSections, getAllSubjectsAndDepartment, registerTeacher, verifyAuthOtp, resendAuthOtp, makeCRController, changeCRController, getAllStudentsInYearAndBranchController } from "../../controllers/teacher/user.controller.js"
 import { authTeacherMiddleware } from "../../middlewares/auth.middleware.js";
 import {
     teacherLogoutController,
@@ -55,5 +55,12 @@ router.post('/forgot-password/verify-otp', verifyForgotPasswordOtp);
 router.post('/forgot-password/reset', resetForgotPassword);
 //4: Teacher can resend OTP if needed
 router.post('/forgot-password/resend-otp',validateRequest(newPasswordSchema), resendForgotPasswordOtp);
+
+//Only 2 CRs can be created for one section by using this route
+router.post('/make-cr/:sectionId',authTeacherMiddleware, makeCRController); //This route returns error response when the Teacher tries to make more than 2 CRs for a section
+//The Teacher can change the CR by using this route
+router.put('/change-cr/:sectionId',authTeacherMiddleware, changeCRController);
+
+router.get('/get-all-students/:year/:branch',getAllStudentsInYearAndBranchController); //Returns all the Students in a particular year and branch
 
 export default router;
