@@ -1550,7 +1550,6 @@ export const getAllStudentsInYearAndBranchController = async (req, res) => {
     .populate('degree', 'name short_name')
     .populate('branch', 'name short_name')
     .select('-password -refreshToken')
-    .sort({ slno: 1 });
 
     return res.status(200).json({
       success: true,

@@ -50,7 +50,7 @@ async function insert2027Sections() {
 }
 
 // Call the function
-insert2027Sections();
+// insert2027Sections();
 
 
 async function insert2028Section(params) {
@@ -93,4 +93,4 @@ async function insert2028Section(params) {
 }
 
 // Call the function
-//  insert2028Section();
+ insert2028Section();

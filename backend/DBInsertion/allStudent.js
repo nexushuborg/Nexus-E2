@@ -43,7 +43,7 @@ function generatePhoneNumber() {
 // Function to generate email from name
 function generateEmail(fullName, regNo) {
   const namePart = fullName.toLowerCase().replace(/\s+/g, '.');
-  return `${namePart}.${regNo.toLowerCase()}@soa.du.in`;
+  return `${namePart}.${regNo.toLowerCase()}@gmail.com`;
 }
 
 // Function to generate registration number
@@ -66,16 +66,13 @@ async function create60Students() {
     }
 
     // Assuming Computer Science branch exists - adjust as needed
-    const csBranch = await Branch.findOne({ short_name: "CS" });
+    const csBranch = await Branch.findOne({ short_name: "CSE" });
     if (!csBranch) {
       throw new Error("CS branch not found.");
     }
 
     // Get available sections for batch 2027 - adjust batch as needed
-    const sections = await Section.find({ batch: 2027, degree: btech._id });
-    if (sections.length === 0) {
-      throw new Error("No sections found for batch 2027.");
-    }
+    const section = await Section.findById("68a3187e0251e4b8448d6d76");
 
     const students = [];
     const usedPhoneNumbers = new Set();
@@ -99,22 +96,18 @@ async function create60Students() {
       } while (usedEmails.has(email));
       usedEmails.add(email);
 
-      // Randomly assign section
-      const randomSection = sections[Math.floor(Math.random() * sections.length)];
-
       // Randomly assign gender
       const gender = Math.random() > 0.5 ? "male" : "female";
-
       const student = {
         full_name: fullName,
-        password: "Student@123", // Default password - will be hashed by pre-save hook
+        password: "Student@123",
         reg_no: regNo,
         slno: i,
-        section: randomSection._id,
         is_cr: false, // You can randomly assign or set specific students as CR later
         email: email,
+        section:section._id,
         phoneNo: phoneNo,
-        isVerified: false,
+        isVerified: true,
         degree: btech._id,
         branch: csBranch._id,
         batch: 2027,
@@ -125,9 +118,13 @@ async function create60Students() {
       students.push(student);
     }
 
-    // Insert all students
-    const insertedStudents = await Student.insertMany(students);
-    console.log(`${insertedStudents.length} students inserted successfully!`);
+    // Create students one-by-one so studentSchema.pre('save') runs and hashes passwords
+    const insertedStudents = [];
+    for (const s of students) {
+      const created = await Student.create(s);
+      insertedStudents.push(created);
+    }
+    console.log(`${insertedStudents.length} students created successfully!`);
 
     // Update section strength and add students to sections
     for (const student of insertedStudents) {
