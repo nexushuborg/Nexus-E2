@@ -7,7 +7,9 @@ import Student from "../../models/student.model.js";
 import { sendOTP } from "../../services/sendmail.js";
 import redisClient from "../../configs/connectRedis.js";
 import blacklistTokenModel from "../../models/blacklisttoken.model.js";
+
 import mongoose from 'mongoose';
+
 
 export const getAllSubjectsAndDepartment = async (req, res) => {
     try {

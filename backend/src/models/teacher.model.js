@@ -49,11 +49,6 @@ const teacherSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    phoneNo:{
-        type: String,
-        // required: true,
-        // unique: true,
-    },
     department:{
         type: Schema.Types.ObjectId,
         ref: "Department",
