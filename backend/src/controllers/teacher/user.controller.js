@@ -723,24 +723,24 @@ export const teacherProfileController = async (req, res) => {
             });
         }
 
-       let sectionsWithThereSubject = [];
+        let sectionsWithThereSubject = [];
 
-       //we will use Promise.all to get all sections and their subjects
+        //we will use Promise.all to get all sections and their subjects
         if (teacher.section && teacher.section.length > 0) {
             sectionsWithThereSubject = await Promise.all(
                 teacher.section.map(
-                    async(section) => {
+                    async (section) => {
                         // Fetch populated subjects
-                        const sectionDetails =await Section.findById(section._id)
-                        .select("section_name batch degree branch faculty")
-                        .populate("faculty.subjects","subject_code subject_name")
-                        .populate("degree","name short_name duration_years")
-                        .populate("branch","name short_name");
+                        const sectionDetails = await Section.findById(section._id)
+                            .select("section_name batch degree branch faculty")
+                            .populate("faculty.subjects", "subject_code subject_name")
+                            .populate("degree", "name short_name duration_years")
+                            .populate("branch", "name short_name");
                         if (!sectionDetails) {
                             return null; // Skip if section not found
                         }
                         const obj = {
-                            section_name : sectionDetails.section_name,
+                            section_name: sectionDetails.section_name,
                             batch: sectionDetails.batch,
                             degree: {
                                 name: sectionDetails.degree?.name || null,
@@ -1182,9 +1182,9 @@ export const verifyForgotPasswordOtp = async (req, res) => {
 
 export const resetForgotPassword = async (req, res) => {
     try {
-        const { resetToken, newPassword} = req.body;
+        const { resetToken, newPassword } = req.body;
 
-        if (!resetToken || !newPassword ) {
+        if (!resetToken || !newPassword) {
             return res.status(400).json({
                 success: false,
                 message: "Please provide reset token, new password and confirm password"
@@ -1508,7 +1508,6 @@ export const changeCRController = async (req, res) => {
                     totalCRs: updatedSection.cr.length
                 },
                 newCR: updatedNewStudent,
-                previousCR: updatedOldStudent
             }
         });
 
@@ -1523,51 +1522,125 @@ export const changeCRController = async (req, res) => {
 };
 
 export const getAllStudentsInYearAndBranchController = async (req, res) => {
-  try {
-    const { year, branch } = req.params;
+    try {
+        const { year, branch } = req.params;
 
-    const admissionYear = parseInt(year);
-    if (isNaN(admissionYear) || admissionYear < 2000 || admissionYear > new Date().getFullYear() + 5) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid year parameter. Please provide a valid admission year."
-      });
+        const admissionYear = parseInt(year);
+        if (isNaN(admissionYear) || admissionYear < 2000 || admissionYear > new Date().getFullYear() + 5) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid year parameter. Please provide a valid admission year."
+            });
+        }
+
+        const branchDoc = await Branch.findOne({ short_name: branch.toUpperCase() });
+        if (!branchDoc) {
+            return res.status(404).json({
+                success: false,
+                message: `Branch with short_name '${branch}' not found.`
+            });
+        }
+
+        const students = await Student.find({
+            batch: admissionYear,
+            branch: branchDoc._id
+        })
+            .populate('section', 'section_name')
+            .populate('degree', 'name short_name')
+            .populate('branch', 'name short_name')
+            .select('-password -refreshToken')
+
+        return res.status(200).json({
+            success: true,
+            message: `Found ${students.length} students for batch ${admissionYear} in ${branch} branch.`,
+            data: {
+                batch: admissionYear,
+                branch: branch.toUpperCase(),
+                totalStudents: students.length,
+                students: students
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching students:', error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while fetching students.",
+            error: error.message
+        });
     }
-
-    const branchDoc = await Branch.findOne({ short_name: branch.toUpperCase() });
-    if (!branchDoc) {
-      return res.status(404).json({
-        success: false,
-        message: `Branch with short_name '${branch}' not found.`
-      });
-    }
-
-    const students = await Student.find({
-      batch: admissionYear,
-      branch: branchDoc._id
-    })
-    .populate('section', 'section_name')
-    .populate('degree', 'name short_name')
-    .populate('branch', 'name short_name')
-    .select('-password -refreshToken')
-
-    return res.status(200).json({
-      success: true,
-      message: `Found ${students.length} students for batch ${admissionYear} in ${branch} branch.`,
-      data: {
-        batch: admissionYear,
-        branch: branch.toUpperCase(),
-        totalStudents: students.length,
-        students: students
-      }
-    });
-
-  } catch (error) {
-    console.error('Error fetching students:', error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error while fetching students.",
-      error: error.message
-    });
-  }
 }
+
+export const getUploadSectionNotesDetails = async (req, res) => {
+    try {
+        const user = req.user;
+        const teacher = await Teacher.findById(user._id)
+            .populate({
+                path: "section",
+                populate: [
+                    { path: "degree", select: "name short_name duration_years" },
+                    { path: "branch", select: "name short_name" }
+                ],
+                select: "section_name batch degree branch strength"
+            })
+            .populate("subjects", "subject_code subject_name short_name");
+
+        //we have to segregate sections by 1st,2nd,3rd,4th year
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: 'Teacher not found' });
+        }
+
+        const sectionByYear = {
+            firstYear: [],
+            secondYear: [],
+            thirdYear: [],
+            fourthYear: []
+        };
+
+        // Map batches to academic year — adjust mapping if your batch-year logic differs
+        teacher.section.forEach((sec) => {
+            const details = {
+                section_name: sec.section_name,
+                batch: sec.batch,
+                strength: sec.strength,
+                section_id: sec._id,
+                degree: sec.degree ? { name: sec.degree.name, short_name: sec.degree.short_name } : null,
+                branch: sec.branch ? { name: sec.branch.name, short_name: sec.branch.short_name } : null
+            };
+
+            if (sec.batch === 2029) {
+                sectionByYear.firstYear.push(details);
+            } else if (sec.batch === 2028) {
+                sectionByYear.secondYear.push(details);
+            } else if (sec.batch === 2027) {
+                sectionByYear.thirdYear.push(details);
+            } else if (sec.batch === 2026) {
+                sectionByYear.fourthYear.push(details);
+            }
+        });
+
+        const filtered = Object.fromEntries(Object.entries(sectionByYear).filter(([, arr]) => arr.length > 0));
+
+        const subjects = teacher.subjects.map(sub => ({
+            subject_code: sub.subject_code,
+            subject_name: sub.subject_name,
+            short_name: sub.short_name,
+            subject_id: sub._id
+        }))
+
+
+        return res.status(200).json({
+            success: true,
+            message: 'Sections grouped by year fetched successfully',
+            sectionByYear: filtered,
+            subjects: subjects
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error while fetching sections by year',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
