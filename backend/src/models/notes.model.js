@@ -1,73 +1,85 @@
-import monogoose,{Schema} from 'mongoose';
+import mongoose, { Schema } from "mongoose";
 
-const notesSchema = new Schema({
-    title:{
-        type:String,
-        required:true,
-        trim:true
+const notesSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    description:{
-        type:String,
-        required:true,
-        trim:true
+    description: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    file_url:{
-        type:String,
-        required:true,
-        trim:true
+    files: [
+      {
+        file_id: { type: String, required: true }, // Telegram file_id
+        message_id: { type: String, required: true }, // Telegram message id (needed for deletion)
+        original_name: { type: String, trim: true }, // original filename
+        mime_type: { type: String, trim: true }, // pdf, png, doc etc
+        file_size: { type: Number }, // size in bytes
+      },
+    ],
+    category: {
+      type: String,
+      enum: [
+        "notes",
+        "assignment",
+        "quiz",
+        "lab",
+        "pyq",
+        "project",
+        "other",
+      ],
+      required: true,
+      trim: true,
+      default: "notes",
     },
-    file_type:{
-        type:String,
-        enum:["pdf","doc","txt","docx","ppt","pptx","jpeg","png"],
-        required:true,
-        trim:true
+    subject: {
+      type: Schema.Types.ObjectId,
+      ref: "Subject",
+      required: true,
     },
-    subject:{
-        type:Schema.Types.ObjectId,
-        ref:"Subject",
-        required:true
+    teacher: {
+      type: Schema.Types.ObjectId,
+      ref: "Teacher",
+      required: true,
     },
-    teacher:{
-        type:Schema.Types.ObjectId,
-        ref:"Teacher",
-        required:true
+    section: {
+      type: Schema.Types.ObjectId,
+      ref: "Section",
+      required: true,
     },
-    section:{
-        type:Schema.Types.ObjectId,
-        ref:"Section",
-        required:true
+    is_pyq: {
+      type: Boolean,
+      default: false,
     },
-    is_pyq:{
-        type:Boolean,
-        default:false
+    exam_year: {
+      type: Number,
     },
-    exam_year:{
-        type:Number
+    semester: {
+      type: Number,
+      enum: [1, 2, 3, 4, 5, 6, 7, 8],
     },
-    semester:{
-        type:Number,
-        enum:[1,2,3,4,5,6,7,8]
-    }
-},{
-    timestamps:true
-})
+  },
+  {
+    timestamps: true,
+  }
+);
 
-//Indexing krlo bhaiya for faster search
-notesSchema.index(
-    {
-        subject:1,
-        tecaher:1,
-        section:1
-    }
-)
 
-notesSchema.index(
-    {
-        title:"text",
-        description:"text"
-    }
-)
+notesSchema.index({
+  subject: 1,
+  teacher: 1,
+  section: 1,
+});
 
-const Notes = monogoose.model("Notes",notesSchema);
+notesSchema.index({
+  title: "text",
+  description: "text",
+});
+
+const Notes = mongoose.model("Notes", notesSchema);
 
 export default Notes;
