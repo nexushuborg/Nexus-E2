@@ -1660,6 +1660,28 @@ export const uploadNotes = async (req, res) => {
             });
         }
 
+        if (!title || !description || !category || !subject || !section) {
+            return res.status(400).json({
+                success: false,
+                message: "Title, description, category, subject and section are required"
+            });
+        }
+
+        const sectionDetails = await Section.findById(section);
+        if (!sectionDetails) {
+            return res.status(404).json({
+                success: false,
+                message: "Section not found"
+            });
+        }
+        const subjectDetails = await Subject.findById(subject);
+        if (!subjectDetails) {
+            return res.status(404).json({
+                success: false,
+                message: "Subject not found"
+            });
+        }
+
         for (const file of files) {
             const filePath = file.path;
             if (!filePath) {
@@ -1689,9 +1711,9 @@ export const uploadNotes = async (req, res) => {
             description,
             files: uploadedFiles,
             category,
-            subject,
+            subject: subjectDetails._id,
             teacher: req.user._id,
-            section,
+            section: sectionDetails._id,
         });
 
         return res.status(201).json({
@@ -1709,7 +1731,19 @@ export const uploadNotes = async (req, res) => {
     }
 }
 
-const deleteUploadedFiles = async (req, res )=> {
+/*
+testing of large file upload using curl command as postman donot support large file upload
+curl -X POST "http://localhost:8000/api/v1/teacher/upload-notes" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4YTMxZDU0YTA3ZTZmOWI0ODc5ZjM4MSIsImVtYWlsIjoic2Fzd2F0YmFyYWk2MTFAc29hLmR1LmluIiwiaWF0IjoxNzU1NTQ5NDgzLCJleHAiOjE3NTU2MzU4ODN9._ksCCnUvQQaIot65H4ha7lQEnak08y6sJBJc7a4TxYw" \
+  -F "title=My Notes Upload" \
+  -F "description=These are sample notes for testing upload." \
+  -F "category=notes" \
+  -F "subject=68a3170384071ea2d7cc7d3d" \
+  -F "section=68a3187e0251e4b8448d6d76" \
+  -F "files=@/c/Users/saswa/Downloads/pdf-1.pdf"
+*/
+
+export const deleteUploadedFiles = async (req, res )=> {
     try {
         const {messageIds} = req.body;
         if (!messageIds || !Array.isArray(messageIds) || messageIds.length === 0) {
