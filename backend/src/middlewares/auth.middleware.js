@@ -6,9 +6,9 @@ import Teacher from "../models/teacher.model.js"
 export const authStudentMiddleware = async (req,res,next) => {
     try {
         const accessToken = req.headers.authorization?.split(" ")[1] || req.cookies.accessToken;
-        console.log("Full headers:", req.headers);
-        console.log("Authorization header:", req.headers.authorization);
-        console.log("Access Token:", accessToken);
+        // console.log("Full headers:", req.headers);
+        // console.log("Authorization header:", req.headers.authorization);
+        // console.log("Access Token:", accessToken);
         if (!accessToken) {
             return res.status(401).json({
                 success: false,
@@ -27,7 +27,7 @@ export const authStudentMiddleware = async (req,res,next) => {
         if (!student) {
             return res.status(404).json({
                 success: false,
-                message: "Student not found 1"
+                message: "Student not found "
             });
         }
         req.user = student;

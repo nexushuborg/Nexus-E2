@@ -1,29 +1,45 @@
-import {Router} from "express";
-import {registerStudent,verifyAuthOtp} from "../../controllers/student/user.controller.js"
-import {validateRequest} from "../../middlewares/validationRequest.js"
-import {loginStudentSchema, registerStudentSchema} from "../../validation/student.valid.js"
+import { Router } from "express";
+import { registerStudent, verifyAuthOtp } from "../../controllers/student/user.controller.js"
+import { validateRequest } from "../../middlewares/validationRequest.js"
+import { loginStudentSchema, registerStudentSchema } from "../../validation/student.valid.js"
 import { upload } from "../../middlewares/multer.middleware.js";
 import { uploadProfileImage } from "../../controllers/student/upload.controller.js";
 import { authStudentMiddleware } from "../../middlewares/auth.middleware.js";
-import {profileController} from "../../controllers/student/profile.controller.js";
+import {validateStudentInSection} from "../../middlewares/isSectionMember.js"
+import { profileController } from "../../controllers/student/profile.controller.js";
 import { loginController } from "../../controllers/student/user.controller.js";
-import { logoutController,logoutAllController,resendAuthOtp ,regenrateAccessToken,requestPasswordReset,verifyPasswordResetOtp,resetPassword,resendForgotPasswordOtp,verifyForgotPasswordOtp,resetForgotPassword,requestForgotPasswordOtp} from "../../controllers/student/user.controller.js";
+import {
+    logoutController,
+    logoutAllController,
+    resendAuthOtp,
+    regenrateAccessToken,
+    requestPasswordReset,
+    verifyPasswordResetOtp,
+    resetPassword,
+    resendForgotPasswordOtp,
+    verifyForgotPasswordOtp,
+    resetForgotPassword,
+    requestForgotPasswordOtp,
+    getAllSubjectOfStudent,
+    getNotes,
+    downloadNotes
+} from "../../controllers/student/user.controller.js";
 
 const router = Router();
 
 
 //Routes related to authentication
-router.post("/register",validateRequest(registerStudentSchema), registerStudent);
-router.post("/login",validateRequest(loginStudentSchema),loginController)
-router.post("/logout",authStudentMiddleware,logoutController)
-router.post("/logout-all",authStudentMiddleware,logoutAllController)
-router.post("/verify-auth-otp",verifyAuthOtp);
-router.post("/resend-auth-otp",resendAuthOtp);
-router.get("/regenerate-access-token",regenrateAccessToken);
+router.post("/register", validateRequest(registerStudentSchema), registerStudent);
+router.post("/login", validateRequest(loginStudentSchema), loginController)
+router.post("/logout", authStudentMiddleware, logoutController)
+router.post("/logout-all", authStudentMiddleware, logoutAllController)
+router.post("/verify-auth-otp", verifyAuthOtp);
+router.post("/resend-auth-otp", resendAuthOtp);
+router.get("/regenerate-access-token", regenrateAccessToken);
 
 //Routes related to profile image upload
-router.post("/upload-profile-image",authStudentMiddleware,upload.single('profileImage'),uploadProfileImage)
-router.get("/profile",authStudentMiddleware,profileController)
+router.post("/upload-profile-image", authStudentMiddleware, upload.single('profileImage'), uploadProfileImage)
+router.get("/profile", authStudentMiddleware, profileController)
 
 //Routes related to reset-password
 //FLOW: User is logged in → Goes to Profile/Settings → Clicks "Reset Password" button
@@ -46,5 +62,15 @@ router.post('/forgot-password/verify-otp', verifyForgotPasswordOtp);
 router.post('/forgot-password/reset', resetForgotPassword);
 //4: User can resend OTP *if needed*
 router.post('/forgot-password/resend-otp', resendForgotPasswordOtp);
+
+//Routes related to student sections
+router.get("/get-all-subjects", authStudentMiddleware,validateStudentInSection, getAllSubjectOfStudent);
+
+
+router.get("/get-notes/:subjectId", authStudentMiddleware, validateStudentInSection, getNotes);
+
+router.get("/download-notes/:fileId", authStudentMiddleware, downloadNotes);
+
+
 
 export default router;
