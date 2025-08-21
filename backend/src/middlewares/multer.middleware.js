@@ -1,4 +1,5 @@
 import multer from "multer"
+import path from "path";
 
 const allowedTypes = [
   "application/pdf",
@@ -9,6 +10,7 @@ const allowedTypes = [
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "image/jpeg",
   "image/png",
+  "image/jpg"
 ];
 
 
@@ -37,17 +39,35 @@ const telegramStorage = multer.diskStorage({
 
 
 function fileFilter(req, file, cb) {
+  // Log for debugging (optional)
+  console.log("Uploaded file MIME type:", file.mimetype);
+  console.log("Original filename:", file.originalname);
+
   if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
+    cb(null, true); // Accept file
   } else {
-    cb(new Error("Invalid file type"), false);
+    // Create a readable list of allowed types
+    const allowedTypesReadable = [
+      "PDF (.pdf)",
+      "Word Document (.doc, .docx)",
+      "Plain Text (.txt)",
+      "PowerPoint (.ppt, .pptx)",
+      "JPEG, PNG, JPG (images)"
+    ];
+
+    cb(
+      new Error(
+        `Unsupported file type: ${file.mimetype}` +"|"+`Allowed types are: ${allowedTypesReadable.join(", ")}.`
+      ),
+      false // Reject file
+    );
   }
 }
 
 
 // Final multer setup
 export const telegramUpload = multer({
-  storage,
+  storage:telegramStorage,
   fileFilter,
-  limits: { fileSize: 30 * 1024 * 1024 },// 30 MB limit
+  limits: { fileSize: 20 * 1024 * 1024 },// 20 MB limit
 });

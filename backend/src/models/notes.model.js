@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
+
 const notesSchema = new Schema(
   {
     title: {
@@ -14,39 +15,24 @@ const notesSchema = new Schema(
     },
     files: [
       {
-        file_id: { type: String, required: true }, // Telegram file_id
-        message_id: { type: String, required: true }, // Telegram message id (needed for deletion)
-        original_name: { type: String, trim: true }, // original filename
-        mime_type: { type: String, trim: true }, // pdf, png, doc etc
-        file_size: { type: Number }, // size in bytes
-        created_at: { type: Date, default: Date.now }, // when the file was uploaded
+        file_id: { type: String, required: true },
+        message_id: { type: String, required: true },
+        original_name: { type: String, trim: true },
+        mime_type: { type: String, trim: true },
+        file_size: { type: Number },
+        created_at: { type: Date, default: Date.now },
       },
     ],
     category: {
       type: String,
-      enum: [
-        "notes",
-        "assignment",
-        "quiz",
-        "lab",
-        "pyq",
-        "project",
-        "other",
-      ],
+      enum: ["notes", "assignment", "quiz", "lab", "pyq", "project", "other"],
       required: true,
-      trim: true,
       default: "notes",
     },
-    chapter:{
-      chatpter_no:{
-        type: String,
-        required: true,
-      },
-      chapter_name: {
-        type: String,
-        required: true,
-        trim: true,
-      },
+    chapter: {
+      type: Schema.Types.ObjectId,
+      ref: "Chapter",
+      required: true,
     },
     subject: {
       type: Schema.Types.ObjectId,
@@ -80,18 +66,9 @@ const notesSchema = new Schema(
   }
 );
 
-
-notesSchema.index({
-  subject: 1,
-  teacher: 1,
-  section: 1,
-});
-
-notesSchema.index({
-  title: "text",
-  description: "text",
-});
+// Indexes
+notesSchema.index({ subject: 1, chapter: 1 });
+notesSchema.index({ title: "text", description: "text" });
 
 const Notes = mongoose.model("Notes", notesSchema);
-
 export default Notes;

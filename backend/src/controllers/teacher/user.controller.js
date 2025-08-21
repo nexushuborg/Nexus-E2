@@ -10,6 +10,7 @@ import redisClient from "../../configs/connectRedis.js";
 import blacklistTokenModel from "../../models/blacklisttoken.model.js";
 import fs from "fs"
 import { bot } from "./../../configs/connectTelegram.js"
+import Chapter from "../../models/chapter.model.js";
 
 import mongoose from 'mongoose';
 
@@ -759,7 +760,8 @@ export const teacherProfileController = async (req, res) => {
                                 if (faculty.teacher.toString() === teacher._id.toString()) {
                                     acc.push(...faculty.subjects.map(subj => ({
                                         subject_code: subj.subject_code,
-                                        subject_name: subj.subject_name
+                                        subject_name: subj.subject_name,
+                                        subject_id: subj._id
                                     })));
                                 }
                                 return acc;
@@ -1649,52 +1651,61 @@ export const getUploadSectionNotesDetails = async (req, res) => {
 
 export const uploadNotes = async (req, res) => {
     try {
-        const uploadedFiles = [];
         const CHAT_ID = process.env.CHAT_ID;
-        const {title,description,category,subject,section} = req.body;
+        const { title, description, category, subject, section, chapterNo, chapterName } = req.body;
         const files = req.files;
+
+      
+        const sectionIds = Array.isArray(section) ? section : [section];
+
+        // Check if all sections exist
+        const sections = await Section.find({ _id: { $in: sectionIds } });
+
+        if (sections.length === 0) {
+            return res.status(404).json({ success: false, message: "No sections found" });
+        }
+
+       
+        if (sections.length !== sectionIds.length) {
+            return res.status(404).json({ success: false, message: "One or more sections not found" });
+        }
+
+        
+        const invalidSections = sections.filter(sectionDetail =>
+            !sectionDetail.isTeacherInSection(req.user._id)
+        );
+
+        if (invalidSections.length > 0) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not assigned to one or more of these sections",
+                invalidSections: invalidSections.map(s => s._id)
+            });
+        }
+
         if (!files || files.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: "No files uploaded"
-            });
+            return res.status(400).json({ success: false, message: "No files uploaded" });
         }
 
-        if (!title || !description || !category || !subject || !section) {
-            return res.status(400).json({
-                success: false,
-                message: "Title, description, category, subject and section are required"
-            });
+        if (!title || !description || !category || !subject || !section || !chapterNo || !chapterName) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
-        const sectionDetails = await Section.findById(section);
-        if (!sectionDetails) {
-            return res.status(404).json({
-                success: false,
-                message: "Section not found"
-            });
-        }
         const subjectDetails = await Subject.findById(subject);
         if (!subjectDetails) {
-            return res.status(404).json({
-                success: false,
-                message: "Subject not found"
-            });
+            return res.status(404).json({ success: false, message: "Subject not found" });
         }
 
+        // Upload files to Telegram (once, reuse for all notes)
+        const uploadedFiles = [];
         for (const file of files) {
             const filePath = file.path;
             if (!filePath) {
-                return res.status(400).json({
-                    success: false,
-                    message: "File path is missing"
-                });
+                return res.status(400).json({ success: false, message: "File path missing" });
             }
-
             const sentMsg = await bot.sendDocument(CHAT_ID, filePath, {
-                caption: file.originalname
+                caption: file.originalname,
             });
-
             uploadedFiles.push({
                 file_id: sentMsg.document.file_id,
                 message_id: sentMsg.message_id,
@@ -1702,34 +1713,54 @@ export const uploadNotes = async (req, res) => {
                 mime_type: sentMsg.document.mime_type,
                 file_size: sentMsg.document.file_size,
             });
-
-            fs.unlinkSync(filePath)
+            fs.unlinkSync(filePath);
         }
 
-        const newNote = await Notes.create({
-            title,
-            description,
-            files: uploadedFiles,
-            category,
-            subject: subjectDetails._id,
-            teacher: req.user._id,
-            section: sectionDetails._id,
-        });
+        // Create notes for each section
+        const createdNotes = [];
+        for (const sectionDetail of sections) {
+            // Find or create chapter for this section
+            let chapter = await Chapter.findOne({
+                subject: subjectDetails._id,
+                chapter_no: chapterNo,
+                section: sectionDetail._id,
+            });
+            if (!chapter) {
+                chapter = await Chapter.create({
+                    chapter_no: chapterNo,
+                    chapter_name: chapterName,
+                    subject: subjectDetails._id,
+                    section: sectionDetail._id,
+                });
+            }
+            // Save note for this section/chapter
+            const newNote = await Notes.create({
+                title,
+                description,
+                files: uploadedFiles,
+                category,
+                chapter: chapter._id,
+                subject: subjectDetails._id,
+                teacher: req.user._id,
+                section: sectionDetail._id,
+            });
+            createdNotes.push(newNote);
+        }
 
         return res.status(201).json({
             success: true,
-            message: "Notes uploaded successfully",
-            note:newNote
-        })
+            message: "Notes uploaded successfully to all selected sections",
+            notes: createdNotes,
+        });
     } catch (error) {
         console.error("Error uploading notes:", error);
         return res.status(500).json({
             success: false,
-            message: "Internal server error while uploading notes",
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: "Internal server error",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined,
         });
     }
-}
+};
 
 /*
 testing of large file upload using curl command as postman donot support large file upload

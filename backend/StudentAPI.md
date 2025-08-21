@@ -23,6 +23,7 @@
 | **[10. Get Student Subjects](#10-get-student-subjects)** | `GET /get-all-subjects` | Bearer Token | Get all subjects for student's section |
 | **[11. Get Subject Notes](#11-get-subject-notes)** | `GET /get-notes/:subjectId` | Bearer Token | Get notes for a specific subject |
 | **[12. Download Notes](#12-download-notes)** | `GET /download-notes/:fileId` | Bearer Token | Download specific notes file |
+| **[13. Regenerate Access Token](#13-regenerate-access-token)** | `GET /regenerate-access-token` | None | Generate new access token using refresh token |
 
 ## API Endpoints Overview
 
@@ -45,6 +46,7 @@
 | `/get-all-subjects` | GET | Bearer Token | Get student's subjects |
 | `/get-notes/:subjectId` | GET | Bearer Token | Get subject notes |
 | `/download-notes/:fileId` | GET | Bearer Token | Download note file |
+| `/regenerate-access-token` | GET | None | Regenerate access token |
 
 # Access Token and Refresh Token Definitions
 
@@ -167,6 +169,56 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+### Response (400 - Validation Error)
+```json
+{
+  "success": false,
+  "message": "Please fill all the fields"
+}
+```
+
+### Response (400 - Student Already Exists)
+```json
+{
+  "success": false,
+  "message": "Student already exists"
+}
+```
+
+### Response (400 - Degree Not Found)
+```json
+{
+  "success": false,
+  "message": "Degree not found"
+}
+```
+
+### Response (400 - Branch Not Found)
+```json
+{
+  "success": false,
+  "message": "Branch not found"
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
+### Postman Testing Steps
+| Step | Action |
+|------|--------|
+| 1 | Set method to POST |
+| 2 | Set Content-Type to application/json |
+| 3 | Add student data in request body |
+| 4 | Send request |
+| 5 | Verify 201 response and success message |
+
 ## 2. Verify OTP
 
 | Property | Value |
@@ -213,6 +265,64 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+### Response (400 - Missing Fields)
+```json
+{
+  "success": false,
+  "message": "Please provide email and otp"
+}
+```
+
+### Response (400 - OTP Expired)
+```json
+{
+  "success": false,
+  "message": "OTP expired or not found"
+}
+```
+
+### Response (400 - Invalid OTP)
+```json
+{
+  "success": false,
+  "message": "Invalid OTP"
+}
+```
+
+### Response (400 - Invalid OTP Length)
+```json
+{
+  "success": false,
+  "message": "OTP must be 6 digits long"
+}
+```
+
+### Response (404 - Student Not Found)
+```json
+{
+  "success": false,
+  "message": "Student not found"
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
+### Postman Testing Steps
+| Step | Action |
+|------|--------|
+| 1 | Set method to POST |
+| 2 | Set Content-Type to application/json |
+| 3 | Add email and OTP in request body |
+| 4 | Send request |
+| 5 | Verify 200 response and access token |
+
 ## 3. Login Student
 
 | Property | Value |
@@ -248,6 +358,64 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
   "accessToken": "eyJhbGciOiJIUzI1NiIs..."
 }
 ```
+
+### Response (400 - Missing Credentials)
+```json
+{
+  "success": false,
+  "message": "Please provide email or registration number"
+}
+```
+
+### Response (400 - Missing Password)
+```json
+{
+  "success": false,
+  "message": "Please provide password"
+}
+```
+
+### Response (401 - Invalid Credentials)
+```json
+{
+  "success": false,
+  "message": "Invalid credentials mark1"
+}
+```
+
+### Response (401 - Invalid Password)
+```json
+{
+  "success": false,
+  "message": "Invalid credentials mark2"
+}
+```
+
+### Response (403 - Account Not Verified)
+```json
+{
+  "success": false,
+  "message": "Please verify your account first"
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
+### Postman Testing Steps
+| Step | Action |
+|------|--------|
+| 1 | Set method to POST |
+| 2 | Set Content-Type to application/json |
+| 3 | Add login credentials in request body |
+| 4 | Send request |
+| 5 | Verify 200 response and access token |
 
 ## 4. Reset Password (3-Step Process)
 
@@ -288,6 +456,23 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+#### Response (429 - Rate Limited)
+```json
+{
+  "success": false,
+  "message": "Please wait before requesting a new password reset OTP"
+}
+```
+
+#### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
 ### 4.2 Verify Password Reset OTP
 
 | Property | Value |
@@ -318,6 +503,47 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+#### Response (400 - Missing OTP)
+```json
+{
+  "success": false,
+  "message": "Please provide OTP"
+}
+```
+
+#### Response (400 - Invalid OTP Format)
+```json
+{
+  "success": false,
+  "message": "OTP must be 6 digits long"
+}
+```
+
+#### Response (400 - OTP Expired)
+```json
+{
+  "success": false,
+  "message": "Password reset OTP expired or not found"
+}
+```
+
+#### Response (400 - Invalid OTP)
+```json
+{
+  "success": false,
+  "message": "Invalid password reset OTP"
+}
+```
+
+#### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
 ### 4.3 Reset Password
 
 | Property | Value |
@@ -345,6 +571,103 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 {
   "success": true,
   "message": "Password reset successfully. Please login with your new password."
+}
+```
+
+#### Response (400 - Missing Password)
+```json
+{
+  "success": false,
+  "message": "New password is required"
+}
+```
+
+#### Response (400 - Invalid Password Format)
+```json
+{
+  "success": false,
+  "message": "New password must be a string"
+}
+```
+
+#### Response (400 - Password Too Short)
+```json
+{
+  "success": false,
+  "message": "Password must be at least 6 characters long"
+}
+```
+
+#### Response (400 - Password Too Long)
+```json
+{
+  "success": false,
+  "message": "Password must not exceed 50 characters"
+}
+```
+
+#### Response (400 - Password Has Whitespace)
+```json
+{
+  "success": false,
+  "message": "Password cannot start or end with whitespace"
+}
+```
+
+#### Response (400 - Missing Reset Token)
+```json
+{
+  "success": false,
+  "message": "Reset token is required"
+}
+```
+
+#### Response (400 - Invalid Reset Token)
+```json
+{
+  "success": false,
+  "message": "Reset token must be 6 characters long"
+}
+```
+
+#### Response (400 - Reset Token Expired)
+```json
+{
+  "success": false,
+  "message": "Reset token expired. Please verify OTP again."
+}
+```
+
+#### Response (400 - Invalid Reset Token)
+```json
+{
+  "success": false,
+  "message": "Invalid reset token. Please verify OTP again."
+}
+```
+
+#### Response (400 - Same Password)
+```json
+{
+  "success": false,
+  "message": "New password cannot be the same as current password"
+}
+```
+
+#### Response (404 - Student Not Found)
+```json
+{
+  "success": false,
+  "message": "Student not found"
+}
+```
+
+#### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
 }
 ```
 
@@ -390,6 +713,31 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+#### Response (400 - Missing Email)
+```json
+{
+  "success": false,
+  "message": "Please provide email address"
+}
+```
+
+#### Response (429 - Rate Limited)
+```json
+{
+  "success": false,
+  "message": "Please wait before requesting a new OTP"
+}
+```
+
+#### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
 ### 5.2 Verify Forgot Password OTP
 
 | Property | Value |
@@ -417,6 +765,55 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
   "success": true,
   "message": "OTP verified successfully",
   "resetToken": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yzab567cdef890ghij123"
+}
+```
+
+#### Response (400 - Missing Fields)
+```json
+{
+  "success": false,
+  "message": "Please provide email and OTP"
+}
+```
+
+#### Response (400 - Invalid OTP Length)
+```json
+{
+  "success": false,
+  "message": "OTP must be 6 digits long"
+}
+```
+
+#### Response (404 - Student Not Found)
+```json
+{
+  "success": false,
+  "message": "Student not found"
+}
+```
+
+#### Response (400 - OTP Expired)
+```json
+{
+  "success": false,
+  "message": "OTP expired or not found"
+}
+```
+
+#### Response (400 - Invalid OTP)
+```json
+{
+  "success": false,
+  "message": "Invalid OTP"
+}
+```
+
+#### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
 }
 ```
 
@@ -450,6 +847,55 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+#### Response (400 - Missing Fields)
+```json
+{
+  "success": false,
+  "message": "Please provide reset token, new password and confirm password"
+}
+```
+
+#### Response (400 - Password Mismatch)
+```json
+{
+  "success": false,
+  "message": "Passwords do not match"
+}
+```
+
+#### Response (400 - Password Too Short)
+```json
+{
+  "success": false,
+  "message": "Password must be at least 8 characters long"
+}
+```
+
+#### Response (400 - Invalid Reset Token)
+```json
+{
+  "success": false,
+  "message": "Invalid or expired reset token"
+}
+```
+
+#### Response (404 - Student Not Found)
+```json
+{
+  "success": false,
+  "message": "Student not found"
+}
+```
+
+#### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
 ### 5.4 Resend Forgot Password OTP
 
 | Property | Value |
@@ -475,6 +921,31 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 {
   "success": true,
   "message": "OTP sent successfully"
+}
+```
+
+#### Response (400 - Missing Email)
+```json
+{
+  "success": false,
+  "message": "Please provide email address"
+}
+```
+
+#### Response (429 - Rate Limited)
+```json
+{
+  "success": false,
+  "message": "Please wait before requesting a new OTP"
+}
+```
+
+#### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
 }
 ```
 
@@ -512,6 +983,47 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+### Response (401 - Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Access denied. No token provided."
+}
+```
+
+### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid access token"
+}
+```
+
+### Response (401 - Token Expired)
+```json
+{
+  "success": false,
+  "message": "Access token has expired"
+}
+```
+
+### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token has been revoked. Please login again."
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
 ### Postman Testing Steps
 | Step | Action |
 |------|--------|
@@ -546,6 +1058,47 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 {
   "success": true,
   "message": "Logged out from all devices successfully"
+}
+```
+
+### Response (401 - Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Access denied. No token provided."
+}
+```
+
+### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid access token"
+}
+```
+
+### Response (401 - Token Expired)
+```json
+{
+  "success": false,
+  "message": "Access token has expired"
+}
+```
+
+### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token has been revoked. Please login again."
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
 }
 ```
 
@@ -592,6 +1145,55 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
     },
     "section": "A"
   }
+}
+```
+
+### Response (401 - Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Access denied. No token provided."
+}
+```
+
+### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid access token"
+}
+```
+
+### Response (401 - Token Expired)
+```json
+{
+  "success": false,
+  "message": "Access token has expired"
+}
+```
+
+### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token has been revoked. Please login again."
+}
+```
+
+### Response (404 - Student Not Found)
+```json
+{
+  "success": false,
+  "message": "Student not found"
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
 }
 ```
 
@@ -643,6 +1245,88 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+### Response (400 - No File Provided)
+```json
+{
+  "success": false,
+  "message": "Please provide a profile image"
+}
+```
+
+### Response (400 - Invalid File Type)
+```json
+{
+  "success": false,
+  "message": "Only image files are allowed"
+}
+```
+
+### Response (400 - File Too Large)
+```json
+{
+  "success": false,
+  "message": "File size too large. Maximum size is 5MB"
+}
+```
+
+### Response (401 - Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Access denied. No token provided."
+}
+```
+
+### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid access token"
+}
+```
+
+### Response (401 - Token Expired)
+```json
+{
+  "success": false,
+  "message": "Access token has expired"
+}
+```
+
+### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token has been revoked. Please login again."
+}
+```
+
+### Response (404 - Student Not Found)
+```json
+{
+  "success": false,
+  "message": "Student not found"
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
+### Postman Testing Steps
+| Step | Action |
+|------|--------|
+| 1 | Set method to POST |
+| 2 | Add Authorization header with Bearer token |
+| 3 | Set Content-Type to application/json |
+| 4 | Send request |
+| 5 | Verify image upload success |
+
 ## 10. Get Student Subjects
 
 | Property | Value |
@@ -688,6 +1372,55 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
             "subjectCode": "CS303"
         },
     ]
+}
+```
+
+### Response (401 - Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Access denied. No token provided."
+}
+```
+
+### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid access token"
+}
+```
+
+### Response (401 - Token Expired)
+```json
+{
+  "success": false,
+  "message": "Access token has expired"
+}
+```
+
+### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token has been revoked. Please login again."
+}
+```
+
+### Response (404 - No Subjects Found)
+```json
+{
+  "success": false,
+  "message": "No subjects found for your section"
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
 }
 ```
 
@@ -784,6 +1517,47 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+### Response (401 - Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Access denied. No token provided."
+}
+```
+
+### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid access token"
+}
+```
+
+### Response (401 - Token Expired)
+```json
+{
+  "success": false,
+  "message": "Access token has expired"
+}
+```
+
+### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token has been revoked. Please login again."
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
 ### Postman Testing Steps
 | Step | Action |
 |------|--------|
@@ -831,6 +1605,47 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+### Response (401 - Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Access denied. No token provided."
+}
+```
+
+### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid access token"
+}
+```
+
+### Response (401 - Token Expired)
+```json
+{
+  "success": false,
+  "message": "Access token has expired"
+}
+```
+
+### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token has been revoked. Please login again."
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
 ### Postman Testing Steps
 | Step | Action |
 |------|--------|
@@ -839,6 +1654,115 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 | 3 | Replace :fileId in URL with actual file ID |
 | 4 | Send request |
 | 5 | Verify file download starts |
+
+## 13. Regenerate Access Token
+
+| Property | Value |
+|----------|-------|
+| **Method** | GET |
+| **Endpoint** | `/regenerate-access-token` |
+| **Authentication** | None |
+
+### Headers
+| Key | Value |
+|-----|-------|
+| Content-Type | application/json |
+
+### Request Body
+```json
+{}
+```
+
+### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Access token regenerated successfully",
+  "accessToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+### Response (401 - Error)
+```json
+{
+  "success": false,
+  "message": "Refresh token is required"
+}
+```
+
+### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid refresh token"
+}
+```
+
+### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token is revoked"
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error during access token regeneration"
+}
+```
+
+### Response (401 - Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Access denied. No token provided."
+}
+```
+
+### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid access token"
+}
+```
+
+### Response (401 - Token Expired)
+```json
+{
+  "success": false,
+  "message": "Access token has expired"
+}
+```
+
+### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token has been revoked. Please login again."
+}
+```
+
+### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
+### Postman Testing Steps
+| Step | Action |
+|------|--------|
+| 1 | Set method to GET |
+| 2 | Ensure refresh token cookie is set |
+| 3 | Set Content-Type to application/json |
+| 4 | Send request |
+| 5 | Verify new access token in response |
 
 ## Complete Testing Flow
 
@@ -857,8 +1781,9 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 | 11 | GET `/get-all-subjects` with Bearer token | 200 - List of subjects |
 | 12 | GET `/get-notes/:subjectId` with valid subject ID | 200 - List of notes |
 | 13 | GET `/download-notes/:fileId` with valid file ID | 200 - File download |
-| 14 | POST `/logout` with Bearer token | 200 - Session ended |
-| 15 | GET `/profile` with same token | 401 - Token revoked |
+| 14 | GET `/regenerate-access-token` with refresh token | 200 - New access token |
+| 15 | POST `/logout` with Bearer token | 200 - Session ended |
+| 16 | GET `/profile` with same token | 401 - Token revoked |
 
 ## Password Reset Testing Flow (Step-by-Step)
 
@@ -922,11 +1847,11 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 
 ## Password Reset Security Features
 
-| Feature | Reset Password | Forgot Password |
-|---------|----------------|-----------------|
-| **Rate Limiting** | 60-second cooldown between OTP requests | 120-second cooldown between OTP requests |
-| **OTP Expiry** | OTP valid for 5 minutes only | OTP valid for 10 minutes only |
-| **Reset Token Expiry** | Reset token valid for 10 minutes | Reset token valid for 15 minutes |
+| Feature | Description | Implementation |
+|---------|-------------|----------------|
+| **Rate Limiting** | 60-second cooldown between OTP requests | Redis cache with TTL |
+| **OTP Expiry** | OTP valid for 5 minutes only | Redis TTL |
+| **Reset Token Expiry** | Reset token valid for 10 minutes | Redis TTL |
 | **Session Invalidation** | All sessions logged out after password reset | All sessions logged out after password reset |
 | **Same Password Check** | Prevents setting same password | Prevents setting same password |
 | **Authentication Required** | Only logged-in users can reset password | No authentication required (for forgot scenarios) |
@@ -998,6 +1923,7 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 | **Logout** | Clear stored token, call logout API | 200 - Token blacklisted |
 | **Logout All** | Clear all stored tokens | 200 - All sessions ended |
 | **Token Expired** | Redirect to login page | 401 - Need new login |
+| **Token Regeneration** | Use refresh token to get new access token | 200 - New access token |
 
 ## Required Fields Validation
 
@@ -1076,6 +2002,10 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 | **Forgot Password Auth** | No authentication required (for users who forgot password) |
 | **Email Privacy** | Forgot password doesn't reveal if email exists |
 | **OTP Resend** | Available for forgot password flow if needed |
+| **Notes Access** | Students can only access notes for subjects in their assigned section |
+| **Chapter-based Notes** | Notes are organized by chapters within subjects |
+| **File Download Limits** | Maximum file size: 20MB (Telegram Bot API limit) |
+| **Token Regeneration** | Available for expired access tokens using refresh tokens |
 
 ## Security Features
 
@@ -1094,3 +2024,7 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 | **Secure Token Generation** | 64-character crypto-secure reset tokens for forgot password |
 | **Password Confirmation** | Required for forgot password reset |
 | **Different Timeouts** | Longer timeouts for non-authenticated flows |
+| **Section Validation** | Students can only access data for their assigned section |
+| **File Type Validation** | Strict file type checking for uploads |
+| **Chapter-based Access Control** | Notes access controlled by subject and chapter |
+| **Token Regeneration** | Secure refresh token-based access token renewal |

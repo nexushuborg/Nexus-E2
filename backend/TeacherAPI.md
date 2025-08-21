@@ -15,7 +15,7 @@
 | **[2. Verify OTP](#2-verify-otp)** | `POST /verify-auth-otp` | None | Verify registration email OTP |
 | **[3. Resend OTP](#3-resend-otp)** | `POST /resend-auth-otp` | None | Resend registration OTP |
 | **[4. Login Teacher](#4-login-teacher)** | `POST /login` | None | Teacher login with credentials |
-| **[5. Reset Password](#5-reset-password-3-step-process)** | `POST /reset-password/*` | Bearer Token | Reset password for logged-in users (3 steps) |
+| **[5. Reset Password](#5-reset-password-3-step-process)** | `PATCH/POST /reset-password/*` | Bearer Token | Reset password for logged-in users (3 steps) |
 | **[6. Forgot Password](#6-forgot-password-4-step-process)** | `POST /forgot-password/*` | None | Reset password for non-logged users (4 steps) |
 | **[7. Logout Current Session](#7-logout-current-session)** | `POST /logout` | Bearer Token | Logout from current device |
 | **[8. Logout From All Devices](#8-logout-from-all-devices)** | `POST /logout-all` | Bearer Token | Logout from all devices |
@@ -25,6 +25,7 @@
 | **[12. Regenerate Access Token](#12-regenerate-access-token)** | `POST /regenerate-access-token` | None | Generate new access token using refresh token |
 | **[13. CR Management](#13-cr-management)** | `POST /make-cr/:sectionId` `PUT /change-cr/:sectionId` | Bearer Token | Manage Class Representatives |
 | **[14. Student List](#14-student-list)** | `GET /get-all-students/:year/:branch` | None | Get list of students by year and branch |
+| **[15. Notes Management](#15-notes-management)** | `GET/POST/DELETE /notes/*` | Bearer Token | Upload, manage, and delete notes |
 
 ## API Endpoints Overview
 
@@ -47,6 +48,13 @@
 | `/upload-profile-image` | POST | Bearer Token | Upload profile image |
 | `/get-all-subjects-and-department` | GET | None | Get subjects and departments |
 | `/get-all-sections` | GET | None | Get sections by batch year |
+| `/regenerate-access-token` | POST | None | Generate new access token |
+| `/make-cr/:sectionId` | POST | Bearer Token | Assign student as CR |
+| `/change-cr/:sectionId` | PUT | Bearer Token | Change section CR |
+| `/get-all-students/:year/:branch` | GET | None | Get students by year and branch |
+| `/get-upload-section-notes-details` | GET | Bearer Token | Get sections and subjects for notes upload |
+| `/upload-notes` | POST | Bearer Token | Upload notes with files |
+| `/delete-uploaded-files/:noteId` | DELETE | Bearer Token | Delete uploaded files |
 
 # Access Token and Refresh Token Definitions
 
@@ -786,6 +794,444 @@ GET /get-all-sections?year=2027
 }
 ```
 
+## 12. Regenerate Access Token
+
+| Property | Value |
+|----------|-------|
+| **Method** | POST |
+| **Endpoint** | `/regenerate-access-token` |
+| **Authentication** | None |
+
+### Headers
+| Key | Value |
+|-----|-------|
+| Content-Type | application/json |
+
+### Request Body
+```json
+{}
+```
+
+### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Access token regenerated successfully",
+  "accessToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+## 13. CR Management
+
+> **Note**: Teacher can only create **2** student CRs belonging to the same section i.e there can be only 2 CR for one section, creating more than that will raise errors 
+
+### 13.1 Make CR
+
+| Property | Value |
+|----------|-------|
+| **Method** | POST |
+| **Endpoint** | `/make-cr/:sectionId` |
+| **Authentication** | Bearer Token Required |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+| Content-Type | application/json |
+
+#### Request Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| sectionId | String | ID of the section |
+
+#### Request Body
+```json
+{
+  "studentId": "64e8f0c2b5d1a2a3b4c5d6e7"
+}
+```
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Student assigned as CR successfully"
+}
+```
+
+### 13.2 Change CR
+
+| Property | Value |
+|----------|-------|
+| **Method** | PUT |
+| **Endpoint** | `/change-cr/:sectionId` |
+| **Authentication** | Bearer Token Required |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+| Content-Type | application/json |
+
+#### Request Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| sectionId | String | ID of the section |
+
+#### Request Body
+```json
+{
+  "oldCrId": "64e8f0c2b5d1a2a3b4c5d6e7",
+  "newCrId": "64e8f0c2b5d1a2a3b4c5d6e8"
+}
+```
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "CR changed successfully"
+}
+```
+
+## 14. Student List
+
+| Property | Value |
+|----------|-------|
+| **Method** | GET |
+| **Endpoint** | `/get-all-students/:year/:branch` |
+| **Authentication** | None |
+
+### Request Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| year | Number | Batch year (e.g., 2027) |
+| branch | String | Branch code or ID |
+
+### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Students fetched successfully",
+  "data": [
+    {
+      "id": "64e8f0c2b5d1a2a3b4c5d6e7",
+      "name": "Student Name",
+      "reg_no": "2023BTCSE00",
+      "section": "23411A1",
+      "isCR": false
+    }
+  ]
+}
+```
+
+## 15. Notes Management
+
+### 15.1 Get Upload Section Notes Details
+
+| Property | Value |
+|----------|-------|
+| **Method** | GET |
+| **Endpoint** | `/get-upload-section-notes-details` |
+| **Authentication** | Bearer Token Required |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+| Content-Type | application/json |
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Sections grouped by year fetched successfully",
+  "sectionByYear": {
+    "firstYear": [
+      {
+        "section_name": "23411A1",
+        "batch": 2029,
+        "strength": 45,
+        "section_id": "64e8f0c2b5d1a2a3b4c5d6e7",
+        "degree": {
+          "name": "Bachelor of Technology",
+          "short_name": "BTech"
+        },
+        "branch": {
+          "name": "Computer Science and Engineering",
+          "short_name": "CSE"
+        }
+      }
+    ],
+    "secondYear": [
+      {
+        "section_name": "23411A2",
+        "batch": 2028,
+        "strength": 42,
+        "section_id": "64e8f0c2b5d1a2a3b4c5d6e8",
+        "degree": {
+          "name": "Bachelor of Technology",
+          "short_name": "BTech"
+        },
+        "branch": {
+          "name": "Computer Science and Engineering",
+          "short_name": "CSE"
+        }
+      }
+    ]
+  },
+  "subjects": [
+    {
+      "subject_code": "CS101",
+      "subject_name": "Introduction to Computer Science",
+      "short_name": "Intro to CS",
+      "subject_id": "64e8f0c2b5d1a2a3b4c5d6e9"
+    }
+  ]
+}
+```
+
+### 15.2 Upload Notes
+
+| Property | Value |
+|----------|-------|
+| **Method** | POST |
+| **Endpoint** | `/upload-notes` |
+| **Authentication** | Bearer Token Required |
+| **Content Type** | multipart/form-data |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+
+#### Request Body (form-data)
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| title | String | Yes | Title of the notes |
+| description | String | Yes | Description of the notes |
+| category | String | Yes | Category: notes, assignment, quiz, lab, pyq, project |
+| subject | String | Yes | Subject ID |
+| section | String/Array | Yes | Section ID or array of section IDs |
+| chapterNo | String | Yes | Chapter number |
+| chapterName | String | Yes | Chapter name |
+| files | File | Yes | Array of files (max 10, max 20MB each) |
+
+#### File Upload Requirements
+| Requirement | Details |
+|-------------|---------|
+| **Max Files** | 10 files per upload |
+| **Max File Size** | 20MB per file |
+| **Accepted Formats** | PDF, Word (.doc, .docx), PowerPoint (.ppt, .pptx), Text (.txt), Images (jpg, png) |
+| **Storage** | Files uploaded to Telegram Bot API |
+| **Chapter Management** | Automatically creates chapters if they don't exist |
+
+#### Response (201 - Success)
+```json
+{
+  "success": true,
+  "message": "Notes uploaded successfully to all selected sections",
+  "notes": [
+    {
+      "title": "Sample Chapter 1 Notes udada",
+      "description": "Test upload with curl",
+      "files": [
+        {
+          "file_id": "BQACAgUAAyEGAASb56CfAAMPaKdc4YcDg2s_VCcs_QdOokQttEoAAuEYAAJ7szlVa0UoTn_WlKs2BA",
+          "message_id": "15",
+          "original_name": "Screenshot 2024-01-24 203333.png",
+          "mime_type": "image/png",
+          "file_size": 532962,
+          "_id": "68a75ce25b560face7944052",
+          "created_at": "2025-08-21T17:52:34.113Z"
+        },
+        {
+          "file_id": "BQACAgUAAyEGAASb56CfAAMQaKdc5uACy7bM_inQ8bZ4X1FZVyYAAuIYAAJ7szlVjf2vJybZa942BA",
+          "message_id": "16",
+          "original_name": "Screenshot 2024-11-14 013217.png",
+          "mime_type": "image/png",
+          "file_size": 1114707,
+          "_id": "68a75ce25b560face7944053",
+          "created_at": "2025-08-21T17:52:34.118Z"
+        }
+      ],
+      "category": "notes",
+      "chapter": "68a75c43024ebf4190913ba3",
+      "subject": "68a3170384071ea2d7cc7d3d",
+      "teacher": "68a31d54a07e6f9b4879f381",
+      "section": "68a3187e0251e4b8448d6d76",
+      "is_pyq": false,
+      "_id": "68a75ce25b560face7944051",
+      "createdAt": "2025-08-21T17:52:34.137Z",
+      "updatedAt": "2025-08-21T17:52:34.137Z",
+      "__v": 0
+    }
+  ]
+}
+```
+
+#### Response (400 - Missing Required Fields)
+```json
+{
+  "success": false,
+  "message": "Please provide all required fields: title, description, category, subject, section, chapterNo, chapterName, and files"
+}
+```
+
+#### Response (400 - Invalid Category)
+```json
+{
+  "success": false,
+  "message": "Invalid category. Must be one of: notes, assignment, quiz, lab, pyq, project"
+}
+```
+
+#### Response (400 - No Files Provided)
+```json
+{
+  "success": false,
+  "message": "Please provide at least one file"
+}
+```
+
+#### Response (400 - Too Many Files)
+```json
+{
+  "success": false,
+  "message": "Maximum 10 files allowed per upload"
+}
+```
+
+#### Response (400 - File Too Large)
+```json
+{
+  "success": false,
+  "message": "File size exceeds 20MB limit"
+}
+```
+
+#### Response (400 - Invalid File Type)
+```json
+{
+  "success": false,
+  "message": "Invalid file type. Only PDF, Word, PowerPoint, Text, and Image files are allowed"
+}
+```
+
+#### Response (400 - Invalid Subject)
+```json
+{
+  "success": false,
+  "message": "Invalid subject ID"
+}
+```
+
+#### Response (400 - Invalid Section)
+```json
+{
+  "success": false,
+  "message": "Invalid section ID"
+}
+```
+
+#### Response (400 - Teacher Not Assigned)
+```json
+{
+  "success": false,
+  "message": "You are not assigned to teach this subject in the selected section"
+}
+```
+
+#### Response (401 - Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Access denied. No token provided."
+}
+```
+
+#### Response (401 - Invalid Token)
+```json
+{
+  "success": false,
+  "message": "Invalid access token"
+}
+```
+
+#### Response (401 - Token Expired)
+```json
+{
+  "success": false,
+  "message": "Access token has expired"
+}
+```
+
+#### Response (401 - Token Revoked)
+```json
+{
+  "success": false,
+  "message": "Token has been revoked. Please login again."
+}
+```
+
+#### Response (500 - Server Error)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Error details in development mode"
+}
+```
+
+#### Response (500 - File Upload Error)
+```json
+{
+  "success": false,
+  "message": "Error uploading files to Telegram",
+  "error": "Telegram API error details"
+}
+```
+
+### Postman Testing Steps
+| Step | Action |
+|------|--------|
+| 1 | Set method to POST |
+| 2 | Add Authorization header with Bearer token |
+| 3 | Go to Body tab → Select "form-data" |
+| 4 | Add required fields: title, description, category, subject, section, chapterNo, chapterName |
+| 5 | Add files array with multiple files |
+| 6 | Send request |
+| 7 | Verify 201 response and notes creation |
+
+### 15.3 Delete Uploaded Files
+
+| Property | Value |
+|----------|-------|
+| **Method** | DELETE |
+| **Endpoint** | `/delete-uploaded-files/:noteId` |
+| **Authentication** | Bearer Token Required |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+| Content-Type | application/json |
+
+#### Request Body
+```json
+{
+  "messageIds": ["12", "13", "14"]
+}
+```
+
+#### Response (200 - Success)
+```json
+{
+  "success": true,
+  "message": "Files deleted successfully"
+}
+```
+
 ## Complete Testing Flow
 
 | Step | Action | Expected Result |
@@ -797,13 +1243,16 @@ GET /get-all-sections?year=2027
 | 5 | POST `/verify-auth-otp` with email, OTP & teacherId | 200 - Get access token |
 | 6 | GET `/profile` with Bearer token | 200 - Profile data |
 | 7 | POST `/upload-profile-image` with token & file | 200 - Image uploaded |
-| 8 | PATCH `/reset-password/request` with Bearer token | 200 - Reset OTP sent |
-| 9 | Check email for reset OTP | 6-digit reset OTP received |
-| 10 | POST `/reset-password/verify-otp` with OTP | 200 - Get reset token |
-| 11 | POST `/reset-password` with new password & reset token | 200 - Password changed, logged out |
-| 12 | POST `/login` with new password | 200 - Login with new credentials |
-| 13 | POST `/logout` with Bearer token | 200 - Session ended |
-| 14 | GET `/profile` with same token | 401 - Token revoked |
+| 8 | GET `/get-upload-section-notes-details` with Bearer token | 200 - Sections and subjects data |
+| 9 | POST `/upload-notes` with token, files, and metadata | 201 - Notes uploaded successfully |
+| 10 | DELETE `/delete-uploaded-files/:noteId` with token and message IDs | 200 - Files deleted successfully |
+| 11 | PATCH `/reset-password/request` with Bearer token | 200 - Reset OTP sent |
+| 12 | Check email for reset OTP | 6-digit reset OTP received |
+| 13 | POST `/reset-password/verify-otp` with OTP | 200 - Get reset token |
+| 14 | POST `/reset-password` with new password & reset token | 200 - Password changed, logged out |
+| 15 | POST `/login` with new password | 200 - Login with new credentials |
+| 16 | POST `/logout` with Bearer token | 200 - Session ended |
+| 17 | GET `/profile` with same token | 401 - Token revoked |
 
 ## Password Reset Testing Flow (Step-by-Step)
 
@@ -1018,250 +1467,11 @@ GET /get-all-sections?year=2027
 | **Session Invalidation** | Complete session cleanup after password reset |
 | **Redis Cache** | Secure OTP and reset token storage with TTL |
 | **Automatic Cleanup** | Expired tokens and OTPs are cleaned periodically |
-
-## 12. Regenerate Access Token
-
-| Property | Value |
-|----------|-------|
-| **Method** | POST |
-| **Endpoint** | `/regenerate-access-token` |
-| **Authentication** | None |
-
-### Headers
-| Key | Value |
-|-----|-------|
-| Content-Type | application/json |
-
-### Request Body
-```json
-{}
-```
-
-### Response (200 - Success)
-```json
-{
-  "success": true,
-  "message": "Access token regenerated successfully",
-  "accessToken": "eyJhbGciOiJIUzI1NiIs..."
-}
-```
-
-## 13. CR Management
-
-> **Note**: Teacher can only create **2** student CRs belonging to the same section i.e there can be only 2 CR for one section, creating more than that will raise errors 
-
-### 13.1 Make CR
-
-| Property | Value |
-|----------|-------|
-| **Method** | POST |
-| **Endpoint** | `/make-cr/:sectionId` |
-| **Authentication** | Bearer Token Required |
-
-#### Headers
-| Key | Value |
-|-----|-------|
-| Authorization | Bearer `<access_token>` |
-| Content-Type | application/json |
-
-#### Request Parameters
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| sectionId | String | ID of the section |
-
-#### Request Body
-```json
-{
-  "studentId": "64e8f0c2b5d1a2a3b4c5d6e7"
-}
-```
-
-#### Response (200 - Success)
-```json
-{
-  "success": true,
-  "message": "Student assigned as CR successfully"
-}
-```
-
-### 13.2 Change CR
-
-| Property | Value |
-|----------|-------|
-| **Method** | PUT |
-| **Endpoint** | `/change-cr/:sectionId` |
-| **Authentication** | Bearer Token Required |
-
-#### Headers
-| Key | Value |
-|-----|-------|
-| Authorization | Bearer `<access_token>` |
-| Content-Type | application/json |
-
-#### Request Parameters
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| sectionId | String | ID of the section |
-
-#### Request Body
-```json
-{
-  "oldCrId": "64e8f0c2b5d1a2a3b4c5d6e7",
-  "newCrId": "64e8f0c2b5d1a2a3b4c5d6e8"
-}
-```
-
-#### Response (200 - Success)
-```json
-{
-  "success": true,
-  "message": "CR changed successfully"
-}
-```
-
-## 14. Student List
-
-| Property | Value |
-|----------|-------|
-| **Method** | GET |
-| **Endpoint** | `/get-all-students/:year/:branch` |
-| **Authentication** | None |
-
-### Request Parameters
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| year | Number | Batch year (e.g., 2027) |
-| branch | String | Branch code or ID |
-
-### Response (200 - Success)
-```json
-{
-  "success": true,
-  "message": "Students fetched successfully",
-  "data": [
-    {
-      "id": "64e8f0c2b5d1a2a3b4c5d6e7",
-      "name": "Student Name",
-      "reg_no": "2023BTCSE00",
-      "section": "23411A1",
-      "isCR": false
-    }
-  ]
-}
-```
-
-## Reference Data Testing
-
-### Get Subjects and Departments Testing
-| Test Case | Expected Result |
-|-----------|----------------|
-| **GET /get-all-subjects-and-department** | 200 - All subjects and departments |
-| **Subject Data Structure** | id, subject_code, subject_name |
-| **Department Data Structure** | id, name |
-| **Empty Response** | 200 - Empty arrays if no data |
-
-### Get Sections Testing
-| Test Case | Query | Expected Result |
-|-----------|-------|----------------|
-| **Valid Year** | `?year=2027` | 200 - Sections for batch 2027 |
-| **Missing Year** | No query param | 400 - Year required |
-| **Invalid Year** | `?year=invalid` | 400 - Invalid year format |
-| **No Sections Found** | `?year=1990` | 404 - No sections found |
-
-## Registration Flow Testing
-
-| Step | Action | Expected Result | Notes |
-|------|--------|----------------|-------|
-| **1** | Get reference data | 200 - Subjects, departments, sections | For form building |
-| **2** | POST registration data | 201 - teacherId returned | OTP sent to email |
-| **3** | Check email | OTP received | 6-digit code |
-| **4** | Verify OTP with teacherId | 200 - Access token | Account verified |
-| **5** | Login with credentials | 200 - New session | Can now access protected routes |
-
-## Profile Data Structure
-
-| Field | Type | Description |
-|-------|------|-------------|
-| profile_picture | String | Cloudinary URL of profile image |
-| full_name | String | Teacher's full name |
-| email | String | Teacher's email address |
-| department | Object | Department info with name and short_name |
-| designation | String | Teacher's designation |
-| total_subjects | Number | Count of subjects taught |
-| total_sections | Number | Count of sections taught |
-| sections | Array | Array of section objects with subjects |
-
-### Section Object Structure
-| Field | Type | Description |
-|-------|------|-------------|
-| section_name | String | Section identifier (e.g., "23411A1") |
-| batch | Number | Batch year |
-| degree | Object | Degree info with name, short_name, duration_years |
-| branch | Object | Branch info with name and short_name |
-| subjects | Array | Subjects taught in this section |
-
-## File Upload Requirements
-
-### Profile Image Upload
-| Requirement | Details |
-|-------------|---------|
-| **Field Name** | profileImage |
-| **Content Type** | multipart/form-data |
-| **Accepted Formats** | jpg, png, gif, webp |
-| **Max File Size** | 5MB (configurable) |
-| **Storage** | Cloudinary CDN |
-| **Authentication** | Bearer token required |
-| **Response** | Updated profile_picture URL |
-
-## API Response Patterns
-
-### Success Response Structure
-```json
-{
-  "success": true,
-  "message": "Descriptive success message",
-  "data": {
-    // Relevant data object
-  }
-}
-```
-
-### Error Response Structure
-```json
-{
-  "success": false,
-  "message": "Error description",
-  "errors": [
-    {
-      "field": "field_name",
-      "message": "Field-specific error message",
-      "code": "error_code"
-    }
-  ]
-}
-```
-
-### Token Response Structure
-```json
-{
-  "success": true,
-  "message": "Success message",
-  "teacher": {
-    // Teacher profile data
-  },
-  "accessToken": "jwt.access.token"
-}
-```
-
-## Rate Limiting Details
-
-| Operation | Limit | Window | Behavior |
-|-----------|-------|--------|----------|
-| **Registration OTP** | 1 request | 60 seconds | 429 if too soon |
-| **Login Attempts** | 5 attempts | 15 minutes | Account lockout |
-| **Password Reset OTP** | 1 request | 60 seconds | 429 if too soon |
-| **Forgot Password OTP** | 1 request | 120 seconds | 429 if too soon |
-| **File Upload** | 10 uploads | 1 hour | 429 if exceeded |
+| **File Type Validation** | Strict file type checking for uploads |
+| **Section Assignment Validation** | Teachers can only upload to assigned sections |
+| **Chapter-based Organization** | Structured notes management by chapters |
+| **Telegram Bot Security** | Secure file storage via Telegram Bot API |
+| **File Size Limits** | Prevents abuse and ensures performance |
 
 ## Environment Configuration
 
@@ -1275,6 +1485,8 @@ GET /get-all-sections?year=2027
 | SMTP_HOST | Email server host | smtp.gmail.com |
 | SMTP_PORT | Email server port | 587 |
 | CLOUDINARY_URL | Cloudinary connection | cloudinary://... |
+| BOT_TOKEN | Telegram Bot token | 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz |
+| CHAT_ID | Telegram chat ID for file storage | -1001234567890 |
 
 ## Database Collections
 
@@ -1296,6 +1508,36 @@ GET /get-all-sections?year=2027
 | createdAt | Date | Auto-generated |
 | updatedAt | Date | Auto-generated |
 
+### Notes Collection
+| Field | Type | Constraints |
+|-------|------|-------------|
+| _id | ObjectId | Primary key |
+| title | String | Required |
+| description | String | Required |
+| files | Array | Array of file objects |
+| category | String | Enum: notes, assignment, quiz, lab, pyq, project |
+| chapter | ObjectId | Required, ref: Chapter |
+| subject | ObjectId | Required, ref: Subject |
+| teacher | ObjectId | Required, ref: Teacher |
+| section | ObjectId | Required, ref: Section |
+| is_pyq | Boolean | Default: false |
+| exam_year | Number | Optional |
+| semester | Number | Enum: 1-8 |
+| createdAt | Date | Auto-generated |
+| updatedAt | Date | Auto-generated |
+
+### Chapters Collection
+| Field | Type | Constraints |
+|-------|------|-------------|
+| _id | ObjectId | Primary key |
+| chapter_no | String | Required |
+| chapter_name | String | Required |
+| subject | ObjectId | Required, ref: Subject |
+| section | ObjectId | Required, ref: Section |
+| order | Number | Default: 0 |
+| createdAt | Date | Auto-generated |
+| updatedAt | Date | Auto-generated |
+
 ### Related Collections References
 | Collection | Referenced Fields |
 |------------|------------------|
@@ -1304,6 +1546,8 @@ GET /get-all-sections?year=2027
 | **Subject** | subject_code, subject_name |
 | **Degree** | name, short_name, duration_years |
 | **Branch** | name, short_name |
+| **Chapter** | chapter_no, chapter_name, order |
+| **Notes** | title, description, files, category |
 
 ## Important Notes
 
@@ -1318,8 +1562,14 @@ GET /get-all-sections?year=2027
 | **Token Transmission** | Always use Authorization header for protected routes |
 | **Password Reset Behavior** | User is logged out from all devices after password reset |
 | **Session Management** | `/logout-all` invalidates all user sessions |
-| **File Upload Formats** | Supports common image formats (jpg, png, gif, webp) |
+| **File Upload Formats** | Supports common document and image formats |
 | **Response Format** | All endpoints return JSON |
 | **Refresh Tokens** | Automatically set as HTTP-only cookies |
 | **Profile Data Population** | Profile endpoint returns populated department, section, and subject data |
 | **Section-Subject Mapping** | Teachers can teach different subjects in different sections |
+| **Notes Organization** | Notes are organized by chapters within subjects |
+| **File Storage** | Files are stored securely via Telegram Bot API |
+| **Chapter Management** | Chapters are automatically created during notes upload |
+| **Multi-section Upload** | Teachers can upload notes to multiple sections simultaneously |
+| **File Deletion** | Files can be deleted individually with proper validation |
+| **Access Control** | Students can only access notes for their assigned sections |
