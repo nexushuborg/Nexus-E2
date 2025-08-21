@@ -19,6 +19,7 @@ const notesSchema = new Schema(
         original_name: { type: String, trim: true }, // original filename
         mime_type: { type: String, trim: true }, // pdf, png, doc etc
         file_size: { type: Number }, // size in bytes
+        created_at: { type: Date, default: Date.now }, // when the file was uploaded
       },
     ],
     category: {
@@ -35,6 +36,17 @@ const notesSchema = new Schema(
       required: true,
       trim: true,
       default: "notes",
+    },
+    chapter:{
+      chatpter_no:{
+        type: String,
+        required: true,
+      },
+      chapter_name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
     },
     subject: {
       type: Schema.Types.ObjectId,
