@@ -18,7 +18,7 @@ import {
     uploadNotes,
     deleteUploadedFiles
 } from "../../controllers/teacher/user.controller.js";
-import { upload } from "../../middlewares/multer.middleware.js";
+import { telegramUpload, upload } from "../../middlewares/multer.middleware.js";
 import {uploadProfileImage} from "../../controllers/teacher/upload.controller.js"
 import {validateRequest} from "../../middlewares/validationRequest.js"
 import {registerTeacherSchema,loginTeacherSchema, newPasswordSchema} from "../../validation/teacher.valid.js"
@@ -68,7 +68,7 @@ router.get('/get-all-students/:year/:branch',getAllStudentsInYearAndBranchContro
 
 router.get("/get-upload-section-notes-details", authTeacherMiddleware, getUploadSectionNotesDetails); //Returns all the sections of the teacher and subjects
 
-router.post("/upload-notes",authTeacherMiddleware,upload.array("files",10),uploadNotes); //Uploads notes with files, title, description, category, subject, section
+router.post("/upload-notes",authTeacherMiddleware,telegramUpload.array("files",10),uploadNotes); //Uploads notes with files, title, description, category, subject, section
 router.delete("/delete-uploaded-files/:noteId", authTeacherMiddleware, deleteUploadedFiles); //Deletes uploaded files from the notes
 
 export default router;

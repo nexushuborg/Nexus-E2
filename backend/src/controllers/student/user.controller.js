@@ -6,14 +6,18 @@ import { redisClient } from "../../configs/connectRedis.js"
 import { sendOTP } from "../../services/sendmail.js"
 import blacklistTokenModel from "../../models/blacklisttoken.model.js";
 import jwt from "jsonwebtoken";
-
-
+import Notes from "../../models/notes.model.js"
+import { bot } from "../../configs/connectTelegram.js"
+import axios from "axios";
+import https from "https";
+import http from "http";
+import { Stream } from "stream";
 
 export const registerStudent = async (req, res) => {
     try {
         console.log("Register endpoint hit - Incoming cookies:", req.cookies);
 
-        const { full_name, password, reg_no, slno,email, phoneNo, degree, branch, batch, gender } = req.body;
+        const { full_name, password, reg_no, slno, email, phoneNo, degree, branch, batch, gender } = req.body;
 
         if (!full_name || !password || !reg_no || !slno || !email || !phoneNo || !degree || !branch || !batch || !gender) {
             return res.status(400).json({
@@ -540,8 +544,8 @@ export const regenrateAccessToken = async (req, res) => {
         }
 
         const userSentAccessToken = req.cookies.accessToken || req.headers?.authorization?.split(' ')[1];
-        console.log("dedewd",userSentAccessToken)
-        if(userSentAccessToken){
+        console.log("dedewd", userSentAccessToken)
+        if (userSentAccessToken) {
             await blacklistTokenModel.create({
                 token: userSentAccessToken
             })
@@ -558,7 +562,7 @@ export const regenrateAccessToken = async (req, res) => {
         }
 
         const student = await Student.findById(decoded.userId);
-        console.log("student ",student)
+        console.log("student ", student)
         if (!student || student.refreshToken !== refreshToken) {
             return res.status(401).json({
                 success: false,
@@ -1089,3 +1093,299 @@ export const resendForgotPasswordOtp = async (req, res) => {
         });
     }
 };
+
+
+export const getAllSubjectOfStudent = async (req, res) => {
+    try {
+        const section = req.section;
+        console.log(section)
+        if (!section) {
+            return res.status(404).json({
+                success: false,
+                message: "Section not found"
+            });
+        }
+
+        if (!section.faculty || section.faculty.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No faculty assigned to this section"
+            });
+        }
+
+        const subjectMap = new Map();
+
+        // Flatten all subjects from all faculties and deduplicate by subjectId
+        for (const faculty of section.faculty) {
+            if (!faculty.subjects || !Array.isArray(faculty.subjects)) continue;
+
+            for (const sub of faculty.subjects) {
+                // Handle both populated (object) and non-populated (ObjectId) cases
+                const subjectId = sub._id.toString()
+
+                if (!subjectMap.has(subjectId)) {
+                    subjectMap.set(subjectId, {
+                        subjectId: sub._id || null,
+                        subjectName: sub.short_name || null,
+                        subjectFullName: sub.subject_name,
+                        subjectCode: sub.subject_code
+                    });
+                }
+            }
+        }
+
+        if (subjectMap.size === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No subjects found for this section"
+            });
+        }
+
+        const subjectArray = Array.from(subjectMap.values());
+
+        return res.status(200).json({
+            success: true,
+            message: "Subjects fetched successfully",
+            subjects: subjectArray
+        });
+
+    } catch (error) {
+        console.error("Error in getAllSubjectOfStudent:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+export const getNotes = async (req, res) => {
+    try {
+        const { subjectId } = req.params;
+        const { category } = req.query;
+
+
+        if (!subjectId) {
+            return res.status(400).json({
+                success: false,
+                message: "Subject ID is required",
+            });
+        }
+
+        if (!category) {
+            return res.status(400).json({
+                success: false,
+                message: "Category is required (e.g., notes, pyq, assignment, quiz, lab, project)",
+            });
+        }
+
+        const validCategories = ["notes", "pyq", "assignment", "quiz", "lab", "project"];
+        if (!validCategories.includes(category)) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid category. Must be one of: ${validCategories.join(", ")}`,
+            });
+        }
+
+        // Get section from middleware (attached via requireSectionMembership)
+        const section = req.section;
+        if (!section) {
+            return res.status(404).json({
+                success: false,
+                message: "Section not found",
+            });
+        }
+
+        // Fetch notes from DB
+        const notesList = await Notes.find({
+            subject: subjectId,
+            section: section._id,
+            category,
+        }).sort({ createdAt: -1 });
+
+        // Helper: Format bytes into KB, MB, or GB (only one unit)
+        const formatBytes = (bytes) => {
+            if (!bytes || bytes === 0) return { value: 0, unit: "KB" };
+
+            const kb = bytes / 1024;
+            const mb = kb / 1024;
+            const gb = mb / 1024;
+
+            if (gb >= 1) {
+                return { value: gb.toFixed(2), unit: "GB" };
+            } else if (mb >= 1) {
+                return { value: mb.toFixed(2), unit: "MB" };
+            } else {
+                return { value: kb.toFixed(2), unit: "KB" };
+            }
+        };
+
+        // Flatten all files with formatted size
+        const flattenedFiles = [];
+
+        for (const note of notesList) {
+            for (const file of note.files) {
+                const sizeObj = formatBytes(file.file_size);
+
+                flattenedFiles.push({
+                    file_id: file.file_id,
+                    message_id: file.message_id,
+                    original_name: file.original_name,
+                    mime_type: file.mime_type,
+                    file_size: sizeObj.value + " " + sizeObj.unit,
+                    title: note.title,
+                    description: note.description,
+                    created_at: note.createdAt,
+                });
+            }
+        }
+
+        // Sort by createdAt (newest first)
+        flattenedFiles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // Send success response
+        return res.status(200).json({
+            success: true,
+            message: `Fetched ${category} successfully`,
+            count: flattenedFiles.length,
+            files: flattenedFiles,
+        });
+    } catch (error) {
+        console.error("Error in getNotes controller:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
+        });
+    }
+};
+
+export const downloadNotes = async (req, res) => {
+    try {
+        const { fileId } = req.params;
+
+        if (!fileId) {
+            return res.status(400).json({
+                success: false,
+                message: "File ID is required",
+            });
+        }
+
+        // Step 1: Get file path from Telegram
+        const file = await bot.getFile(fileId);
+
+        if (!file) {
+            return res.status(404).json({
+                success: false,
+                message: "File not found on Telegram",
+            });
+        }
+
+        // Check file size limit (Telegram Bot API limit is 20MB)
+        const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB in bytes
+        if (file.file_size && file.file_size > MAX_FILE_SIZE) {
+            return res.status(413).json({
+                success: false,
+                message: "File is too large to download via Bot API. Maximum size is 20MB.",
+                fileSize: `${(file.file_size / (1024 * 1024)).toFixed(2)} MB`
+            });
+        }
+
+        const filePath = file.file_path;
+
+        // Step 2: Construct direct Telegram file URL
+        const telegramFileUrl = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${filePath}`;
+
+        // Step 3: Get file info from database to get original filename
+        const noteFile = await Notes.findOne({ "files.file_id": fileId });
+        let originalFileName = "file";
+
+        if (noteFile) {
+            const fileInfo = noteFile.files.find(f => f.file_id === fileId);
+            if (fileInfo && fileInfo.original_name) {
+                originalFileName = fileInfo.original_name;
+            }
+        }
+
+        // Step 4: Stream file from Telegram to client
+        const fileResponse = await axios({
+            method: "GET",
+            url: telegramFileUrl,
+            responseType: "stream", // Important: stream the file
+        });
+
+        // Step 5: Set proper headers based on file type
+        const contentType = fileResponse.headers['content-type'] || 'application/octet-stream';
+        const contentLength = fileResponse.headers['content-length'];
+
+        res.set({
+            "Content-Disposition": `attachment; filename="${originalFileName}"`,
+            "Content-Type": contentType,
+            "Content-Length": contentLength,
+            "Cache-Control": "no-cache",
+            "Accept-Ranges": "bytes"
+        });
+
+        // Pipe the file stream directly to response
+        fileResponse.data.pipe(res);
+
+        // Handle stream events
+        fileResponse.data.on("error", (err) => {
+            console.error("Stream error:", err);
+            if (!res.headersSent) {
+                return res.status(500).json({
+                    success: false,
+                    message: "Error streaming file",
+                });
+            }
+        });
+
+        fileResponse.data.on("end", () => {
+            console.log("File download completed successfully");
+        });
+
+        // Handle response events
+        res.on("close", () => {
+            console.log("Client disconnected during file download");
+        });
+
+    } catch (error) {
+        console.error("Error in downloadNotes:", error);
+
+        // Handle Telegram-specific errors
+        if (error.response?.status === 400) {
+            if (error.message?.includes("file is too big")) {
+                return res.status(413).json({
+                    success: false,
+                    message: "File is too large to download. Telegram Bot API has a 20MB limit for file downloads.",
+                });
+            }
+            return res.status(404).json({
+                success: false,
+                message: "Invalid file ID or file not found on Telegram",
+            });
+        }
+
+        if (error.code === 'ETELEGRAM') {
+            return res.status(400).json({
+                success: false,
+                message: "Telegram API error: " + (error.description || error.message),
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while downloading file",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
+        });
+    }
+};
+
+/*
+curl -X GET "http://localhost:8000/api/v1/student/download-notes/BQACAgUAAyEGAASb56CfAAMIaKXHxUZqoSqzC-WlmJk76bIkwWMAApYYAAJ7sylVXkgiP4YtUl82BA"      
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGEzMjRjMDIyYjNjYTc0MjYyYTg3ZGEiLCJpYXQiOjE3NTU2ODE2OTAsImV4cCI6MTc1NTc2ODA5MH0.L4D0YEddZwL4qlQSb6YzeFx0IQv4XiR8nHA5hAGRH9Q"     
+ --remote-header-name --remote-name
+
+*/
