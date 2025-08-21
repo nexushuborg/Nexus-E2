@@ -1163,8 +1163,7 @@ export const getAllSubjectOfStudent = async (req, res) => {
 export const getNotes = async (req, res) => {
     try {
         const { subjectId } = req.params;
-        const { category } = req.query;
-
+        const { category, chapterNo } = req.query;
 
         if (!subjectId) {
             return res.status(400).json({
@@ -1188,7 +1187,6 @@ export const getNotes = async (req, res) => {
             });
         }
 
-        // Get section from middleware (attached via requireSectionMembership)
         const section = req.section;
         if (!section) {
             return res.status(404).json({
@@ -1197,59 +1195,62 @@ export const getNotes = async (req, res) => {
             });
         }
 
-        // Fetch notes from DB
-        const notesList = await Notes.find({
+        const query = {
             subject: subjectId,
             section: section._id,
             category,
-        }).sort({ createdAt: -1 });
+        };
 
-        // Helper: Format bytes into KB, MB, or GB (only one unit)
+        if (chapterNo) {
+            query["chapter.chatpter_no"] = chapterNo;
+        }
+
+        const notesList = await Notes.find(query).sort({ createdAt: -1 });
+
         const formatBytes = (bytes) => {
-            if (!bytes || bytes === 0) return { value: 0, unit: "KB" };
+            if (!bytes || bytes === 0) return "0 KB";
 
             const kb = bytes / 1024;
             const mb = kb / 1024;
             const gb = mb / 1024;
 
             if (gb >= 1) {
-                return { value: gb.toFixed(2), unit: "GB" };
+                return `${gb.toFixed(2)} GB`;
             } else if (mb >= 1) {
-                return { value: mb.toFixed(2), unit: "MB" };
+                return `${mb.toFixed(2)} MB`;
             } else {
-                return { value: kb.toFixed(2), unit: "KB" };
+                return `${kb.toFixed(2)} KB`;
             }
         };
 
-        // Flatten all files with formatted size
-        const flattenedFiles = [];
+        const transformedNotes = notesList.map(note => {
+            const transformedFiles = note.files.map(file => ({
+                file_id: file.file_id,
+                message_id: file.message_id,
+                original_name: file.original_name,
+                mime_type: file.mime_type,
+                file_size: formatBytes(file.file_size),
+                created_at: file.created_at
+            }));
 
-        for (const note of notesList) {
-            for (const file of note.files) {
-                const sizeObj = formatBytes(file.file_size);
-
-                flattenedFiles.push({
-                    file_id: file.file_id,
-                    message_id: file.message_id,
-                    original_name: file.original_name,
-                    mime_type: file.mime_type,
-                    file_size: sizeObj.value + " " + sizeObj.unit,
-                    title: note.title,
-                    description: note.description,
-                    created_at: note.createdAt,
-                });
-            }
-        }
-
-        // Sort by createdAt (newest first)
-        flattenedFiles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            return {
+                _id: note._id,
+                subjectId: note.subject,
+                chapterNo: note.chapter?.chatpter_no || null,
+                chapterName: note.chapter?.chapter_name || null,
+                title: note.title,
+                description: note.description,
+                files: transformedFiles,
+                created_at: note.createdAt
+            };
+        });
 
         // Send success response
         return res.status(200).json({
             success: true,
             message: `Fetched ${category} successfully`,
-            count: flattenedFiles.length,
-            files: flattenedFiles,
+            count: transformedNotes.length,
+            notes: transformedNotes,
         });
     } catch (error) {
         console.error("Error in getNotes controller:", error);
@@ -1384,8 +1385,8 @@ export const downloadNotes = async (req, res) => {
 };
 
 /*
-curl -X GET "http://localhost:8000/api/v1/student/download-notes/BQACAgUAAyEGAASb56CfAAMIaKXHxUZqoSqzC-WlmJk76bIkwWMAApYYAAJ7sylVXkgiP4YtUl82BA"      
--H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGEzMjRjMDIyYjNjYTc0MjYyYTg3ZGEiLCJpYXQiOjE3NTU2ODE2OTAsImV4cCI6MTc1NTc2ODA5MH0.L4D0YEddZwL4qlQSb6YzeFx0IQv4XiR8nHA5hAGRH9Q"     
+curl -X GET "http://localhost:8000/api/v1/student/download-notes/BQACAgUAAyEGAASb56CfAAMIaKXHxUZqoSqzC-WlmJk76bIkwWMAApYYAAJ7sylVXkgiP4YtUl82BA"
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGEzMjRjMDIyYjNjYTc0MjYyYTg3ZGEiLCJpYXQiOjE3NTU2ODE2OTAsImV4cCI6MTc1NTc2ODA5MH0.L4D0YEddZwL4qlQSb6YzeFx0IQv4XiR8nHA5hAGRH9Q"
  --remote-header-name --remote-name
 
 */

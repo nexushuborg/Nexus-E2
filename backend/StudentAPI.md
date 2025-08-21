@@ -20,6 +20,9 @@
 | **[7. Logout From All Devices](#7-logout-from-all-devices)** | `POST /logout-all` | Bearer Token | Logout from all devices |
 | **[8. Get Profile](#8-get-profile)** | `GET /profile` | Bearer Token | Retrieve student profile data |
 | **[9. Upload Profile Image](#9-upload-profile-image)** | `POST /upload-profile-image` | Bearer Token | Upload student profile picture |
+| **[10. Get Student Subjects](#10-get-student-subjects)** | `GET /get-all-subjects` | Bearer Token | Get all subjects for student's section |
+| **[11. Get Subject Notes](#11-get-subject-notes)** | `GET /get-notes/:subjectId` | Bearer Token | Get notes for a specific subject |
+| **[12. Download Notes](#12-download-notes)** | `GET /download-notes/:fileId` | Bearer Token | Download specific notes file |
 
 ## API Endpoints Overview
 
@@ -39,6 +42,9 @@
 | `/forgot-password/resend-otp` | POST | None | Resend forgot password OTP |
 | `/profile` | GET | Bearer Token | Get student profile |
 | `/upload-profile-image` | POST | Bearer Token | Upload profile image |
+| `/get-all-subjects` | GET | Bearer Token | Get student's subjects |
+| `/get-notes/:subjectId` | GET | Bearer Token | Get subject notes |
+| `/download-notes/:fileId` | GET | Bearer Token | Download note file |
 
 # Access Token and Refresh Token Definitions
 
@@ -637,6 +643,203 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 }
 ```
 
+## 10. Get Student Subjects
+
+| Property | Value |
+|----------|-------|
+| **Method** | GET |
+| **Endpoint** | `/get-all-subjects` |
+| **Authentication** | Bearer Token Required |
+
+### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+| Content-Type | application/json |
+
+### Response (200 - Success)
+```json
+{
+    "success": true,
+    "message": "Subjects fetched successfully",
+    "subjects": [
+        {
+            "subjectId": "66c4b8e5a1234567890abcef",
+            "subjectName": "DSA",
+            "subjectFullName": "Data Structures and Algorithms",
+            "subjectCode": "CS201"
+        },
+        {
+            "subjectId": "66c4b8e5a1234567890abcf0",
+            "subjectName": "DBMS",
+            "subjectFullName": "Database Management Systems",
+            "subjectCode": "CS301"
+        },
+        {
+            "subjectId": "66c4b8e5a1234567890abcf1",
+            "subjectName": "OS",
+            "subjectFullName": "Operating Systems",
+            "subjectCode": "CS302"
+        },
+        {
+            "subjectId": "66c4b8e5a1234567890abcf2",
+            "subjectName": "CN",
+            "subjectFullName": "Computer Networks",
+            "subjectCode": "CS303"
+        },
+    ]
+}
+```
+
+### Postman Testing Steps
+| Step | Action |
+|------|--------|
+| 1 | Set method to GET |
+| 2 | Add Authorization header with Bearer token |
+| 3 | Set Content-Type to application/json |
+| 4 | Send request |
+| 5 | Verify subjects list in response |
+
+## 11. Get Subject Notes
+
+| Property | Value |
+|----------|-------|
+| **Method** | GET |
+| **Endpoint** | `/get-notes/:subjectId` |
+| **Authentication** | Bearer Token Required |
+
+### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+| Content-Type | application/json |
+
+### URL Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| subjectId | String | ID of the subject to get notes for |
+
+### Response (200 - Success)
+```json
+{
+    "success": true,
+    "message": "Fetched notes successfully",
+    "count": 3,
+    "notes": [
+        {
+            "_id": "66c4b8e5a1234567890abcde",
+            "subjectId": "66c4b8e5a1234567890abcef",
+            "chapterNo": "2",
+            "chapterName": "Data Structures and Algorithms",
+            "title": "Arrays and Linked Lists",
+            "description": "Comprehensive notes on arrays, linked lists, and their operations including insertion, deletion, and traversal.",
+            "files": [
+                {
+                    "file_id": "BQACAgUAAyEGAASb56CfAAMKaKXHxUZqoSqzC-WlmJk76bIkwWMAApYYAAJ7sylVXkgiP4YtUl82BA",
+                    "message_id": "12",
+                    "original_name": "chapter2_arrays_linkedlists.pdf",
+                    "mime_type": "application/pdf",
+                    "file_size": "8.45 MB",
+                    "created_at": "2025-08-21T10:30:00.000Z"
+                },
+                {
+                    "file_id": "BQACAgUAAyEGAASb56CfAAMLaKXHtuGNipEybqHaZT1sNMf_Op4AApUYAAJ7sylVK3dFa4WweNk2BA",
+                    "message_id": "13",
+                    "original_name": "arrays_examples.cpp",
+                    "mime_type": "text/x-c++src",
+                    "file_size": "2.14 KB",
+                    "created_at": "2025-08-21T10:32:00.000Z"
+                }
+            ],
+            "created_at": "2025-08-21T10:30:00.000Z"
+        },
+        {
+            "_id": "66c4b8e5a1234567890abce0",
+            "subjectId": "66c4b8e5a1234567890abcef",
+            "chapterNo": "2",
+            "chapterName": "Data Structures and Algorithms",
+            "title": "Binary Trees and Tree Traversals",
+            "description": "Introduction to binary trees, binary search trees, and different tree traversal techniques including inorder, preorder, and postorder.",
+            "files": [
+                {
+                    "file_id": "BQACAgUAAyEGAASb56CfAAMPaKOUtqysSP1I06TKC7_NaP3_0oYAAsUUAAINpiBVZg_FsFCzbyg2BA",
+                    "message_id": "17",
+                    "original_name": "binary_trees_chapter2.pdf",
+                    "mime_type": "application/pdf",
+                    "file_size": "15.32 MB",
+                    "created_at": "2025-08-20T14:45:00.000Z"
+                },
+                {
+                    "file_id": "BQACAgUAAyEGAASb56CfAAMQaKXHxUZqoSqzC-WlmJk76bIkwWMAApYYAAJ7sylVXkgiP4YtUl82BA",
+                    "message_id": "18",
+                    "original_name": "tree_traversal_diagrams.png",
+                    "mime_type": "image/png",
+                    "file_size": "1.23 MB",
+                    "created_at": "2025-08-20T14:47:00.000Z"
+                }
+            ],
+            "created_at": "2025-08-20T14:45:00.000Z"
+        }
+    ]
+}
+```
+
+### Postman Testing Steps
+| Step | Action |
+|------|--------|
+| 1 | Set method to GET |
+| 2 | Add Authorization header with Bearer token |
+| 3 | Replace :subjectId in URL with actual subject ID |
+| 4 | Set Content-Type to application/json |
+| 5 | Send request |
+| 6 | Verify notes list in response |
+
+## 12. Download Notes
+
+| Property | Value |
+|----------|-------|
+| **Method** | GET |
+| **Endpoint** | `/download-notes/:fileId` |
+| **Authentication** | Bearer Token Required |
+
+### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+
+### URL Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fileId | String | ID of the note file to download |
+
+### Response
+- **Success**: File download stream
+- **Content-Type**: Application/PDF or appropriate mime type
+- **Content-Disposition**: attachment; filename="note_file_name.pdf"
+
+### Error Responses
+```json
+{
+  "success": false,
+  "message": "File not found"
+}
+```
+```json
+{
+  "success": false,
+  "message": "Access denied"
+}
+```
+
+### Postman Testing Steps
+| Step | Action |
+|------|--------|
+| 1 | Set method to GET |
+| 2 | Add Authorization header with Bearer token |
+| 3 | Replace :fileId in URL with actual file ID |
+| 4 | Send request |
+| 5 | Verify file download starts |
+
 ## Complete Testing Flow
 
 | Step | Action | Expected Result |
@@ -651,8 +854,11 @@ A **Refresh Token** is a long-lived security credential used to obtain new acces
 | 8 | POST `/reset-password/verify-otp` with OTP | 200 - Get reset token |
 | 9 | POST `/reset-password` with new password & reset token | 200 - Password changed, logged out |
 | 10 | POST `/login` with new password | 200 - Login with new credentials |
-| 11 | POST `/logout` with Bearer token | 200 - Session ended |
-| 12 | GET `/profile` with same token | 401 - Token revoked |
+| 11 | GET `/get-all-subjects` with Bearer token | 200 - List of subjects |
+| 12 | GET `/get-notes/:subjectId` with valid subject ID | 200 - List of notes |
+| 13 | GET `/download-notes/:fileId` with valid file ID | 200 - File download |
+| 14 | POST `/logout` with Bearer token | 200 - Session ended |
+| 15 | GET `/profile` with same token | 401 - Token revoked |
 
 ## Password Reset Testing Flow (Step-by-Step)
 
