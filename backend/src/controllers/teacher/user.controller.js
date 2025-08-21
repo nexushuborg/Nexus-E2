@@ -1737,7 +1737,7 @@ curl -X POST "http://localhost:8000/api/v1/teacher/upload-notes" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4YTMxZDU0YTA3ZTZmOWI0ODc5ZjM4MSIsImVtYWlsIjoic2Fzd2F0YmFyYWk2MTFAc29hLmR1LmluIiwiaWF0IjoxNzU1NTQ5NDgzLCJleHAiOjE3NTU2MzU4ODN9._ksCCnUvQQaIot65H4ha7lQEnak08y6sJBJc7a4TxYw" \
   -F "title=My Notes Upload" \
   -F "description=These are sample notes for testing upload." \
-  -F "category=notes" \ 
+  -F "category=notes" \
   -F "subject=68a3170384071ea2d7cc7d3d" \
   -F "section=68a3187e0251e4b8448d6d76" \
   -F "files=@/c/Users/saswa/Downloads/pdf-1.pdf"
@@ -1769,9 +1769,9 @@ export const deleteUploadedFiles = async (req, res )=> {
                     });
                 }
 
-                //remove the file from notes 
+                //remove the file from notes
                 const fileIndex = notes.files.findIndex(file => file.message_id === messageId);
-               
+
                 await notes.save({ validateBeforeSave: false });
                 if( notes.files.length === 0) {
                     await Notes.findByIdAndDelete(notes._id);
@@ -1796,6 +1796,5 @@ export const deleteUploadedFiles = async (req, res )=> {
         })
     }
 }
-
 
 

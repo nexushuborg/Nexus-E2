@@ -1,0 +1,49 @@
+{
+    "success": true,
+    "message": "Fetched notes successfully",
+    "count": 3,
+    "notes": [
+        {
+            "_id": "note1",
+            "subjectId": "subject1",
+            "chapterNo": 1,
+            "chapterName": "Introduction to Biology",
+            "title": "Introduction to Biology",
+            "description": "Basic concepts of biology",
+            "files": [
+                {
+                    "_id": "file1",
+                    "original_name": "biology_intro.pdf",
+                    "mime_type": "application/pdf",
+                    "file_size": 204800,
+                    "created_at": "2023-10-01T12:00:00Z"
+                }
+            ]
+        },
+        {
+            "_id": "note2",
+            "subjectId": "subject2",
+            "chapterNo": 2,
+            "chapterName": "Introduction to Biology",
+            "title": "Advanced Mathematics",
+            "description": "Complex numbers and equations",
+            "files": [
+                {
+                    "_id": "file2",
+                    "original_name": "maths_advanced.pdf",
+                    "mime_type": "application/pdf",
+                    "file_size": 307200,
+                    "created_at": "2023-10-02T12:00:00Z"
+                }
+            ]
+        },
+        {
+            "_id": "note3",
+            "subjectId": null,
+            "chapterNo": null,
+            "title": null,
+            "description": null,
+            "files": []
+        }
+    ]
+}
