@@ -6,6 +6,7 @@ import cors from "cors";
 import morgan from "morgan";
 import multer from "multer";
 import dotenv from "dotenv";
+import { setupSwagger } from "./swagger.js";
 dotenv.config();
 
 
@@ -42,6 +43,9 @@ app.use(limiter);
 
 //Logging Middlware
 app.use(morgan("dev"));
+
+// Setup Swagger documentation
+setupSwagger(app);
 
 //routes 
 import studentRoutes from "./routes/student/user.route.js"
