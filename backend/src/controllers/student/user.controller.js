@@ -12,6 +12,8 @@ import axios from "axios";
 import https from "https";
 import http from "http";
 import { Stream } from "stream";
+import Chapter from "../../models/chapter.model.js";
+import Subject from "../../models/subject.model.js";
 
 export const registerStudent = async (req, res) => {
     try {
@@ -1194,18 +1196,29 @@ export const getNotes = async (req, res) => {
                 message: "Section not found",
             });
         }
-
+        const subject = await Subject.findOne({ _id: subjectId});
+        
         const query = {
-            subject: subjectId,
+            subject: subject._id,
             section: section._id,
             category,
         };
-
+        
+        console.log(chapterNo)
+        let chapterDoc;
         if (chapterNo) {
-            query["chapter.chatpter_no"] = chapterNo;
+             chapterDoc = await Chapter.findOne({ chapter_no: String(chapterNo), subject: subject._id, section: section._id });
+            if (!chapterDoc) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Chapter not found"
+                });
+            }
+            query["chapter"] = chapterDoc._id;
         }
 
         const notesList = await Notes.find(query).sort({ createdAt: -1 });
+        console.log(notesList)
 
         const formatBytes = (bytes) => {
             if (!bytes || bytes === 0) return "0 KB";
@@ -1236,8 +1249,8 @@ export const getNotes = async (req, res) => {
             return {
                 _id: note._id,
                 subjectId: note.subject,
-                chapterNo: note.chapter?.chatpter_no || null,
-                chapterName: note.chapter?.chapter_name || null,
+                chapterNo: chapterDoc?.chapter_no || null,
+                chapterName: chapterDoc?.chapter_name || null,
                 title: note.title,
                 description: note.description,
                 files: transformedFiles,

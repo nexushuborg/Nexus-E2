@@ -52,7 +52,18 @@ const sectionSchema = new Schema({
   },
 }, {
   timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 });
+
+
+
+
+sectionSchema.methods.isTeacherInSection = function(teacherId) {
+  return this.faculty.some(f => 
+    f.teacher && f.teacher.toString() === teacherId.toString()
+  );
+};
 
 const Section = mongoose.model("Section", sectionSchema);
 export default Section;
