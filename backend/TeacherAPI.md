@@ -54,7 +54,8 @@
 | `/get-all-students/:year/:branch` | GET | None | Get students by year and branch |
 | `/get-upload-section-notes-details` | GET | Bearer Token | Get sections and subjects for notes upload |
 | `/upload-notes` | POST | Bearer Token | Upload notes with files |
-| `/delete-uploaded-files/:noteId` | DELETE | Bearer Token | Delete uploaded files |
+| `/get-notes/:subjectId` | GET | Bearer Token | Get notes by subject and category |
+| `/delete-uploaded-files/:noteId` | DELETE | Bearer Token | Delete specific file from note |
 
 # Access Token and Refresh Token Definitions
 
@@ -823,7 +824,7 @@ GET /get-all-sections?year=2027
 
 ## 13. CR Management
 
-> **Note**: Teacher can only create **2** student CRs belonging to the same section i.e there can be only 2 CR for one section, creating more than that will raise errors 
+> **Note**: Teacher can only create **2** student CRs belonging to the same section i.e there can be only 2 CR for one section, creating more than that will raise errors
 
 ### 13.1 Make CR
 
@@ -1070,140 +1071,89 @@ GET /get-all-sections?year=2027
 }
 ```
 
-#### Response (400 - Missing Required Fields)
+### 15.3 Get Notes
+
+| Property | Value |
+|----------|-------|
+| **Method** | GET |
+| **Endpoint** | `/get-notes/:subjectId` |
+| **Authentication** | Bearer Token Required |
+
+#### Headers
+| Key | Value |
+|-----|-------|
+| Authorization | Bearer `<access_token>` |
+| Content-Type | application/json |
+
+#### Request Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| subjectId | String | ID of the subject |
+
+#### Query Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| category | String | Yes | Category: notes, assignment, quiz, lab, pyq, project, other |
+| chapterNo | String | No | Chapter number to filter by |
+
+#### Example Request
+```
+GET /get-notes/64e8f0c2b5d1a2a3b4c5d6e7?category=notes&chapterNo=1
+```
+
+#### Response (200 - Success)
 ```json
 {
-  "success": false,
-  "message": "Please provide all required fields: title, description, category, subject, section, chapterNo, chapterName, and files"
+  "success": true,
+  "message": "Fetched notes successfully",
+  "subject": {
+    "_id": "64e8f0c2b5d1a2a3b4c5d6e7",
+    "name": "Data Structures",
+    "code": "CS201"
+  },
+  "chapter": {
+    "_id": "64e8f0c2b5d1a2a3b4c5d6e8",
+    "chapter_no": "1",
+    "chapter_name": "Introduction to Arrays"
+  },
+  "totalCount": 5,
+  "sectionsCount": 2,
+  "notes": [
+    {
+      "_id": "64e8f0c2b5d1a2a3b4c5d6e9",
+      "subjectId": "64e8f0c2b5d1a2a3b4c5d6e7",
+      "chapterNo": "1",
+      "chapterName": "Introduction to Arrays",
+      "sectionName": "CSE-A",
+      "sectionBatch": 2023,
+      "uploadedBy": "John Doe",
+      "isMyUpload": true,
+      "title": "Array Basics",
+      "description": "Introduction to arrays and their operations",
+      "files": [
+        {
+          "file_id": "BQACAgUAAyEGAASb56CfAAMPaKdc4YcDg2s",
+          "message_id": "15",
+          "original_name": "arrays_intro.pdf",
+          "mime_type": "application/pdf",
+          "file_size": "2.5 MB",
+          "created_at": "2025-08-21T17:52:34.113Z"
+        }
+      ],
+      "exam_year": null,
+      "semester": null,
+      "is_pyq": false,
+      "created_at": "2025-08-21T17:52:34.137Z"
+    }
+  ],
+  "notesBySection": {
+    "CSE-A (Batch 2023)": [...],
+    "CSE-B (Batch 2023)": [...]
+  }
 }
 ```
 
-#### Response (400 - Invalid Category)
-```json
-{
-  "success": false,
-  "message": "Invalid category. Must be one of: notes, assignment, quiz, lab, pyq, project"
-}
-```
-
-#### Response (400 - No Files Provided)
-```json
-{
-  "success": false,
-  "message": "Please provide at least one file"
-}
-```
-
-#### Response (400 - Too Many Files)
-```json
-{
-  "success": false,
-  "message": "Maximum 10 files allowed per upload"
-}
-```
-
-#### Response (400 - File Too Large)
-```json
-{
-  "success": false,
-  "message": "File size exceeds 20MB limit"
-}
-```
-
-#### Response (400 - Invalid File Type)
-```json
-{
-  "success": false,
-  "message": "Invalid file type. Only PDF, Word, PowerPoint, Text, and Image files are allowed"
-}
-```
-
-#### Response (400 - Invalid Subject)
-```json
-{
-  "success": false,
-  "message": "Invalid subject ID"
-}
-```
-
-#### Response (400 - Invalid Section)
-```json
-{
-  "success": false,
-  "message": "Invalid section ID"
-}
-```
-
-#### Response (400 - Teacher Not Assigned)
-```json
-{
-  "success": false,
-  "message": "You are not assigned to teach this subject in the selected section"
-}
-```
-
-#### Response (401 - Unauthorized)
-```json
-{
-  "success": false,
-  "message": "Access denied. No token provided."
-}
-```
-
-#### Response (401 - Invalid Token)
-```json
-{
-  "success": false,
-  "message": "Invalid access token"
-}
-```
-
-#### Response (401 - Token Expired)
-```json
-{
-  "success": false,
-  "message": "Access token has expired"
-}
-```
-
-#### Response (401 - Token Revoked)
-```json
-{
-  "success": false,
-  "message": "Token has been revoked. Please login again."
-}
-```
-
-#### Response (500 - Server Error)
-```json
-{
-  "success": false,
-  "message": "Internal server error",
-  "error": "Error details in development mode"
-}
-```
-
-#### Response (500 - File Upload Error)
-```json
-{
-  "success": false,
-  "message": "Error uploading files to Telegram",
-  "error": "Telegram API error details"
-}
-```
-
-### Postman Testing Steps
-| Step | Action |
-|------|--------|
-| 1 | Set method to POST |
-| 2 | Add Authorization header with Bearer token |
-| 3 | Go to Body tab → Select "form-data" |
-| 4 | Add required fields: title, description, category, subject, section, chapterNo, chapterName |
-| 5 | Add files array with multiple files |
-| 6 | Send request |
-| 7 | Verify 201 response and notes creation |
-
-### 15.3 Delete Uploaded Files
+### 15.4 Delete Uploaded Files
 
 | Property | Value |
 |----------|-------|
@@ -1217,20 +1167,54 @@ GET /get-all-sections?year=2027
 | Authorization | Bearer `<access_token>` |
 | Content-Type | application/json |
 
+#### Request Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| noteId | String | ID of the note containing the file |
+
 #### Request Body
 ```json
 {
-  "messageIds": ["12", "13", "14"]
+  "fileId": "BQACAgUAAyEGAASb56CfAAMPaKdc4YcDg2s"
 }
 ```
 
-#### Response (200 - Success)
+#### Response (200 - Success - File Deleted)
 ```json
 {
   "success": true,
-  "message": "Files deleted successfully"
+  "message": "File deleted successfully",
+  "remainingFiles": 3
 }
 ```
+
+#### Response (200 - Success - Note Removed)
+```json
+{
+  "success": true,
+  "message": "File deleted successfully. Note was also removed as it had no remaining files."
+}
+```
+
+#### Response (200 - Success - Telegram Failed)
+```json
+{
+  "success": true,
+  "message": "File removed from database, but may still exist in Telegram storage",
+  "warning": "Telegram deletion failed",
+  "remainingFiles": 2
+}
+```
+
+### Postman Testing Steps for Notes
+| Step | Action |
+|------|--------|
+| 1 | Set method to GET/POST/DELETE |
+| 2 | Add Authorization header with Bearer token |
+| 3 | For upload: Go to Body tab → Select "form-data" |
+| 4 | Add required fields and files |
+| 5 | Send request |
+| 6 | Verify response |
 
 ## Complete Testing Flow
 
@@ -1245,14 +1229,15 @@ GET /get-all-sections?year=2027
 | 7 | POST `/upload-profile-image` with token & file | 200 - Image uploaded |
 | 8 | GET `/get-upload-section-notes-details` with Bearer token | 200 - Sections and subjects data |
 | 9 | POST `/upload-notes` with token, files, and metadata | 201 - Notes uploaded successfully |
-| 10 | DELETE `/delete-uploaded-files/:noteId` with token and message IDs | 200 - Files deleted successfully |
-| 11 | PATCH `/reset-password/request` with Bearer token | 200 - Reset OTP sent |
-| 12 | Check email for reset OTP | 6-digit reset OTP received |
-| 13 | POST `/reset-password/verify-otp` with OTP | 200 - Get reset token |
-| 14 | POST `/reset-password` with new password & reset token | 200 - Password changed, logged out |
-| 15 | POST `/login` with new password | 200 - Login with new credentials |
-| 16 | POST `/logout` with Bearer token | 200 - Session ended |
-| 17 | GET `/profile` with same token | 401 - Token revoked |
+| 10 | GET `/get-notes/:subjectId?category=notes` with Bearer token | 200 - Notes retrieved successfully |
+| 11 | DELETE `/delete-uploaded-files/:noteId` with token and fileId | 200 - File deleted successfully |
+| 12 | PATCH `/reset-password/request` with Bearer token | 200 - Reset OTP sent |
+| 13 | Check email for reset OTP | 6-digit reset OTP received |
+| 14 | POST `/reset-password/verify-otp` with OTP | 200 - Get reset token |
+| 15 | POST `/reset-password` with new password & reset token | 200 - Password changed, logged out |
+| 16 | POST `/login` with new password | 200 - Login with new credentials |
+| 17 | POST `/logout` with Bearer token | 200 - Session ended |
+| 18 | GET `/profile` with same token | 401 - Token revoked |
 
 ## Password Reset Testing Flow (Step-by-Step)
 
@@ -1429,6 +1414,19 @@ GET /get-all-sections?year=2027
 | **Invalid reset token** | 400 | "Invalid or expired reset token" |
 | **Weak new password** | 400 | "Password must meet complexity requirements" |
 
+### Notes Management Errors
+| Scenario | HTTP Status | Response Message |
+|----------|-------------|------------------|
+| **Missing subject ID** | 400 | "Subject ID is required" |
+| **Missing category** | 400 | "Category is required" |
+| **Invalid category** | 400 | "Invalid category. Must be one of: notes, pyq, assignment, quiz, lab, project, other" |
+| **Subject not found** | 404 | "Subject not found" |
+| **Unauthorized access** | 403 | "You are not authorized to access notes for this subject" |
+| **Chapter not found** | 404 | "Chapter not found in your accessible sections" |
+| **Note not found** | 404 | "Note not found" |
+| **File not found** | 404 | "File not found in this note" |
+| **Unauthorized delete** | 403 | "You are not authorized to delete files from this section" |
+
 ## Logout Scenarios Testing
 
 | Test Case | Setup | Expected Result |
@@ -1472,6 +1470,7 @@ GET /get-all-sections?year=2027
 | **Chapter-based Organization** | Structured notes management by chapters |
 | **Telegram Bot Security** | Secure file storage via Telegram Bot API |
 | **File Size Limits** | Prevents abuse and ensures performance |
+| **Multi-Section Access Control** | Teachers can only access notes from their assigned sections |
 
 ## Environment Configuration
 
@@ -1515,7 +1514,7 @@ GET /get-all-sections?year=2027
 | title | String | Required |
 | description | String | Required |
 | files | Array | Array of file objects |
-| category | String | Enum: notes, assignment, quiz, lab, pyq, project |
+| category | String | Enum: notes, assignment, quiz, lab, pyq, project, other |
 | chapter | ObjectId | Required, ref: Chapter |
 | subject | ObjectId | Required, ref: Subject |
 | teacher | ObjectId | Required, ref: Teacher |
@@ -1572,4 +1571,5 @@ GET /get-all-sections?year=2027
 | **Chapter Management** | Chapters are automatically created during notes upload |
 | **Multi-section Upload** | Teachers can upload notes to multiple sections simultaneously |
 | **File Deletion** | Files can be deleted individually with proper validation |
-| **Access Control** | Students can only access notes for their assigned sections |
+| **Access Control** | Teachers can only access notes for their assigned sections |
+| **Multi-Section Access** | Teachers can view notes from all sections they teach for a subject |
