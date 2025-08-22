@@ -1655,7 +1655,7 @@ export const uploadNotes = async (req, res) => {
         const { title, description, category, subject, section, chapterNo, chapterName } = req.body;
         const files = req.files;
 
-      
+
         const sectionIds = Array.isArray(section) ? section : [section];
 
         // Check if all sections exist
@@ -1665,12 +1665,12 @@ export const uploadNotes = async (req, res) => {
             return res.status(404).json({ success: false, message: "No sections found" });
         }
 
-       
+
         if (sections.length !== sectionIds.length) {
             return res.status(404).json({ success: false, message: "One or more sections not found" });
         }
 
-        
+
         const invalidSections = sections.filter(sectionDetail =>
             !sectionDetail.isTeacherInSection(req.user._id)
         );
@@ -1774,58 +1774,275 @@ curl -X POST "http://localhost:8000/api/v1/teacher/upload-notes" \
   -F "files=@/c/Users/saswa/Downloads/pdf-1.pdf"
 */
 
-export const deleteUploadedFiles = async (req, res )=> {
+export const deleteUploadedFiles = async (req, res) => {
     try {
-        const {messageIds} = req.body;
-        if (!messageIds || !Array.isArray(messageIds) || messageIds.length === 0) {
+        const { noteId } = req.params;
+        const { fileId } = req.body; // File ID to delete from the request body
+        const teacherId = req.teacher._id; // Assuming teacher info is available from authTeacherMiddleware
+
+        if (!noteId) {
             return res.status(400).json({
                 success: false,
-                message: "No message IDs provided"
+                message: "Note ID is required"
             });
         }
 
-        for (const messageId of messageIds) {
-            if (!messageId) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid message ID"
-                });
-            }
-            try {
-                const notes = await Notes.findOne({ "files.message_id": messageId });
-                if (!notes) {
-                    return res.status(404).json({
-                        success: false,
-                        message: `No notes found with message ID ${messageId}`
-                    });
-                }
-
-                //remove the file from notes
-                const fileIndex = notes.files.findIndex(file => file.message_id === messageId);
-
-                await notes.save({ validateBeforeSave: false });
-                if( notes.files.length === 0) {
-                    await Notes.findByIdAndDelete(notes._id);
-                }
-                // Now delete the file from Telegram
-                await bot.deleteMessage(process.env.CHAT_ID, messageId);
-
-            } catch (error) {
-                console.error(`Error deleting message ${messageId}:`, error);
-                return res.status(500).json({
-                    success: false,
-                    message: `Failed to delete message ${messageId}`,
-                    error: process.env.NODE_ENV === 'development' ? error.message : undefined
-                });
-            }
+        if (!fileId) {
+            return res.status(400).json({
+                success: false,
+                message: "File ID is required"
+            });
         }
+        if (!mongoose.Types.ObjectId.isValid(noteId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid note ID"
+            });
+        }
+        if (!mongoose.Types.ObjectId.isValid(fileId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid file ID"
+            });
+        }
+        const note = await Notes.findById(noteId).populate('section');
+
+        if (!note) {
+            return res.status(404).json({
+                success: false,
+                message: "Note not found"
+            });
+        }
+
+        const section = note.section;
+        if (!section.isTeacherInSection(teacherId)) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to delete files from this section"
+            });
+        }
+
+        const fileIndex = note.files.findIndex(file => file.file_id === fileId);
+
+        if (fileIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: "File not found in this note"
+            });
+        }
+
+        const fileToDelete = note.files[fileIndex];
+
+        try {
+            await bot.deleteMessage(process.env.CHAT_ID, fileToDelete.message_id);
+
+            note.files.splice(fileIndex, 1);
+
+            if (note.files.length === 0) {
+                await Notes.findByIdAndDelete(noteId);
+
+                return res.status(200).json({
+                    success: true,
+                    message: "File deleted successfully. Note was also removed as it had no remaining files."
+                });
+            } else {
+                await note.save({ validateBeforeSave: false });
+
+                return res.status(200).json({
+                    success: true,
+                    message: "File deleted successfully",
+                    remainingFiles: note.files.length
+                });
+            }
+
+        } catch (telegramError) {
+            console.error(`Error deleting message from Telegram:`, telegramError);
+
+            note.files.splice(fileIndex, 1);
+
+            if (note.files.length === 0) {
+                await Notes.findByIdAndDelete(noteId);
+            } else {
+                await note.save({ validateBeforeSave: false });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "File removed from database, but may still exist in Telegram storage",
+                warning: "Telegram deletion failed",
+                remainingFiles: note.files.length
+            });
+        }
+
     } catch (error) {
+        console.error('Error in deleteUploadedFiles:', error);
         return res.status(500).json({
             success: false,
-            message: "Internal server error while deleting files",
+            message: "Internal server error while deleting file",
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        })
+        });
     }
-}
+};
 
+export const getNotes = async (req, res) => {
+    try {
+        const { subjectId } = req.params;
+        const { category, chapterNo } = req.query;
+        const teacherId = req.teacher._id;
 
+        if (!subjectId) {
+            return res.status(400).json({
+                success: false,
+                message: "Subject ID is required",
+            });
+        }
+
+        if (!category) {
+            return res.status(400).json({
+                success: false,
+                message: "Category is required (e.g., notes, pyq, assignment, quiz, lab, project, other)",
+            });
+        }
+
+        const validCategories = ["notes", "pyq", "assignment", "quiz", "lab", "project", "other"];
+        if (!validCategories.includes(category)) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid category. Must be one of: ${validCategories.join(", ")}`,
+            });
+        }
+
+        const subject = await Subject.findById(subjectId);
+        if (!subject) {
+            return res.status(404).json({
+                success: false,
+                message: "Subject not found",
+            });
+        }
+
+        const sectionsWithAccess = await Section.find({
+            "faculty.teacher": teacherId,
+            "faculty.subjects": subjectId
+        });
+
+        if (!sectionsWithAccess || sectionsWithAccess.length === 0) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to access notes for this subject",
+            });
+        }
+
+        const sectionIds = sectionsWithAccess.map(section => section._id);
+
+        const query = {
+            subject: subjectId,
+            section: { $in: sectionIds },
+            category,
+        };
+
+        let chapterDoc;
+        if (chapterNo) {
+            chapterDoc = await Chapter.findOne({
+                chapter_no: String(chapterNo),
+                subject: subjectId,
+                section: { $in: sectionIds }
+            });
+
+            if (!chapterDoc) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Chapter not found in your accessible sections"
+                });
+            }
+            query["chapter"] = chapterDoc._id;
+        }
+
+        const notesList = await Notes.find(query)
+            .populate('section', 'section_name batch')
+            .populate('chapter', 'chapter_no chapter_name')
+            .populate('teacher', 'name email')
+            .sort({ createdAt: -1 });
+
+        const formatBytes = (bytes) => {
+            if (!bytes || bytes === 0) return "0 KB";
+
+            const kb = bytes / 1024;
+            const mb = kb / 1024;
+            const gb = mb / 1024;
+
+            if (gb >= 1) {
+                return `${gb.toFixed(2)} GB`;
+            } else if (mb >= 1) {
+                return `${mb.toFixed(2)} MB`;
+            } else {
+                return `${kb.toFixed(2)} KB`;
+            }
+        };
+
+        const transformedNotes = notesList.map(note => {
+            const transformedFiles = note.files.map(file => ({
+                file_id: file.file_id,
+                message_id: file.message_id,
+                original_name: file.original_name,
+                mime_type: file.mime_type,
+                file_size: formatBytes(file.file_size),
+                created_at: file.created_at
+            }));
+
+            return {
+                _id: note._id,
+                subjectId: note.subject,
+                chapterNo: note.chapter?.chapter_no || null,
+                chapterName: note.chapter?.chapter_name || null,
+                sectionName: note.section?.section_name || null,
+                sectionBatch: note.section?.batch || null,
+                uploadedBy: note.teacher?.name || null,
+                isMyUpload: note.teacher._id.toString() === teacherId.toString(),
+                title: note.title,
+                description: note.description,
+                files: transformedFiles,
+                exam_year: note.exam_year || null,
+                semester: note.semester || null,
+                is_pyq: note.is_pyq || false,
+                created_at: note.createdAt
+            };
+        });
+
+        const notesBySection = transformedNotes.reduce((acc, note) => {
+            const sectionKey = `${note.sectionName} (Batch ${note.sectionBatch})`;
+            if (!acc[sectionKey]) {
+                acc[sectionKey] = [];
+            }
+            acc[sectionKey].push(note);
+            return acc;
+        }, {});
+
+        return res.status(200).json({
+            success: true,
+            message: `Fetched ${category} successfully`,
+            subject: {
+                _id: subject._id,
+                name: subject.subject_name,
+                code: subject.subject_code
+            },
+            chapter: chapterDoc ? {
+                _id: chapterDoc._id,
+                chapter_no: chapterDoc.chapter_no,
+                chapter_name: chapterDoc.chapter_name
+            } : null,
+            totalCount: transformedNotes.length,
+            sectionsCount: Object.keys(notesBySection).length,
+            notes: transformedNotes,
+            notesBySection: notesBySection, 
+        });
+
+    } catch (error) {
+        console.error("Error in getNotes controller:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
+        });
+    }
+};
