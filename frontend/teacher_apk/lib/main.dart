@@ -11,6 +11,7 @@ import 'screens/verification_complete_page.dart';
 import 'screens/dashboard_page.dart';
 import 'screens/profile_page.dart';
 import 'screens/settings_page.dart';
+import 'screens/upload_notes.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -28,6 +29,7 @@ void main() {
       'dashboard': (context) => const DashboardPage(),
       'profile': (context) => const ProfilePage(),
       'settings': (context) => const SettingsPage(),
+      'uploadNotes': (context) => const UploadNotesScreen(),
     },
   ));
 }
