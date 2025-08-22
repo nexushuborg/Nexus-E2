@@ -16,7 +16,8 @@ import {
     regenerateTeacherAccessToken,
     getUploadSectionNotesDetails,
     uploadNotes,
-    deleteUploadedFiles
+    deleteUploadedFiles,
+    getNotes
 } from "../../controllers/teacher/user.controller.js";
 import { telegramUpload, upload } from "../../middlewares/multer.middleware.js";
 import {uploadProfileImage} from "../../controllers/teacher/upload.controller.js"
@@ -1009,4 +1010,7 @@ router.delete("/delete-uploaded-files/:noteId", authTeacherMiddleware, deleteUpl
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
+
+router.get("/get-notes/:subjectId", authTeacherMiddleware, getNotes);
+
 export default router;

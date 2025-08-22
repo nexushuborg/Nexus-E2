@@ -1883,3 +1883,166 @@ export const deleteUploadedFiles = async (req, res) => {
         });
     }
 };
+
+export const getNotes = async (req, res) => {
+    try {
+        const { subjectId } = req.params;
+        const { category, chapterNo } = req.query;
+        const teacherId = req.teacher._id;
+
+        if (!subjectId) {
+            return res.status(400).json({
+                success: false,
+                message: "Subject ID is required",
+            });
+        }
+
+        if (!category) {
+            return res.status(400).json({
+                success: false,
+                message: "Category is required (e.g., notes, pyq, assignment, quiz, lab, project, other)",
+            });
+        }
+
+        const validCategories = ["notes", "pyq", "assignment", "quiz", "lab", "project", "other"];
+        if (!validCategories.includes(category)) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid category. Must be one of: ${validCategories.join(", ")}`,
+            });
+        }
+
+        const subject = await Subject.findById(subjectId);
+        if (!subject) {
+            return res.status(404).json({
+                success: false,
+                message: "Subject not found",
+            });
+        }
+
+        const sectionsWithAccess = await Section.find({
+            "faculty.teacher": teacherId,
+            "faculty.subjects": subjectId
+        });
+
+        if (!sectionsWithAccess || sectionsWithAccess.length === 0) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to access notes for this subject",
+            });
+        }
+
+        const sectionIds = sectionsWithAccess.map(section => section._id);
+
+        const query = {
+            subject: subjectId,
+            section: { $in: sectionIds },
+            category,
+        };
+
+        let chapterDoc;
+        if (chapterNo) {
+            chapterDoc = await Chapter.findOne({
+                chapter_no: String(chapterNo),
+                subject: subjectId,
+                section: { $in: sectionIds }
+            });
+
+            if (!chapterDoc) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Chapter not found in your accessible sections"
+                });
+            }
+            query["chapter"] = chapterDoc._id;
+        }
+
+        const notesList = await Notes.find(query)
+            .populate('section', 'section_name batch')
+            .populate('chapter', 'chapter_no chapter_name')
+            .populate('teacher', 'name email')
+            .sort({ createdAt: -1 });
+
+        const formatBytes = (bytes) => {
+            if (!bytes || bytes === 0) return "0 KB";
+
+            const kb = bytes / 1024;
+            const mb = kb / 1024;
+            const gb = mb / 1024;
+
+            if (gb >= 1) {
+                return `${gb.toFixed(2)} GB`;
+            } else if (mb >= 1) {
+                return `${mb.toFixed(2)} MB`;
+            } else {
+                return `${kb.toFixed(2)} KB`;
+            }
+        };
+
+        const transformedNotes = notesList.map(note => {
+            const transformedFiles = note.files.map(file => ({
+                file_id: file.file_id,
+                message_id: file.message_id,
+                original_name: file.original_name,
+                mime_type: file.mime_type,
+                file_size: formatBytes(file.file_size),
+                created_at: file.created_at
+            }));
+
+            return {
+                _id: note._id,
+                subjectId: note.subject,
+                chapterNo: note.chapter?.chapter_no || null,
+                chapterName: note.chapter?.chapter_name || null,
+                sectionName: note.section?.section_name || null,
+                sectionBatch: note.section?.batch || null,
+                uploadedBy: note.teacher?.name || null,
+                isMyUpload: note.teacher._id.toString() === teacherId.toString(),
+                title: note.title,
+                description: note.description,
+                files: transformedFiles,
+                exam_year: note.exam_year || null,
+                semester: note.semester || null,
+                is_pyq: note.is_pyq || false,
+                created_at: note.createdAt
+            };
+        });
+
+        const notesBySection = transformedNotes.reduce((acc, note) => {
+            const sectionKey = `${note.sectionName} (Batch ${note.sectionBatch})`;
+            if (!acc[sectionKey]) {
+                acc[sectionKey] = [];
+            }
+            acc[sectionKey].push(note);
+            return acc;
+        }, {});
+
+        return res.status(200).json({
+            success: true,
+            message: `Fetched ${category} successfully`,
+            subject: {
+                _id: subject._id,
+                name: subject.subject_name,
+                code: subject.subject_code
+            },
+            chapter: chapterDoc ? {
+                _id: chapterDoc._id,
+                chapter_no: chapterDoc.chapter_no,
+                chapter_name: chapterDoc.chapter_name
+            } : null,
+            totalCount: transformedNotes.length,
+            sectionsCount: Object.keys(notesBySection).length,
+            notes: transformedNotes,
+            notesBySection: notesBySection, 
+        });
+
+    } catch (error) {
+        console.error("Error in getNotes controller:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
+        });
+    }
+};
