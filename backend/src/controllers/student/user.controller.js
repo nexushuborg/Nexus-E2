@@ -1197,13 +1197,13 @@ export const getNotes = async (req, res) => {
             });
         }
         const subject = await Subject.findOne({ _id: subjectId});
-        
+
         const query = {
             subject: subject._id,
             section: section._id,
             category,
         };
-        
+
         console.log(chapterNo)
         let chapterDoc;
         if (chapterNo) {
