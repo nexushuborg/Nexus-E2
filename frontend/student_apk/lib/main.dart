@@ -11,6 +11,13 @@ import 'package:student_apk/screens/verification_complete_page.dart';
 import 'package:student_apk/screens/dashboard_page.dart';
 import 'package:student_apk/screens/profile_page.dart';
 import 'package:student_apk/screens/settings_page.dart';
+import 'package:student_apk/screens/materials_page.dart';
+import 'package:student_apk/screens/subject_page.dart';
+import 'package:student_apk/screens/subject_content_page.dart';
+import 'package:student_apk/screens/files_page.dart';
+import 'package:student_apk/screens/forgot_password_step1.dart';
+import 'package:student_apk/screens/forgot_password_step2.dart';
+import 'package:student_apk/screens/forgot_password_step3.dart';
 import 'package:student_apk/theme.dart';
 
 void main() {
@@ -39,6 +46,13 @@ class MyApp extends StatelessWidget {
         Routes.dashboard: (context) => const DashboardPage(),
         Routes.profile: (context) => const ProfilePage(),
         Routes.settings: (context) => const SettingsPage(),
+        Routes.materials: (context) => const MaterialsPage(),
+        Routes.subject: (context) => const SubjectPage(),
+        Routes.subjectContent: (context) => const SubjectContentPage(),
+        Routes.files: (context) => const FilesPage(),
+        Routes.forgotPasswordStep1: (context) => const ForgotPasswordStep1(),
+        Routes.forgotPasswordStep2: (context) => const ForgotPasswordStep2(),
+        Routes.forgotPasswordStep3: (context) => const ForgotPasswordStep3(),
       },
     );
   }

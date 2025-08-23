@@ -28,7 +28,7 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
                 // Logo
                 const Center(
                   child: Text(
-                    'ARCANUM',
+                    'Arcanum',
                     style: TextStyle(
                       color: AppTheme.textColor,
                       fontSize: 28,
@@ -137,7 +137,7 @@ class _ArcanumLoginState extends State<ArcanumLogin> {
                       ],
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () => Navigator.pushNamed(context, Routes.forgotPasswordStep1),
                       child: const Text(
                         'Forgot Password?',
                         style: TextStyle(

@@ -118,7 +118,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
             card.title,
             style: TextStyle(
               color: AppTheme.primaryColor,
-              fontSize: 25,
+              fontSize: 32,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -127,7 +127,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
             card.prominentTitle,
             style: TextStyle(
               color: AppTheme.primaryColor,
-              fontSize: 60,
+              fontSize: 48,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -136,7 +136,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
             card.description,
             style: TextStyle(
               color: AppTheme.primaryColor,
-              fontSize: 16,
+              fontSize: 18,
               height: 1.5,
             ),
             textAlign: TextAlign.start,
@@ -153,7 +153,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
     // Or use a more dynamic way to calculate height if cards have varying content.
     // For now, estimating based on typical content height.
     final screenHeight = MediaQuery.of(context).size.height;
-    final contentHeight = screenHeight * 0.45; // Approx 45% of screen for text content
+    final contentHeight = screenHeight * 0.35; // Approx 45% of screen for text content
 
     return Container(
       decoration: BoxDecoration(

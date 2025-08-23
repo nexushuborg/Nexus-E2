@@ -57,7 +57,7 @@ class _VerificationCompletePageState extends State<VerificationCompletePage> {
               ),
               const Spacer(flex: 2),
               const Text(
-                'ARCANUM',
+                'Arcanum',
                 style: TextStyle(
                   color: AppTheme.textColor,
                   fontSize: 20,

@@ -47,7 +47,7 @@ class _LoadingPageState extends State<LoadingPage> {
               ),
               const SizedBox(height: 64),
               const Text(
-                'ARCANUM',
+                'Arcanum',
                 style: TextStyle(
                   color: AppTheme.textColor,
                   fontSize: 32,

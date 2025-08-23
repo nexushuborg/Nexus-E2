@@ -103,7 +103,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
               children: [
                 const SizedBox(height: 48),
                 const Text(
-                  'ARCANUM',
+                  'Arcanum',
                   style: TextStyle(
                     color: AppTheme.textColor,
                     fontSize: 24,
