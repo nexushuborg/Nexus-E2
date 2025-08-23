@@ -26,12 +26,12 @@ class _DashboardPageState extends State<DashboardPage> {
               // Top Bar with ARCANUM logo and icons
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'ARCANUM',
+                        'Arcanum',
                         style: TextStyle(
                           color: AppTheme.textColor,
                           fontSize: 24,
@@ -66,22 +66,24 @@ class _DashboardPageState extends State<DashboardPage> {
               // Profile Section
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
                   child: InkWell(
                     onTap: () => Navigator.pushNamed(context, Routes.profile),
                     child: Row(
                       children: [
                         const CircleAvatar(
                           backgroundColor: AppTheme.buttonBg,
+                          radius: 24,
                           child: Text(
-                            'P',
+                            'S',
                             style: TextStyle(
                               color: AppTheme.textColor2,
+                              fontSize: 20,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 16),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -89,15 +91,15 @@ class _DashboardPageState extends State<DashboardPage> {
                               'Hey Student!',
                               style: TextStyle(
                                 color: AppTheme.textColor,
-                                fontSize: 18,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             Text(
-                              'Welcome Back',
+                              'Welcome Back!',
                               style: TextStyle(
                                 color: AppTheme.textColor.withAlpha(178),
-                                fontSize: 14,
+                                fontSize: 16,
                               ),
                             ),
                           ],
@@ -126,7 +128,7 @@ class _DashboardPageState extends State<DashboardPage> {
               // Deadlines Section
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                  padding: const EdgeInsets.fromLTRB(24, 10, 24, 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -279,34 +281,76 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildQuickAccessCard(String title, IconData icon) {
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(25),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(51),  // Changed from withOpacity
-            blurRadius: 15,
-            spreadRadius: 1,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: AppTheme.textColor, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppTheme.textColor,
-              fontSize: 14,
+    return InkWell(
+      onTap: () {
+        if (title == 'Materials') {
+          Navigator.pushNamed(context, Routes.materials);
+        }
+      },
+      child: Container(
+        width: 110,
+        height: 110,
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(220),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.backgroundGradientEnd.withAlpha(40),
+              offset: const Offset(-2, 10),
+              blurRadius: 10,
+              spreadRadius: 2,
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              bottom: 12,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppTheme.textColor2.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.arrow_outward,
+                  color: AppTheme.textColor2,
+                  size: 16,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 12, top: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.textColor2.withAlpha(25),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: AppTheme.textColor2,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: AppTheme.textColor2,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

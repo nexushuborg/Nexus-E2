@@ -89,8 +89,16 @@ class DashboardPage extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(51),
+                            color: Colors.white.withAlpha(80),
                             borderRadius: BorderRadius.circular(32),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(30),
+                                offset: const Offset(-1, 8),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ],
                           ),
                           child: Row(
                             children: [
@@ -99,8 +107,9 @@ class DashboardPage extends StatelessWidget {
                               Text(
                                 'Search',
                                 style: TextStyle(
-                                  color: AppTheme.primaryColor.withAlpha(127),
+                                  color: AppTheme.primaryColor.withAlpha(130),
                                   fontSize: 16,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -132,8 +141,16 @@ class DashboardPage extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(51),
+                        color: Colors.white.withAlpha(80),
                         borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(30),
+                            offset: const Offset(-1, 8),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
@@ -178,7 +195,7 @@ class DashboardPage extends StatelessWidget {
                 GridView.count(
                   shrinkWrap: true,
                   primary: false,
-                  padding: const EdgeInsets.fromLTRB(24, 50, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
                   crossAxisCount: 2,
                   mainAxisSpacing: 20,
                   crossAxisSpacing: 20,
@@ -219,7 +236,7 @@ class DashboardPage extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(25),
+                      color: Colors.white.withAlpha(60),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -240,7 +257,7 @@ class DashboardPage extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withAlpha(51),
+                                  color: Colors.white.withAlpha(90),
                                   borderRadius: BorderRadius.circular(32),
                                 ),
                                 child: Row(
@@ -276,7 +293,7 @@ class DashboardPage extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withAlpha(51),
+                                    color: Colors.white.withAlpha(90),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Column(
@@ -380,13 +397,13 @@ class _DashboardCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 24),
         decoration: BoxDecoration(
-          color: Colors.white.withAlpha(51),
+          color: Colors.white.withAlpha(90),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(25), 
-              offset: const Offset(-2, 10),    
-              blurRadius: 8,                  
+              color: Colors.black.withAlpha(30),
+              offset: const Offset(-2, 10),
+              blurRadius: 10,
               spreadRadius: 1,                
             ),
           ],
@@ -401,7 +418,7 @@ class _DashboardCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppTheme.primaryColor,
-                fontSize: 16,
+                fontSize: 20,
                 fontWeight: FontWeight.w400,
                 height: 1.2,
               ),

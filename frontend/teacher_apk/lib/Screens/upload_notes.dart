@@ -389,7 +389,7 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                 _previousUploads.isEmpty
                     ? const Center(child: Text("No uploads yet.", style: TextStyle(color: Colors.black54, fontSize: 16)))
                     : ListView.builder(
-                        padding: const EdgeInsets.only(top: kToolbarHeight + kTextTabBarHeight + 60, left: 8, right: 8, bottom: 8),
+                        padding: const EdgeInsets.only(top: kToolbarHeight + kTextTabBarHeight + 110, left: 8, right: 8, bottom: 8),
                         itemCount: _previousUploads.length,
                         itemBuilder: (context, index) {
                           final item = _previousUploads[index];
