@@ -1,6 +1,8 @@
 import mongoose,{Schema} from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 
 const studentSchema = new Schema({
@@ -138,6 +140,6 @@ studentSchema.methods.generateRefreshToken = function () {
 }
 
 
-const Student = mongoose.model("Student", studentSchema);
+const Student = createModel("Student", studentSchema, "main");
 
 export default Student;

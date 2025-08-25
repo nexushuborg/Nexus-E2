@@ -1,6 +1,8 @@
 import mongoose,{Schema} from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 const teacherSchema = new Schema({
     full_name:{
@@ -100,7 +102,7 @@ teacherSchema.methods.generateRefreshToken = function() {
     return jwt.sign({ id: this._id, email: this.email }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
 }
 
-const Teacher = mongoose.model("Teacher", teacherSchema);
+const Teacher = createModel("Teacher", teacherSchema, "main");
 export default Teacher;
 
 

@@ -1,4 +1,6 @@
 import mongoose, { Schema } from "mongoose";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 const notificationSchema = new Schema({
   title: {
@@ -60,5 +62,5 @@ const notificationSchema = new Schema({
     timestamps: true,
 });
 
-const Notification = mongoose.model("Notification", notificationSchema);
+const Notification = createModel("Notification", notificationSchema, "main");
 export default Notification;

@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 const branchSchema = new mongoose.Schema({
     name: {
@@ -17,5 +19,5 @@ const branchSchema = new mongoose.Schema({
 }, {
     timestamps: true,
 });
-const Branch = mongoose.model("Branch", branchSchema);
+const Branch = createModel("Branch", branchSchema, "main");
 export default Branch;
