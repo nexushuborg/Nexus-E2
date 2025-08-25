@@ -1,4 +1,6 @@
 import mongoose, { Schema } from "mongoose";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 
 const notesSchema = new Schema(
@@ -70,5 +72,5 @@ const notesSchema = new Schema(
 notesSchema.index({ subject: 1, chapter: 1 });
 notesSchema.index({ title: "text", description: "text" });
 
-const Notes = mongoose.model("Notes", notesSchema);
+const Notes = createModel("Notes", notesSchema, "main");
 export default Notes;

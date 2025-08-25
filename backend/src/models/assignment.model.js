@@ -1,4 +1,6 @@
 import mongoose,{Schema} from "mongoose";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 
 const assignmentSchema = new Schema({
@@ -44,5 +46,5 @@ const assignmentSchema = new Schema({
     timestamps: true
 })
 
-const Assignment = mongoose.model("Assignment", assignmentSchema);
+const Assignment = createModel("Assignment", assignmentSchema, "main");
 export default Assignment;

@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 const subjectSchema = new mongoose.Schema({
   subject_code: {
@@ -40,5 +42,11 @@ const subjectSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-const Subject = mongoose.model("Subject", subjectSchema);
+// Register the model with the connection
+if (connection.main) {
+  connection.main.model("Subject", subjectSchema);
+}
+
+// Get the model using the proxy approach for safe access
+const Subject = createModel("Subject", subjectSchema, "main");
 export default Subject;

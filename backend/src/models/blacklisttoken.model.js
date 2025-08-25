@@ -1,4 +1,6 @@
 import mongoose, { Mongoose } from "mongoose";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 const blacklistTokenSchema = new mongoose.Schema({
     token:{
@@ -13,5 +15,5 @@ const blacklistTokenSchema = new mongoose.Schema({
     }
 });
 
-const blacklistTokenModel = mongoose.model('BlacklistToken',blacklistTokenSchema)
+const blacklistTokenModel = createModel('BlacklistToken', blacklistTokenSchema, "main");
 export default blacklistTokenModel;

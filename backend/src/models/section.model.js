@@ -1,4 +1,6 @@
 import mongoose,{Schema} from "mongoose";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 const sectionSchema = new Schema({
   section_name: {
@@ -58,12 +60,11 @@ const sectionSchema = new Schema({
 
 
 
-
 sectionSchema.methods.isTeacherInSection = function(teacherId) {
   return this.faculty.some(f => 
     f.teacher && f.teacher.toString() === teacherId.toString()
   );
 };
 
-const Section = mongoose.model("Section", sectionSchema);
+const Section = createModel("Section", sectionSchema, "main");
 export default Section;

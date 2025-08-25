@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 const degreeSchema = new mongoose.Schema({
     name: {
@@ -18,6 +20,5 @@ const degreeSchema = new mongoose.Schema({
     timestamps: true,
 })
 
-const Degree = mongoose.model("Degree", degreeSchema);
-
+const Degree = createModel("Degree", degreeSchema, "main");
 export default Degree;

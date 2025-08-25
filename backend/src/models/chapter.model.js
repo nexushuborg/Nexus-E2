@@ -1,4 +1,6 @@
 import mongoose,{Schema} from "mongoose";
+import connection from "../configs/connectDB.js";
+import { createModel } from "../utils/modelConnector.js";
 
 
 const chapterSchema = new Schema({
@@ -34,5 +36,5 @@ const chapterSchema = new Schema({
 chapterSchema.index({ subject: 1, chapter_no: 1 }, { unique: true });
 chapterSchema.index({ subject: 1, order: 1 });
 
-const Chapter = mongoose.model("Chapter", chapterSchema);
+const Chapter = createModel("Chapter", chapterSchema, "main");
 export default Chapter;
