@@ -73,7 +73,15 @@ const teacherSchema = new Schema({
     refreshToken :{
         type: String,
         default: null,
-    }
+    },
+    status: {
+        type: String,
+        enum: ['online', 'offline', 'away', 'busy'],
+        default: 'offline'
+    },
+    lastSeen: { type: Date, default: Date.now },
+    socketId: { type: String, default: null }, 
+    createdAt: { type: Date, default: Date.now },
 
 },{
     timestamps: true,
