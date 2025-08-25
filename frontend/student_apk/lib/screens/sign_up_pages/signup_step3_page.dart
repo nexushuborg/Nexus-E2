@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
-import '../routes.dart';
-import '../widgets/glass_frame.dart';
+import 'package:student_apk/theme.dart';
+import 'package:student_apk/routes.dart';
+import 'package:student_apk/widgets/glass_frame.dart';
 
 class SignUpStep3Page extends StatefulWidget {
   const SignUpStep3Page({super.key});

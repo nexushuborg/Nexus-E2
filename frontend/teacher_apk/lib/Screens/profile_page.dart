@@ -119,15 +119,15 @@ class ProfilePage extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () {},
-                            child: Icon(
-                              Icons.edit,
-                              color: AppTheme.primaryColor,
-                              size: UIConstants.iconSizeMedium,
-                            ),
-                          ),
+                          // const Spacer(),
+                          // GestureDetector(
+                          //   onTap: () {},
+                          //   child: Icon(
+                          //     Icons.edit,
+                          //     color: AppTheme.primaryColor,
+                          //     size: UIConstants.iconSizeMedium,
+                          //   ),
+                          // ),
                         ],
                       ),
                       const Divider(height: UIConstants.spacingXLarge),

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'screens/get_started_page.dart';
 import 'screens/login.dart';
-import 'screens/signup_step1_page.dart';
-import 'screens/signup_step2_page.dart';
-import 'screens/signup_step3_page.dart';
-import 'screens/verification_complete_page.dart';
+import 'screens/sign_up_pages/signup_step1_page.dart';
+import 'screens/sign_up_pages/signup_step2_page.dart';
+import 'screens/sign_up_pages/signup_step3_page.dart';
+import 'screens/sign_up_pages/verification_complete_page.dart';
 import 'screens/dashboard_page.dart';
 import 'screens/profile_page.dart';
 import 'screens/settings_page.dart';
+import 'screens/forgot_pass_pages/forgot_password_email.dart';
+import 'screens/forgot_pass_pages/forgot_password_otp.dart';
+import 'screens/forgot_pass_pages/new_password.dart';
 
 class Routes {
   static const String loading = 'loading';
@@ -20,6 +23,9 @@ class Routes {
   static const String dashboard = 'dashboard';
   static const String profile = 'profile';
   static const String settings = 'settings';
+  static const String forgotPasswordEmail = 'forgotPasswordEmail';
+  static const String forgotPasswordOTP = 'forgotPasswordOTP';
+  static const String newPassword = 'newPassword';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -41,6 +47,12 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const ProfilePage());
       case 'settings':
         return MaterialPageRoute(builder: (_) => const SettingsPage());
+      case 'forgotPasswordEmail':
+        return MaterialPageRoute(builder: (_) => const ForgotPasswordEmailScreen());
+      case 'forgotPasswordOTP':
+        return MaterialPageRoute(builder: (_) => const OtpVerificationScreen());
+      case 'newPassword':
+        return MaterialPageRoute(builder: (_) => const NewPasswordScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

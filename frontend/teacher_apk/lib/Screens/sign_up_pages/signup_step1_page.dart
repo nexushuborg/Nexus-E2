@@ -1,6 +1,6 @@
 // Sign Up Step 1: Profile Information
 import 'package:flutter/material.dart';
-import '../theme.dart';
+import '../../theme.dart';
 
 class SignUpStep1Page extends StatefulWidget {
   const SignUpStep1Page({super.key});

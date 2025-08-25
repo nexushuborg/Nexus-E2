@@ -1,6 +1,6 @@
 // Sign Up Step 2: Academic Information
 import 'package:flutter/material.dart';
-import '../theme.dart';
+import 'package:teacher_apk/theme.dart';
 
 class SignUpStep2Page extends StatefulWidget {
   const SignUpStep2Page({super.key});

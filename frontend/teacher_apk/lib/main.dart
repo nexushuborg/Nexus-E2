@@ -4,14 +4,17 @@ import 'theme.dart';
 import 'screens/login.dart';
 import 'screens/loading.dart';
 import 'screens/get_started_page.dart';
-import 'screens/signup_step1_page.dart';
-import 'screens/signup_step2_page.dart';
-import 'screens/signup_step3_page.dart';
-import 'screens/verification_complete_page.dart';
+import 'screens/sign_up_pages/signup_step1_page.dart';
+import 'screens/sign_up_pages/signup_step2_page.dart';
+import 'screens/sign_up_pages/signup_step3_page.dart';
+import 'screens/sign_up_pages/verification_complete_page.dart';
 import 'screens/dashboard_page.dart';
 import 'screens/profile_page.dart';
 import 'screens/settings_page.dart';
 import 'screens/upload_notes.dart';
+import 'screens/forgot_pass_pages/forgot_password_email.dart';
+import 'screens/forgot_pass_pages/forgot_password_otp.dart';
+import 'screens/forgot_pass_pages/new_password.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -30,6 +33,9 @@ void main() {
       'profile': (context) => const ProfilePage(),
       'settings': (context) => const SettingsPage(),
       'uploadNotes': (context) => const UploadNotesScreen(),
+      'forgotPasswordEmail': (context) => const ForgotPasswordEmailScreen(),
+      'forgotPasswordOTP': (context) => const OtpVerificationScreen(),
+      'newPassword': (context) => const NewPasswordScreen(),
     },
   ));
 }
