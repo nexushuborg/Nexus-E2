@@ -1,7 +1,7 @@
 // Sign Up Step 3: Verification
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme.dart';
+import '../../theme.dart';
 
 class SignUpStep3Page extends StatefulWidget {
   const SignUpStep3Page({super.key});

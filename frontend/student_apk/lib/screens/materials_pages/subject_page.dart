@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
-import '../routes.dart';
+import '../../theme.dart';
+import '../../routes.dart';
 
 class SubjectPage extends StatelessWidget {
   const SubjectPage({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
-import '../routes.dart';
+import '../../theme.dart';
+import '../../routes.dart';
 
 class ForgotPasswordStep1 extends StatelessWidget {
   const ForgotPasswordStep1({super.key});

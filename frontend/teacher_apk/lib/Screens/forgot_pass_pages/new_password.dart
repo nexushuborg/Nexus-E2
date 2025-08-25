@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:teacher_apk/theme.dart';
-// import '../widgets/arcanum_logo.dart'; // Removed ArcanumLogo import
-import '../widgets/triangle_logo.dart'; // Added TriangleLogo import
-import '../utils/ui_constants.dart'; // Added UIConstants import
+import 'package:teacher_apk/widgets/triangle_logo.dart';
+import 'package:teacher_apk/utils/ui_constants.dart';
 
 // Main widget for the New Password screen.
 class NewPasswordScreen extends StatefulWidget {

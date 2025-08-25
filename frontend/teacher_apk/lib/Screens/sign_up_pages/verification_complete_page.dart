@@ -1,7 +1,7 @@
 // Verification Complete screen after sign up
 import 'package:flutter/material.dart';
-import '../theme.dart';
-import '../widgets/arcanum_logo.dart';
+import '../../theme.dart';
+import '../../widgets/arcanum_logo.dart';
 
 class VerificationCompletePage extends StatefulWidget {
   const VerificationCompletePage({super.key});

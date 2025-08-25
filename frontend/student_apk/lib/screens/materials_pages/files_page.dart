@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
+import 'package:student_apk/theme.dart';
 
 class FilesPage extends StatelessWidget {
   const FilesPage({super.key});

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:teacher_apk/Screens/forgot_password_otp.dart';
+import 'package:teacher_apk/screens/forgot_pass_pages/forgot_password_otp.dart';
 import 'package:teacher_apk/theme.dart';
 import 'package:teacher_apk/utils/ui_constants.dart';
 import 'package:teacher_apk/widgets/triangle_logo.dart';
 
+// Using ButtonStyle.styleFrom instead of manual state properties
 class ForgotPasswordEmailScreen extends StatelessWidget {
   const ForgotPasswordEmailScreen({super.key});
 
@@ -89,17 +90,13 @@ class ForgotPasswordEmailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30.0), // Space after the alert message, before the button
               ElevatedButton(
-                style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
-                  minimumSize: WidgetStateProperty.all(const Size(double.infinity, 50)),
-                  textStyle: WidgetStateProperty.all(
-                    const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                  textStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  backgroundColor: WidgetStateProperty.all(AppTheme.primaryColor),
-                  // Foreground color (text color) can also be set if needed
-                  // foregroundColor: WidgetStateProperty.all(Colors.white),
+                  backgroundColor: AppTheme.primaryColor,
                 ),
                 onPressed: () {
                   Navigator.push(

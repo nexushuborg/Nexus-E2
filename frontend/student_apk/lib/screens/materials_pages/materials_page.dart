@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
-import '../routes.dart';
+import '../../theme.dart';
+import '../../routes.dart';
 
 class MaterialsPage extends StatelessWidget {
   const MaterialsPage({super.key});
