@@ -1,0 +1,266 @@
+{
+	"info": {
+		"name": "Doubt Chat System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "HTTP Endpoints",
+			"item": [
+				{
+					"name": "Create Doubt",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{studentToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Test Doubt\",\n    \"description\": \"I have a question about arrays in JavaScript\",\n    \"subjectId\": \"{{subjectId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/doubt/student/create",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "doubt", "student", "create"]
+						}
+					}
+				},
+				{
+					"name": "Get Student's Doubts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{studentToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/doubt/student/list",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "doubt", "student", "list"]
+						}
+					}
+				},
+				{
+					"name": "Get Teacher's Doubts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{teacherToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/doubt/teacher/list",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "doubt", "teacher", "list"]
+						}
+					}
+				},
+				{
+					"name": "Resolve Doubt",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{teacherToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/doubt/teacher/resolve/{{doubtId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "doubt", "teacher", "resolve", "{{doubtId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "WebSocket",
+			"item": [
+				{
+					"name": "Student Chat Connection",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "ws://{{baseUrl}}",
+							"protocol": "ws",
+							"host": ["{{baseUrl}}"]
+						}
+					},
+					"events": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Authenticate",
+									"const authenticateMessage = {",
+									"    event: 'authenticate',",
+									"    data: {",
+									"        userId: pm.variables.get('studentId'),",
+									"        role: 'Student'",
+									"    }",
+									"};",
+									"",
+									"// Join room",
+									"const joinRoomMessage = {",
+									"    event: 'join_doubt_room',",
+									"    data: {",
+									"        userId: pm.variables.get('studentId'),",
+									"        roomId: pm.variables.get('roomId'),",
+									"        userType: 'Student'",
+									"    }",
+									"};",
+									"",
+									"// Send test message",
+									"const sendMessageData = {",
+									"    event: 'send_message',",
+									"    data: {",
+									"        roomId: pm.variables.get('roomId'),",
+									"        sender: pm.variables.get('studentId'),",
+									"        senderModel: 'Student',",
+									"        content: 'This is a test message'",
+									"    }",
+									"};",
+									"",
+									"// Send typing indicator",
+									"const typingData = {",
+									"    event: 'typing_start',",
+									"    data: {",
+									"        roomId: pm.variables.get('roomId'),",
+									"        userId: pm.variables.get('studentId')",
+									"    }",
+									"};",
+									"",
+									"// Listen for messages",
+									"pm.ws.on('message', (message) => {",
+									"    console.log('Received:', message);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Teacher Chat Connection",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "ws://{{baseUrl}}",
+							"protocol": "ws",
+							"host": ["{{baseUrl}}"]
+						}
+					},
+					"events": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Authenticate",
+									"const authenticateMessage = {",
+									"    event: 'authenticate',",
+									"    data: {",
+									"        userId: pm.variables.get('teacherId'),",
+									"        role: 'Teacher'",
+									"    }",
+									"};",
+									"",
+									"// Join room",
+									"const joinRoomMessage = {",
+									"    event: 'join_doubt_room',",
+									"    data: {",
+									"        userId: pm.variables.get('teacherId'),",
+									"        roomId: pm.variables.get('roomId'),",
+									"        userType: 'Teacher'",
+									"    }",
+									"};",
+									"",
+									"// Listen for messages",
+									"pm.ws.on('message', (message) => {",
+									"    console.log('Received:', message);",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "studentToken",
+			"value": "YOUR_STUDENT_TOKEN",
+			"type": "string"
+		},
+		{
+			"key": "teacherToken",
+			"value": "YOUR_TEACHER_TOKEN",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "YOUR_STUDENT_ID",
+			"type": "string"
+		},
+		{
+			"key": "teacherId",
+			"value": "YOUR_TEACHER_ID",
+			"type": "string"
+		},
+		{
+			"key": "subjectId",
+			"value": "YOUR_SUBJECT_ID",
+			"type": "string"
+		},
+		{
+			"key": "roomId",
+			"value": "ROOM_ID_FROM_CREATE_DOUBT",
+			"type": "string"
+		}
+	]
+}

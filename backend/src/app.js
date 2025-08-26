@@ -7,10 +7,11 @@ import morgan from "morgan";
 import multer from "multer";
 import dotenv from "dotenv";
 import { setupSwagger } from "./swagger.js";
+import { Server } from 'http';
 dotenv.config();
 
-
 const app = express();
+const httpServer = Server(app);
 
 //Security middleware
 app.use(helmet(
@@ -24,7 +25,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded(
     {
-        extended: true  
+        extended: true
     }
 ))
 
@@ -47,12 +48,18 @@ app.use(morgan("dev"));
 // Setup Swagger documentation
 setupSwagger(app);
 
-//routes 
+//routes
 import studentRoutes from "./routes/student/user.route.js"
 import teacherRoutes from "./routes/teacher/user.route.js"
+import doubtRoutes from "./routes/doubt.routes.js"
 
 app.use("/api/v1/student",studentRoutes);
 app.use("/api/v1/teacher",teacherRoutes);
+app.use("/api/v1/doubt", doubtRoutes);
+
+// Initialize Socket.IO
+import { initializeSocket } from './socket/index.js';
+initializeSocket(httpServer);
 
 app.get("/",(req,res) => {
     res.status(200).json({
@@ -91,4 +98,4 @@ app.use((error, req, res, next) => {
   });
 });
 
-export default app;
+export { app, httpServer };

@@ -1,53 +1,46 @@
 import mongoose from 'mongoose';
-import { createModel } from '../utils/modelConnector';
+import { createModel } from '../utils/modelConnector.js';
 
 const messageSchema = new mongoose.Schema({
-    messageId: {
-        type: String,
-        required: true,
-        unique: true,
-        index: true
-    },
-    conversationId: {
+    roomId: {
         type: String,
         required: true,
         index: true
     },
-    senderId: {
-        type: String,
+    sender: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
+        refPath: 'senderModel',
         index: true
     },
-    senderUsername: {
+    senderModel: {
         type: String,
-        required: true
+        required: true,
+        enum: ['Student', 'Teacher']
     },
-    text: {
-        type: String,
-        required: true
+    content: {
+        encryptedMessage: String,
+        key: String,
+        iv: String
     },
-    type: {
+    messageType: {
         type: String,
-        enum: ['text', 'image', 'file', 'audio', 'video'],
+        enum: ['text', 'file'],
         default: 'text'
+    },
+    file: {
+        type: String // Telegram file ID
     },
     status: {
         type: String,
         enum: ['sent', 'delivered', 'read'],
         default: 'sent'
     },
-    replyTo: { type: String, default: null }, // messageId being replied to
-    editedAt: { type: Date, default: null },
-    deletedAt: { type: Date, default: null },
-    readBy: [{
-        userId: String,
-        readAt: { type: Date, default: Date.now }
-    }],
-    deliveredTo: [{
-        userId: String,
-        deliveredAt: { type: Date, default: Date.now }
-    }],
-    createdAt: { type: Date, default: Date.now, index: true }
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        index: true
+    }
 });
 
 const Message = createModel("Message", messageSchema, "chat");
