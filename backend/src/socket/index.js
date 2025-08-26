@@ -1,28 +1,38 @@
 import { Server } from 'socket.io';
-import { handleDoubtChat } from './doubtChat.socket.js';
+import { socketAuthMiddleware } from './middleware/auth.middleware.js';
+import { setupChatRoutes } from './routes/chat.routes.js';
 
 export const initializeSocket = (server) => {
     const io = new Server(server, {
         cors: {
-            origin: process.env.ALLOWED_ORIGINS?.split(',') || "*",
-            methods: ["GET", "POST"]
+            origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+            methods: ['GET', 'POST'],
+            credentials: true
         },
-        pingTimeout: 60000
+        transports: ['polling', 'websocket'],
+        pingTimeout: 30000
     });
+
+    // Global middleware for all connections
+    io.use(socketAuthMiddleware);
+
+    // Make io available globally
+    global.io = io;
 
     io.on('connection', (socket) => {
-        console.log('New client connected:', socket.id);
+        console.log('Socket connected:', socket.id);
+        console.log('User authenticated:', socket.userId, socket.userRole);
 
-        // Initialize doubt chat handlers
-        handleDoubtChat(io, socket);
-
-        socket.on('disconnect', () => {
-            console.log('Client disconnected:', socket.id);
+        // Log all events for debugging
+        socket.onAny((eventName, ...args) => {
+            console.log(`📨 Event received: ${eventName} from ${socket.userId}`, args);
         });
-    });
 
-    // Make io instance globally available
-    global.io = io;
+        // Setup chat routes
+        setupChatRoutes(socket);
+    });
 
     return io;
 };
+
+

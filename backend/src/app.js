@@ -7,11 +7,11 @@ import morgan from "morgan";
 import multer from "multer";
 import dotenv from "dotenv";
 import { setupSwagger } from "./swagger.js";
-import { Server } from 'http';
+import { createServer } from 'http';
 dotenv.config();
 
 const app = express();
-const httpServer = Server(app);
+const httpServer = createServer(app);
 
 //Security middleware
 app.use(helmet(
@@ -52,10 +52,16 @@ setupSwagger(app);
 import studentRoutes from "./routes/student/user.route.js"
 import teacherRoutes from "./routes/teacher/user.route.js"
 import doubtRoutes from "./routes/doubt.routes.js"
+import { setupChatAPIRoutes } from "./socket/routes/chat.routes.js"
 
 app.use("/api/v1/student",studentRoutes);
 app.use("/api/v1/teacher",teacherRoutes);
 app.use("/api/v1/doubt", doubtRoutes);
+
+// Chat API routes
+const chatRouter = express.Router();
+setupChatAPIRoutes(chatRouter);
+app.use("/api/v1/chat", chatRouter);
 
 // Initialize Socket.IO
 import { initializeSocket } from './socket/index.js';
