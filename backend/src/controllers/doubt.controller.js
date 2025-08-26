@@ -5,7 +5,7 @@ import { MongoRedisLike } from "../services/mongoRedisLike.js";
 
 export const createDoubt = async (req, res) => {
     try {
-        const { title, description, subjectId } = req.body;
+        const { title, description, subjectId } = req.body; //68a3170384071ea2d7cc7d3d
         const studentId = req.user._id;
 
         if (!title || !description || !subjectId) {
