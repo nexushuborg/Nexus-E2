@@ -1,84 +1,54 @@
-import ActiveSession from "../models/section.model.js";
+import Session from "../models/session.model.js";
 import TypingStatus from "../models/typing.model.js";
 import Student from "../models/student.model.js";
 import Teacher from "../models/teacher.model.js";
 
-/*
-role = 1 then student
-role = 2 then teacher
-*/
-class MongoRedisLike {
-    static async setUserSession(userId, socketId, role) {
-        await ActiveSession.findOneAndUpdate(
+export class MongoRedisLike {
+    static async setUserSession(userId, sessionData) {
+        await Session.findOneAndUpdate(
             { userId },
             {
                 userId,
-                socketId,
-                status: "online",
+                ...sessionData,
                 lastActivity: new Date(),
                 expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes from now
             },
-            {
-                upsert: true,
-                /*
-                        it means if the document with the specified userId does not exist,
-                        create a new document with the provided userId and socketId.
-                        If it does exist, update the existing document with the new socketId.
-                        */
-            }
+            { upsert: true }
         );
 
-        if (role == 1) {
-            const student = await Student.findByIdAndUpdate(userId, {
-                status: "online",
-                socketId,
+        // Update the user's status
+        const [student, teacher] = await Promise.all([
+            Student.findById(userId),
+            Teacher.findById(userId)
+        ]);
+
+        if (student) {
+            await Student.findByIdAndUpdate(userId, {
+                status: sessionData.status,
+                socketId: sessionData.socketId
             });
-            if (!student) {
-                throw new Error("Student not found");
-            }
-        } else if (role == 2) {
-            const teacher = await Teacher.findByIdAndUpdate(userId, {
-                status: "online",
-                socketId,
+        } else if (teacher) {
+            await Teacher.findByIdAndUpdate(userId, {
+                status: sessionData.status,
+                socketId: sessionData.socketId
             });
-            if (!teacher) {
-                throw new Error("Teacher not found");
-            }
         }
     }
 
     static async getUserSession(userId) {
-        return await ActiveSession.findOne({ userId });
+        return await Session.findOne({ userId });
+    }
+
+    static async getUserBySocketId(socketId) {
+        const session = await Session.findOne({ socketId });
+        return session?.userId;
     }
 
     static async getAllActiveSessions() {
-        return await ActiveSession.find({});
+        return await Session.find({ status: 'online' });
     }
 
-    static async deleteUserSession(userId, role) {
-        const session = await ActiveSession.findOneAndDelete({ userId });
-        if (role == 1) {
-            const student = await Student.findByIdAndUpdate(
-                userId,
-                {
-                    status: "offline",
-                    lastSeen: new Date(),
-                    socketId: null,
-                }
-            );
-        } else if (role == 2) {
-            const teacher = await Teacher.findByIdAndUpdate(
-                userId,
-                {
-                    status: "offline",
-                    lastSeen: new Date(),
-                    socketId: null,
-                }
-            );
-        }
-    }
-
-    static async setTypingStatus(roomId, userId){
+    static async setTypingStatus(roomId, userId) {
         await TypingStatus.findOneAndUpdate(
             { roomId, userId },
             {
@@ -86,20 +56,21 @@ class MongoRedisLike {
                 userId,
                 isTyping: true,
                 startedAt: new Date(),
-                expiresAt: new Date(Date.now() + 10 * 1000), // 10 seconds 
+                expiresAt: new Date(Date.now() + 10 * 1000), // 10 seconds
             },
-            {
-                upsert: true,
-            }
-        )
+            { upsert: true }
+        );
     }
 
-    static async getTypingStatus(roomId){
-        return await TypingStatus.find({ roomId, isTyping: true });
+    static async getTypingStatus(roomId) {
+        return await TypingStatus.find({
+            roomId,
+            isTyping: true,
+            expiresAt: { $gt: new Date() }
+        });
     }
-    static async clearTypingStatus(roomId, userId){
+
+    static async clearTypingStatus(roomId, userId) {
         await TypingStatus.findOneAndDelete({ roomId, userId });
     }
 }
-
-export default MongoRedisLike;

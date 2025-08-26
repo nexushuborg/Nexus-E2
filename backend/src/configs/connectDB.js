@@ -21,7 +21,7 @@ export const connectDB = async () => {
 
         const MAIN_URI = process.env.MONOGO_MAINDB_URI;
         const CHAT_URI = process.env.MONOGO_CHATDB_URI;
-        
+
         if(!MAIN_URI){
             throw new Error("MONOGO_MAINDB_URI is not defined in the environment variables.");
         }
@@ -53,7 +53,7 @@ export const connectDB = async () => {
 
         // Mark as initialized
         connection.isInitialized = true;
-        
+
         return connection;
     } catch (error) {
         console.log("Error in DB connection", error);
