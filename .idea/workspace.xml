@@ -5,11 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8796f1ec-4215-4a56-85e6-c43a20e49f25" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/student_apk/test/widget_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/test/widget_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/screens/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/screens/login.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step1_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step1_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step2_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step2_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step3_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step3_page.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +20,21 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dart File" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GithubDefaultAccount">
+    <option name="defaultAccountId" value="d6ca144d-4ac0-495d-99a0-ecbd7471f9ce" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -31,23 +45,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "rohit/dev",
-    "last_opened_file_path": "E:/Flutter/Nexus-E2/frontend/student_apk/lib/screens",
-    "settings.editor.selected.configurable": "AndroidSdkUpdater",
-    "show.migrate.to.gradle.popup": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;aritra&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Flutter/Nexus-E2/frontend/student_apk/lib/screens&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\Flutter\Nexus-E2\frontend\student_apk\lib\screens" />
@@ -62,5 +76,16 @@
       <updated>1754974792914</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
