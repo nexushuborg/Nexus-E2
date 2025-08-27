@@ -278,14 +278,14 @@ Ack: "delivered: 3"
 // socket/middleware/auth.middleware.js
 export const socketAuthMiddleware = async (socket, next) => {
   const { userId, role } = socket.handshake.auth;
-  
+
   if (!userId || !role) {
     return next(new Error('Authentication required'));
   }
-  
+
   // Validate session and attach user data
   // ... validation logic
-  
+
   next();
 };
 ```
@@ -297,7 +297,7 @@ export const validateSocketData = (schema) => {
   return (socket, data, next) => {
     // Validate required fields, types, enums
     // ... validation logic
-    
+
     next();
   };
 };
@@ -542,6 +542,6 @@ const socket = io('ws://localhost:8000', {
 
 ---
 
-**Last Updated**: January 2024  
-**Version**: 1.0.0  
+**Last Updated**: January 2024
+**Version**: 1.0.0
 **Maintainer**: Development Team

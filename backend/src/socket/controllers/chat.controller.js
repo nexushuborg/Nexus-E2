@@ -5,9 +5,19 @@ import { uploadFile, getFileLink } from '../../services/chatService.js';
 export class ChatController {
     static async handleTest(socket, data, ack) {
         try {
-            const myName = data.my_name || data.data?.my_name || 'Unknown';
+            console.log('Received data:', JSON.stringify(data, null, 2));
+
+            // Postman socket.io event data is wrapped in a 'data' object
+            //{
+            //   "my_name": "YourName"
+            //}
+            const dataObj = typeof data === 'string' ? JSON.parse(data) : data;
+            const myName = dataObj?.my_name || dataObj?.data?.my_name || 'Unknown';
+
+            console.log('Extracted name:', myName);
+
             const payload = { message: `Hello ${myName}, your socket is working fine!` };
-            
+
             socket.emit('test_response', payload);
             if (typeof ack === 'function') ack(payload);
         } catch (error) {
@@ -29,8 +39,8 @@ export class ChatController {
 
     static async handleJoinRoom(socket, data, ack) {
         try {
-            const { roomId, userId, userType, doubtStatus } = data;
-            
+            const { roomId, userId, userType, doubtStatus } = JSON.parse(data);
+
             // Leave previous rooms except own socket room
             for (const room of socket.rooms) {
                 if (room !== socket.id) socket.leave(room);
@@ -52,7 +62,7 @@ export class ChatController {
 
     static async handleSendMessage(socket, data, ack) {
         try {
-            const { roomId, senderId, senderModel, recipientId, text, files } = data;
+            const { roomId, senderId, senderModel, recipientId, text, files } = JSON.parse(data);
 
             // Encrypt kr do text ko
             let encryptedContent = null;
@@ -66,11 +76,11 @@ export class ChatController {
                 for (const f of files) {
                     const fileId = await uploadFile(f);
                     const url = await getFileLink(fileId);
-                    uploadedFiles.push({ 
-                        fileId, 
-                        url, 
-                        mimeType: f.mimetype, 
-                        name: f.originalname 
+                    uploadedFiles.push({
+                        fileId,
+                        url,
+                        mimeType: f.mimetype,
+                        name: f.originalname
                     });
                 }
             }
@@ -117,14 +127,14 @@ export class ChatController {
         try {
             const { userId } = data;
             const pending = await MongoRedisLike.getPendingMessages(userId);
-            
+
             if (pending && pending.length > 0) {
                 for (const p of pending) {
                     socket.emit('new_message', p.payload);
                 }
                 await MongoRedisLike.clearPendingMessages(userId);
             }
-            
+
             if (typeof ack === 'function') ack({ ok: true, delivered: pending?.length || 0 });
         } catch (error) {
             console.error('Check missed messages error:', error);
