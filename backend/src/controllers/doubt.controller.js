@@ -6,7 +6,7 @@ import Room from '../models/room.model.js'; // Added import for Room
 
 export const createDoubt = async (req, res) => {
     try {
-        const { title, description, subjectId } = req.body; //68a3170384071ea2d7cc7d3d
+        const { title, description, subjectId } = req.body; 
         const studentId = req.user._id;
 
         if (!title || !description || !subjectId) {
@@ -166,7 +166,7 @@ export const getTeacherDoubts = async (req, res) => {
 export const createDoubtRoom = async (req, res) => {
     try {
         const { studentId, teacherId, subject, description, doubtType = 'unresolved' } = req.body;
-        
+
         if (!studentId || !teacherId || !subject || !description) {
             return res.status(400).json({
                 success: false,
@@ -176,7 +176,7 @@ export const createDoubtRoom = async (req, res) => {
 
         // Generate unique room ID
         const roomId = `doubt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
+
         // Create room in database
         const room = await Room.create({
             conversationId: roomId,
@@ -225,7 +225,7 @@ export const updateDoubtStatus = async (req, res) => {
     try {
         const { roomId } = req.params;
         const { status } = req.body;
-        
+
         if (!['resolved', 'unresolved'].includes(status)) {
             return res.status(400).json({
                 success: false,
@@ -272,10 +272,10 @@ export const getDoubtHistory = async (req, res) => {
     try {
         const { userId } = req.params;
         const { status, page = 1, limit = 10 } = req.query;
-        
+
         const query = {};
         if (status) query.status = status;
-        
+
         // Find doubts where user is either student or teacher
         query.$or = [
             { studentId: userId },
@@ -362,7 +362,7 @@ export const sendMessageWithFiles = async (req, res) => {
             if (global.io) {
                 global.io.in(roomId).emit('new_message', messageData);
             }
-            
+
             res.json({
                 success: true,
                 message: 'Message delivered',
@@ -376,9 +376,9 @@ export const sendMessageWithFiles = async (req, res) => {
                     message: "recipientId is required when recipient is offline"
                 });
             }
-            
+
             await MongoRedisLike.addPendingMessage(recipientId, roomId, messageData);
-            
+
             res.json({
                 success: true,
                 message: 'Message queued for offline delivery',
