@@ -52,7 +52,12 @@ export class ChatController {
 
             // Prompt client to fetch offline items
             socket.emit('check_missed_messages', { userId });
-
+            await MongoRedisLike.setUserSession(userId, {
+                userid: userId,
+                socketId: socket.id,
+                status: 'online',
+                role: userType
+            });
             if (typeof ack === 'function') ack({ ok: true, roomId });
         } catch (error) {
             console.error('Join room error:', error);
@@ -125,8 +130,11 @@ export class ChatController {
 
     static async handleCheckMissedMessages(socket, data, ack) {
         try {
-            const { userId } = data;
+            console.log("Event occurred");
+            const { userId } = JSON.parse(data);
+
             const pending = await MongoRedisLike.getPendingMessages(userId);
+            console.log("pending",pending);
 
             if (pending && pending.length > 0) {
                 for (const p of pending) {
