@@ -1,10 +1,11 @@
+// ================== Imports ==================
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:teacher_apk/Screens/dashboard_page.dart';
 import 'package:teacher_apk/theme.dart';
 import 'package:teacher_apk/widgets/triangle_logo.dart';
 
-// Data model for representing an uploaded note
+// ================== Uploaded Note Data Model ==================
 class UploadedNoteData {
   final String subject;
   final String category;
@@ -29,7 +30,7 @@ class UploadedNoteData {
   });
 }
 
-// Main widget for the Upload Notes screen
+// ================== Upload Notes Screen ==================
 class UploadNotesScreen extends StatefulWidget {
   const UploadNotesScreen({super.key});
 
@@ -37,12 +38,9 @@ class UploadNotesScreen extends StatefulWidget {
   State<UploadNotesScreen> createState() => _UploadNotesScreenState();
 }
 
-// State class for UploadNotesScreen
 class _UploadNotesScreenState extends State<UploadNotesScreen> {
-  // List to store previously uploaded notes data
   final List<UploadedNoteData> _previousUploads = [];
 
-  // Build method for the UploadNotesScreen widget
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -53,7 +51,7 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
         child: Scaffold(
           extendBodyBehindAppBar: true,
 
-          // AppBar configuration
+          // ================== AppBar ==================
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -90,7 +88,6 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                 ),
               ),
             ],
-            // TabBar configuration
             bottom: PreferredSize(
               preferredSize: Size.fromHeight(kTextTabBarHeight + 40.0 + 8.0 + 1.0),
               child: Column(
@@ -121,7 +118,7 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
             ),
           ),
 
-          // Body of the Scaffold with a gradient background
+          // ================== Body ==================
           body: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -133,21 +130,17 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-
-            // TabBarView to display content for each tab
             child: TabBarView(
               children: [
-                // Content for Tab 1: New Upload
+                // ================== New Upload Tab ==================
                 Builder(
                   builder: (BuildContext tabContext) {
                     return Center(
                       child: GestureDetector(
                         onTap: () {
-                          // Show dialog for new upload
                           showDialog(
                             context: tabContext,
                             builder: (BuildContext dialogContext) {
-                              // State variables for the dialog
                               String? selectedSubject;
                               String? selectedCategory;
                               int? selectedChapter;
@@ -158,23 +151,17 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                               DateTime? selectedDate;
                               TimeOfDay? selectedTime;
                               String? selectedFileName;
-
-                              // Data for dropdowns
                               List<String> subjects = ["AD", "PS", "DSA"];
                               List<String> categories = ["Notes", "Assignments", "Projects", "Quiz", "PYQs", "lab"];
                               List<int> chapters = List<int>.generate(20, (i) => i + 1);
-
-                              // StatefulBuilder for dialog content to manage its own state
                               return StatefulBuilder(
                                 builder: (BuildContext context, StateSetter setStateDialog) {
                                   return AlertDialog(
                                     content: SingleChildScrollView(
-                                      // Form fields for uploading notes
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: <Widget>[
-                                          // Subject dropdown
                                           DropdownButtonFormField<String>(
                                             decoration: const InputDecoration(hintText: "Select Subject", hintStyle: TextStyle(fontWeight: FontWeight.w300, color: Colors.black54)),
                                             style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black),
@@ -187,7 +174,6 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                                             items: subjects.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(value: value, child: Text(value, style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black)))).toList(),
                                           ),
                                           const SizedBox(height: 16.0),
-                                          // Category dropdown
                                           DropdownButtonFormField<String>(
                                             decoration: const InputDecoration(hintText: "Choose Category", hintStyle: TextStyle(fontWeight: FontWeight.w300, color: Colors.black54)),
                                             style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black),
@@ -204,8 +190,6 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                                             items: categories.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(value: value, child: Text(value, style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black)))).toList(),
                                           ),
                                           const SizedBox(height: 16.0),
-
-                                          // Conditional fields for "Notes" category
                                           if (selectedCategory == "Notes") ...[
                                             DropdownButtonFormField<int>(
                                               decoration: const InputDecoration(hintText: "Choose Chapter No.", hintStyle: TextStyle(fontWeight: FontWeight.w300, color: Colors.black54)),
@@ -226,21 +210,16 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                                             ),
                                             const SizedBox(height: 16.0),
                                           ],
-
-                                          // Document title field
                                           TextFormField(
                                             controller: documentTitleController,
                                             decoration: const InputDecoration(hintText: "Enter Document Title", hintStyle: TextStyle(fontWeight: FontWeight.w300, color: Colors.black54)),
                                             style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black),
                                           ),
                                           const SizedBox(height: 24.0),
-                                          // Scheduled upload section
                                           const Text("Scheduled upload", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
                                           const SizedBox(height: 8.0),
                                           const Text("If you want to schedule the sending of notes, mention date & time.", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.black54)),
                                           const SizedBox(height: 16.0),
-
-                                          // Date and Time pickers
                                           Row(
                                             children: <Widget>[
                                               Expanded(
@@ -281,8 +260,6 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                                             ],
                                           ),
                                           const SizedBox(height: 24.0),
-
-                                          // Attach document section
                                           const Align(alignment: Alignment.centerLeft, child: Text("Attach Document", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black))),
                                           const SizedBox(height: 8.0),
                                           Row(
@@ -292,7 +269,7 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                                                 label: const Text("Choose File", style: TextStyle(fontWeight: FontWeight.w300)),
                                                 onPressed: () {
                                                   setStateDialog(() {
-                                                    selectedFileName = "syllabus_choosen.pdf"; // Simulated file selection
+                                                    selectedFileName = "syllabus_choosen.pdf";
                                                   });
                                                 },
                                                 style: OutlinedButton.styleFrom(foregroundColor: AppTheme.primaryColor, side: BorderSide(color: AppTheme.primaryColor), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
@@ -304,13 +281,11 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                                         ],
                                       ),
                                     ),
-                                    // Dialog actions: Cancel and Submit
                                     actions: <Widget>[
                                       TextButton(child: const Text("Cancel"), onPressed: () => Navigator.of(dialogContext).pop()),
                                       TextButton(
                                         child: const Text("Submit"),
                                         onPressed: () {
-                                          // Form validation
                                           String? errorMessage;
                                           if (selectedSubject == null) {
                                             errorMessage = "Please select a subject.";
@@ -325,8 +300,6 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                                           } else if (selectedFileName == null) {
                                             errorMessage = "Please attach a document.";
                                           }
-
-                                          // Show error or process data
                                           if (errorMessage != null) {
                                             ScaffoldMessenger.of(tabContext).showSnackBar(SnackBar(content: Text(errorMessage), backgroundColor: Colors.red));
                                           } else {
@@ -341,11 +314,10 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                                               scheduledTime: selectedTime,
                                               submissionTime: DateTime.now(),
                                             );
-                                            // Update the main screen's state with the new upload
                                             setState(() {
                                               _previousUploads.add(newUpload);
                                             });
-                                            Navigator.of(dialogContext).pop(); // Close dialog
+                                            Navigator.of(dialogContext).pop();
                                           }
                                         },
                                       ),
@@ -356,7 +328,6 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                             },
                           );
                         },
-                        // UI for the "New Upload" button/area
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -382,10 +353,11 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                           ],
                         ),
                       ),
-                    );
+                      );
                   },
                 ),
-                // Content for Tab 2: Previous Uploads
+
+                // ================== Previous Uploads Tab ==================
                 _previousUploads.isEmpty
                     ? const Center(child: Text("No uploads yet.", style: TextStyle(color: Colors.black54, fontSize: 16)))
                     : ListView.builder(
@@ -393,7 +365,6 @@ class _UploadNotesScreenState extends State<UploadNotesScreen> {
                         itemCount: _previousUploads.length,
                         itemBuilder: (context, index) {
                           final item = _previousUploads[index];
-                          // Displaying each uploaded item in a Card
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                             elevation: 3,

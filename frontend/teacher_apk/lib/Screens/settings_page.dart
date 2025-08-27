@@ -1,34 +1,35 @@
-// Account Settings screen
+// ================== Imports ==================
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets/arcanum_logo.dart';
 import '../utils/ui_constants.dart';
-import 'Login.dart'; // Added for ArcanumLogin navigation
+import 'Login.dart';
 
+// ================== Settings Page ==================
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  // Helper method to show logout confirmation dialog
+  // ================== Logout Confirmation Dialog ==================
   Future<bool?> _showLogoutConfirmationDialog(BuildContext context) {
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppTheme.backgroundGradientStart, // Fixed: Used AppTheme.backgroundGradientStart
-          shape: RoundedRectangleBorder(borderRadius: UIConstants.circularRadius(UIConstants.glassRadius)), // Fixed: Used UIConstants.circularRadius
+          backgroundColor: AppTheme.backgroundGradientStart,
+          shape: RoundedRectangleBorder(borderRadius: UIConstants.circularRadius(UIConstants.glassRadius)),
           title: Text('Confirm Logout', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
-          content: Text('Are you sure you want to log out?', style: TextStyle(color: AppTheme.primaryColor.withAlpha(204))), // Fixed: withAlpha
+          content: Text('Are you sure you want to log out?', style: TextStyle(color: AppTheme.primaryColor.withAlpha(204))),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel', style: TextStyle(color: AppTheme.primaryColor.withAlpha(153))), // Fixed: withAlpha
+              child: Text('Cancel', style: TextStyle(color: AppTheme.primaryColor.withAlpha(153))),
               onPressed: () {
-                Navigator.of(context).pop(false); // User cancelled
+                Navigator.of(context).pop(false);
               },
             ),
             TextButton(
               child: Text('Logout', style: TextStyle(color: Colors.red)),
               onPressed: () {
-                Navigator.of(context).pop(true); // User confirmed
+                Navigator.of(context).pop(true);
               },
             ),
           ],
@@ -37,6 +38,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  // ================== Build Method ==================
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -52,7 +54,7 @@ class SettingsPage extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              // Top Bar
+              // ================== Top Bar ==================
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 24, 24),
                 child: Row(
@@ -83,7 +85,7 @@ class SettingsPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
-                      // Profile Info Card
+                      // ================== Profile Info Card ==================
                       Container(
                         padding: const EdgeInsets.all(UIConstants.spacingLarge),
                         decoration: UIConstants.glassDecoration(),
@@ -92,7 +94,7 @@ class SettingsPage extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(UIConstants.spacingSmall),
                               decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(51), // Fixed: withAlpha
+                                color: Colors.white.withAlpha(51),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -118,14 +120,14 @@ class SettingsPage extends StatelessWidget {
                                   Text(
                                     '+91 - 90300 20398',
                                     style: TextStyle(
-                                      color: AppTheme.primaryColor.withAlpha(178), // Fixed: withAlpha
+                                      color: AppTheme.primaryColor.withAlpha(178),
                                       fontSize: 14,
                                     ),
                                   ),
                                   Text(
                                     'Santkumar@gmail.com',
                                     style: TextStyle(
-                                      color: AppTheme.primaryColor.withAlpha(178), // Fixed: withAlpha
+                                      color: AppTheme.primaryColor.withAlpha(178),
                                       fontSize: 14,
                                     ),
                                   ),
@@ -138,7 +140,7 @@ class SettingsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: UIConstants.spacingMedium),
 
-                      // Update Available Card
+                      // ================== Update Available Card ==================
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: UIConstants.spacingLarge,
@@ -162,7 +164,7 @@ class SettingsPage extends StatelessWidget {
                             Text(
                               'v23.2.12',
                               style: TextStyle(
-                                color: AppTheme.primaryColor.withAlpha(178), // Fixed: withAlpha
+                                color: AppTheme.primaryColor.withAlpha(178),
                                 fontSize: 14,
                               ),
                             ),
@@ -177,7 +179,7 @@ class SettingsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: UIConstants.spacingMedium),
 
-                      // Settings Options
+                      // ================== Settings Options ==================
                       _SettingsOption(
                         icon: Icons.notifications_none,
                         label: 'Notifications',
@@ -208,13 +210,11 @@ class SettingsPage extends StatelessWidget {
                         onTap: () async {
                           final confirmed = await _showLogoutConfirmationDialog(context);
                           if (confirmed == true) {
-                            // Perform actual logout logic here (e.g., clearing session, tokens)
-                            // For now, just navigating
-                            if (context.mounted) { // Fixed: Added context.mounted check
+                            if (context.mounted) {
                               Navigator.pushAndRemoveUntil(
                                 context,
-                                MaterialPageRoute(builder: (context) => const ArcanumLogin()), // Corrected to ArcanumLogin
-                                (Route<dynamic> route) => false, // Remove all previous routes
+                                MaterialPageRoute(builder: (context) => const ArcanumLogin()),
+                                (Route<dynamic> route) => false,
                               );
                             }
                           }
@@ -232,7 +232,7 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
 
-              // Logo
+              // ================== Logo ==================
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: UIConstants.spacingLarge),
                 child: ArcanumLogo(color: Colors.white),
@@ -245,6 +245,7 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
+// ================== Settings Option ==================
 class _SettingsOption extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -261,7 +262,6 @@ class _SettingsOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isDestructive ? Colors.red : AppTheme.primaryColor;
-
     return InkWell(
       onTap: onTap,
       child: Container(

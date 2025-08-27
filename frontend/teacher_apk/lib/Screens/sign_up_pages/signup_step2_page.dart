@@ -1,7 +1,11 @@
-// Sign Up Step 2: Academic Information
+// ================== Imports ==================
 import 'package:flutter/material.dart';
 import 'package:teacher_apk/theme.dart';
+import 'dart:convert';
+import '../../models/signup_data.dart';
+import '../../services/api_service.dart';
 
+// ================== Sign Up Step 2 Page ==================
 class SignUpStep2Page extends StatefulWidget {
   const SignUpStep2Page({super.key});
 
@@ -10,304 +14,72 @@ class SignUpStep2Page extends StatefulWidget {
 }
 
 class _SignUpStep2PageState extends State<SignUpStep2Page> {
-  String? _department;
-  String? _designation;
-  final List<String> _sections = [];
+  SignupData? signupData;
+  bool _isLoading = false;
+  List<Map<String, dynamic>> _departments = [];
+  List<Map<String, dynamic>> _subjects = [];
+  List<Map<String, dynamic>> _sections = [];
+  String? _selectedDepartmentId;
+  String? _selectedDesignation;
+  List<String> _selectedSectionIds = [];
+  List<String> _selectedSubjectIds = [];
 
-  // State variables for the dialog
-  String? _selectedDegree;
-  String? _selectedYear;
-
-  // Dummy data for dependent dropdowns/fields
-  final Map<String, List<String>> _yearsForDegree = {
-    'B.Tech': ['1st', '2nd', '3rd', '4th'],
-    'M.Tech': ['1st', '2nd'],
-    'PhD': ['1st', '2nd', '3rd', '4th', '5th'],
-  };
-
-  final Map<String, Map<String, List<String>>> _sectionsForYear = {
-    'B.Tech': {
-      '1st': ['A', 'B', 'C', 'C2', 'C3'],
-      '2nd': ['D', 'E', 'F', 'D1'],
-      '3rd': ['G', 'H', 'I'],
-      '4th': ['J', 'K', 'L'],
-    },
-    'M.Tech': {
-      '1st': ['M', 'N'],
-      '2nd': ['O', 'P'],
-    },
-    'PhD': {
-      '1st': ['Q', 'R', 'R1'],
-      '2nd': ['S', 'T'],
-      '3rd': ['U', 'V'],
-      '4th': ['W', 'X'],
-      '5th': ['Y', 'Z'],
-    }
-  };
-
-   final Map<String, Map<String, Map<String, List<String>>>> _subjectsForSection = {
-    'B.Tech': {
-      '1st': {
-        'A': ['Maths-1', 'Physics-1', 'Chemistry-1'],
-        'B': ['Maths-1', 'Physics-1', 'Chemistry-1'],
-        'C': ['Maths-1', 'Physics-1', 'Chemistry-1'],
-        'C2': ['Maths-1', 'Physics-1', 'Chemistry-1'],
-        'C3': ['Maths-1', 'Physics-1', 'Chemistry-1'],
-      },
-      '2nd': {
-        'D': ['Maths-2', 'Physics-2', 'Chemistry-2'],
-        'E': ['Maths-2', 'Physics-2', 'Chemistry-2'],
-        'F': ['Maths-2', 'Physics-2', 'Chemistry-2'],
-        'D1': ['Maths-2', 'Physics-2', 'Chemistry-2'],
-      },
-       '3rd': {
-        'G': ['DBMS', 'OS', 'CN'],
-        'H': ['DBMS', 'OS', 'CN'],
-        'I': ['DBMS', 'OS', 'CN'],
-      },
-      '4th': {
-        'J': ['AI', 'ML', 'Cloud'],
-        'K': ['AI', 'ML', 'Cloud'],
-        'L': ['AI', 'ML', 'Cloud'],
-      },
-    },
-     'M.Tech': {
-      '1st': {
-        'M': ['Advanced Algo', 'Advanced OS'],
-        'N': ['Advanced Algo', 'Advanced OS'],
-      },
-      '2nd': {
-        'O': ['Research Methodologies', 'Thesis'],
-        'P': ['Research Methodologies', 'Thesis'],
-      },
-    },
-     'PhD': {
-      '1st': {
-        'Q': ['Advanced Research Topics 1'],
-        'R': ['Advanced Research Topics 1'],
-        'R1': ['Advanced Research Topics 1'],
-      },
-      '2nd': {
-        'S': ['Advanced Research Topics 2'],
-        'T': ['Advanced Research Topics 2'],
-      },
-       '3rd': {
-        'U': ['Advanced Research Topics 3'],
-        'V': ['Advanced Research Topics 3'],
-      },
-       '4th': {
-        'W': ['Advanced Research Topics 4'],
-        'X': ['Advanced Research Topics 4'],
-      },
-       '5th': {
-        'Y': ['Thesis Submission'],
-        'Z': ['Thesis Submission'],
-      },
-    }
-  };
-
-
-  void _showAddSectionDialog() {
-    _selectedDegree = null;
-    _selectedYear = null;
-    String? dialogSelectedSection;
-    String? dialogSelectedSubject;
-
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withAlpha(128),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setStateDialog) {
-            List<String> currentYears = _selectedDegree != null ? _yearsForDegree[_selectedDegree!] ?? [] : [];
-            if (_selectedDegree == null || !currentYears.contains(_selectedYear)) {
-               _selectedYear = null;
-               dialogSelectedSection = null;
-               dialogSelectedSubject = null;
-            }
-
-            List<String> currentSectionsList = [];
-            if (_selectedDegree != null && _selectedYear != null) {
-              currentSectionsList = _sectionsForYear[_selectedDegree!]?[_selectedYear!] ?? [];
-            }
-            if (_selectedYear == null || !currentSectionsList.contains(dialogSelectedSection)) {
-                dialogSelectedSection = null;
-                dialogSelectedSubject = null;
-            }
-            
-            List<String> currentSubjectsList = [];
-            if (_selectedDegree != null && _selectedYear != null && dialogSelectedSection != null) {
-                 currentSubjectsList = _subjectsForSection[_selectedDegree!]?[_selectedYear!]?[dialogSelectedSection!] ?? [];
-            }
-            if (dialogSelectedSection == null || !currentSubjectsList.contains(dialogSelectedSubject)) {
-                dialogSelectedSubject = null;
-            }
-
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Add Section',
-                      style: TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          hint: Text('Degree', style: TextStyle(color: Colors.grey[600])),
-                          value: _selectedDegree,
-                          items: ['B.Tech', 'M.Tech', 'PhD']
-                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                              .toList(),
-                          onChanged: (value) {
-                            setStateDialog(() {
-                              _selectedDegree = value;
-                              _selectedYear = null; 
-                              dialogSelectedSection = null;
-                              dialogSelectedSubject = null;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: _selectedDegree == null ? Colors.grey[300] : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          hint: Text('Year', style: TextStyle(color: Colors.grey[600])),
-                          value: _selectedYear,
-                          items: currentYears
-                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                              .toList(),
-                          onChanged: _selectedDegree == null ? null : (value) {
-                            setStateDialog(() {
-                              _selectedYear = value;
-                              dialogSelectedSection = null;
-                              dialogSelectedSubject = null;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: _selectedYear == null ? Colors.grey[300] : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          hint: Text('Section', style: TextStyle(color: Colors.grey[600])),
-                          value: dialogSelectedSection,
-                          items: currentSectionsList
-                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                              .toList(),
-                          onChanged: _selectedYear == null ? null : (value) {
-                            setStateDialog(() {
-                              dialogSelectedSection = value;
-                              dialogSelectedSubject = null;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: dialogSelectedSection == null ? Colors.grey[300] : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                            isExpanded: true,
-                            hint: Text('Subject', style: TextStyle(color: Colors.grey[600])),
-                            value: dialogSelectedSubject,
-                            items: currentSubjectsList
-                                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                                .toList(),
-                            onChanged: dialogSelectedSection == null || currentSubjectsList.isEmpty
-                                ? null
-                                : (value) {
-                                    if (value != null) {
-                                       setStateDialog(() => dialogSelectedSubject = value);
-                                    }
-                                  },
-                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: (_selectedDegree != null &&
-                                _selectedYear != null &&
-                                dialogSelectedSection != null &&
-                                dialogSelectedSubject != null)
-                            ? () {
-                                setState(() {
-                                  _sections.add('$_selectedDegree - $_selectedYear - $dialogSelectedSection - $dialogSelectedSubject');
-                                });
-                                Navigator.pop(context);
-                              }
-                            : null, 
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          disabledBackgroundColor: Colors.grey[400],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Add',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    signupData = ModalRoute.of(context)?.settings.arguments as SignupData?;
+    _fetchData();
   }
 
+  Future<void> _fetchData() async {
+    setState(() { _isLoading = true; });
+    final deptSubRes = await ApiService.getDepartmentsAndSubjects();
+    final sectionRes = await ApiService.getSections();
+    if (deptSubRes.statusCode == 200 && sectionRes.statusCode == 200) {
+      final deptSubData = Map<String, dynamic>.from(jsonDecode(deptSubRes.body)['data']);
+      final sectionData = List<Map<String, dynamic>>.from(jsonDecode(sectionRes.body)['data']['sections']);
+      setState(() {
+        _departments = List<Map<String, dynamic>>.from(deptSubData['departments']);
+        _subjects = List<Map<String, dynamic>>.from(deptSubData['subjects']);
+        _sections = sectionData;
+      });
+    }
+    setState(() { _isLoading = false; });
+  }
+
+  Future<void> _submit() async {
+    if (_selectedDepartmentId == null || _selectedDesignation == null || _selectedSectionIds.isEmpty || _selectedSubjectIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select all academic fields.')),
+      );
+      return;
+    }
+    signupData?.designation = _selectedDesignation;
+    signupData?.departments = [_selectedDepartmentId!];
+    signupData?.sections = _selectedSectionIds;
+    signupData?.subjects = _selectedSubjectIds;
+    setState(() { _isLoading = true; });
+    final response = await ApiService.registerTeacher(
+      fullName: signupData!.fullName!,
+      email: signupData!.email!,
+      password: signupData!.password!,
+      designation: signupData!.designation!,
+      gender: signupData!.gender!,
+      departments: signupData!.departments,
+      subjects: signupData!.subjects,
+      sections: signupData!.sections,
+    );
+    setState(() { _isLoading = false; });
+    if (response.statusCode == 201) {
+      Navigator.pushNamed(context, 'signupStep3', arguments: signupData!.email);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration failed: ' + response.body)),
+      );
+    }
+  }
+
+  // ================== Build Method ==================
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -323,7 +95,7 @@ class _SignUpStep2PageState extends State<SignUpStep2Page> {
         body: SafeArea(
           child: Column(
             children: [
-              // Top Bar
+              // ================== Top Bar ==================
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 24, 0),
                 child: Row(
@@ -344,19 +116,19 @@ class _SignUpStep2PageState extends State<SignUpStep2Page> {
                   ],
                 ),
               ),
-
+              // ================== Form & Stepper ==================
               Expanded(
                 child: CustomScrollView(
                   slivers: [
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32), // Original padding
+                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Part 1: Form Content
+                            // ================== Form Content ==================
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -378,8 +150,6 @@ class _SignUpStep2PageState extends State<SignUpStep2Page> {
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-
-                                // Department Dropdown
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 24),
                                   decoration: BoxDecoration(
@@ -390,17 +160,18 @@ class _SignUpStep2PageState extends State<SignUpStep2Page> {
                                     child: DropdownButton<String>(
                                       isExpanded: true,
                                       hint: Text('Choose your department', style: TextStyle(color: Colors.grey[600])),
-                                      value: _department,
-                                      items: ['CSE', 'ECE', 'ME', 'CE', 'EE']
-                                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                                          .toList(),
-                                      onChanged: (value) => setState(() => _department = value),
+                                      value: _selectedDepartmentId,
+                                      items: _departments.map((dept) {
+                                        return DropdownMenuItem<String>(
+                                          value: dept['id'].toString(),
+                                          child: Text(dept['name']),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) => setState(() => _selectedDepartmentId = value),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-
-                                // Designation Dropdown
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 24),
                                   decoration: BoxDecoration(
@@ -411,17 +182,15 @@ class _SignUpStep2PageState extends State<SignUpStep2Page> {
                                     child: DropdownButton<String>(
                                       isExpanded: true,
                                       hint: Text('Designation', style: TextStyle(color: Colors.grey[600])),
-                                      value: _designation,
+                                      value: _selectedDesignation,
                                       items: ['Professor', 'Assistant Professor', 'Lecturer']
                                           .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                                           .toList(),
-                                      onChanged: (value) => setState(() => _designation = value),
+                                      onChanged: (value) => setState(() => _selectedDesignation = value),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-
-                                // Add Sections
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
@@ -435,48 +204,109 @@ class _SignUpStep2PageState extends State<SignUpStep2Page> {
                                     ),
                                     IconButton(
                                       icon: Icon(Icons.add_circle, color: AppTheme.primaryColor),
-                                      onPressed: _showAddSectionDialog,
+                                      onPressed: () {
+                                        // TODO: Implement section addition
+                                      },
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                // Section Chips
                                 Wrap(
                                   spacing: 8,
                                   runSpacing: 8,
-                                  children: _sections.map((section) => Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(24),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          section,
-                                          style: TextStyle(
-                                            color: AppTheme.primaryColor,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                          ),
+                                  children: _sections.map((section) {
+                                    final isSelected = _selectedSectionIds.contains(section['id'].toString());
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          if (isSelected) {
+                                            _selectedSectionIds.remove(section['id'].toString());
+                                          } else {
+                                            _selectedSectionIds.add(section['id'].toString());
+                                          }
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppTheme.primaryColor : Colors.white,
+                                          borderRadius: BorderRadius.circular(24),
+                                          border: isSelected ? null : Border.all(color: Colors.grey[300]!),
                                         ),
-                                        const SizedBox(width: 8),
-                                        GestureDetector(
-                                          onTap: () => setState(() => _sections.remove(section)),
-                                          child: Icon(
-                                            Icons.close,
-                                            size: 18,
-                                            color: AppTheme.primaryColor,
-                                          ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              section['name'],
+                                              style: TextStyle(
+                                                color: isSelected ? Colors.white : AppTheme.primaryColor,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            if (isSelected)
+                                              Icon(
+                                                Icons.check,
+                                                size: 18,
+                                                color: Colors.white,
+                                              ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  )).toList(),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                                const SizedBox(height: 16),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: _subjects.map((subject) {
+                                    final isSelected = _selectedSubjectIds.contains(subject['id'].toString());
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          if (isSelected) {
+                                            _selectedSubjectIds.remove(subject['id'].toString());
+                                          } else {
+                                            _selectedSubjectIds.add(subject['id'].toString());
+                                          }
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppTheme.primaryColor : Colors.white,
+                                          borderRadius: BorderRadius.circular(24),
+                                          border: isSelected ? null : Border.all(color: Colors.grey[300]!),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              subject['name'],
+                                              style: TextStyle(
+                                                color: isSelected ? Colors.white : AppTheme.primaryColor,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            if (isSelected)
+                                              Icon(
+                                                Icons.check,
+                                                size: 18,
+                                                color: Colors.white,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
                               ],
                             ),
-                            // Part 2: Button and Indicator
+                            // ================== Button and Step Indicator ==================
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -484,7 +314,7 @@ class _SignUpStep2PageState extends State<SignUpStep2Page> {
                                   width: double.infinity,
                                   height: 56,
                                   child: ElevatedButton(
-                                    onPressed: () => Navigator.pushNamed(context, 'signupStep3'),
+                                    onPressed: _isLoading ? null : _submit,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppTheme.primaryColor,
                                       shape: RoundedRectangleBorder(
@@ -492,25 +322,26 @@ class _SignUpStep2PageState extends State<SignUpStep2Page> {
                                       ),
                                       elevation: 0,
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: const [
-                                        Text(
-                                          'Next',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
+                                    child: _isLoading
+                                        ? CircularProgressIndicator(color: Colors.white)
+                                        : Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: const [
+                                              Text(
+                                                'Next',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              SizedBox(width: 8),
+                                              Icon(Icons.arrow_forward, color: Colors.white),
+                                            ],
                                           ),
-                                        ),
-                                        SizedBox(width: 8),
-                                        Icon(Icons.arrow_forward, color: Colors.white),
-                                      ],
-                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 32),
-                                // Step Indicator
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [

@@ -1,10 +1,10 @@
+// Forgot Password Email Page: Enter email to reset password
 import 'package:flutter/material.dart';
 import 'package:teacher_apk/screens/forgot_pass_pages/forgot_password_otp.dart';
 import 'package:teacher_apk/theme.dart';
 import 'package:teacher_apk/utils/ui_constants.dart';
 import 'package:teacher_apk/widgets/triangle_logo.dart';
 
-// Using ButtonStyle.styleFrom instead of manual state properties
 class ForgotPasswordEmailScreen extends StatelessWidget {
   const ForgotPasswordEmailScreen({super.key});
 
@@ -25,9 +25,7 @@ class ForgotPasswordEmailScreen extends StatelessWidget {
               radius: UIConstants.iconSizeLarge / 1.0,
               child: const TriangleLogo(size: UIConstants.iconSizeLarge / 1.6, isWhite: true),
             ),
-            onPressed: () {
-              // Handle profile icon tap
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -59,14 +57,11 @@ class ForgotPasswordEmailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               TextField(
-                // controller: TextEditingController(), // Add controller if needed for state management
-                style: const TextStyle(color: Colors.black87), // Style from Login.dart's _EmailTextField
+                style: const TextStyle(color: Colors.black87),
                 decoration: InputDecoration(
                   hintText: 'Enter your email address',
-                  hintStyle: TextStyle(color: Colors.grey.shade600), // Style from Login.dart's _EmailTextField
-                  prefixIcon: Icon(Icons.email_outlined, color: AppTheme.primaryColor), // Changed from person_outline
-                  // border: AppTheme.inputBorder, // If you have a global input border in your theme
-                  // Filled and border style from AppTheme.themeData if applicable
+                  hintStyle: TextStyle(color: Colors.grey.shade600),
+                  prefixIcon: Icon(Icons.email_outlined, color: AppTheme.primaryColor),
                   filled: Theme.of(context).inputDecorationTheme.filled,
                   fillColor: Theme.of(context).inputDecorationTheme.fillColor,
                   border: Theme.of(context).inputDecorationTheme.border,
@@ -75,12 +70,12 @@ class ForgotPasswordEmailScreen extends StatelessWidget {
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 8.0), // Space before the alert message
+              const SizedBox(height: 8.0),
               Row(
                 children: [
                   Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20.0),
                   const SizedBox(width: 8.0),
-                  Expanded( // To allow text to wrap if it's long
+                  Expanded(
                     child: Text(
                       'Please use your college email ID',
                       style: TextStyle(color: Colors.grey.shade800, fontSize: 14.0),
@@ -88,7 +83,7 @@ class ForgotPasswordEmailScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 30.0), // Space after the alert message, before the button
+              const SizedBox(height: 30.0),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),

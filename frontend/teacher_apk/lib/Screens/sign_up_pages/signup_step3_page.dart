@@ -1,7 +1,8 @@
-// Sign Up Step 3: Verification
+// Sign Up Step 3: Verification Page
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme.dart';
+import '../../services/api_service.dart';
 
 class SignUpStep3Page extends StatefulWidget {
   const SignUpStep3Page({super.key});
@@ -13,6 +14,8 @@ class SignUpStep3Page extends StatefulWidget {
 class _SignUpStep3PageState extends State<SignUpStep3Page> {
   final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  bool _isLoading = false;
+  String? _email;
 
   @override
   void dispose() {
@@ -25,9 +28,53 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _email = ModalRoute.of(context)?.settings.arguments as String?;
+  }
+
   void _onCodeDigitChanged(int index, String value) {
     if (value.length == 1 && index < 5) {
       _focusNodes[index + 1].requestFocus();
+    } else if (value.isEmpty && index > 0) {
+      _focusNodes[index - 1].requestFocus();
+    }
+  }
+
+  Future<void> _verify() async {
+    final otp = _controllers.map((c) => c.text).join();
+    if (otp.length != 6 || _email == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter the 6-digit code.')),
+      );
+      return;
+    }
+    setState(() { _isLoading = true; });
+    final response = await ApiService.verifyOtp(email: _email!, otp: otp);
+    setState(() { _isLoading = false; });
+    if (response.statusCode == 200) {
+      Navigator.pushReplacementNamed(context, 'verificationComplete');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Verification failed: ' + response.body)),
+      );
+    }
+  }
+
+  Future<void> _resend() async {
+    if (_email == null) return;
+    setState(() { _isLoading = true; });
+    final response = await ApiService.resendOtp(email: _email!);
+    setState(() { _isLoading = false; });
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('OTP resent to your email.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to resend OTP: ' + response.body)),
+      );
     }
   }
 
@@ -46,7 +93,6 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
         body: SafeArea(
           child: Column(
             children: [
-              // Top Bar
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 24, 0),
                 child: Row(
@@ -71,11 +117,10 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
                 child: CustomScrollView(
                   slivers: [
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0), // Adjusted padding
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                       sliver: SliverList(
                         delegate: SliverChildListDelegate(
                           [
-                            // Heading
                             Text(
                               'Verify your Account',
                               style: TextStyle(
@@ -85,8 +130,6 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
                               ),
                             ),
                             const SizedBox(height: 24),
-
-                            // Enter Code Label
                             Text(
                               'Enter Code',
                               style: TextStyle(
@@ -96,7 +139,6 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            // Email Info
                             Text(
                               "We've sent a verification code to your registered email address teachname@soa.du.in",
                               style: TextStyle(
@@ -105,8 +147,6 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
                               ),
                             ),
                             const SizedBox(height: 32),
-
-                            // OTP Input Fields
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: List.generate(
@@ -143,22 +183,23 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
                               ),
                             ),
                             const SizedBox(height: 16),
-
-                            // Resend Code
                             Center(
                               child: TextButton(
-                                onPressed: () {}, // Add your resend code logic here
-                                child: Text(
-                                  'Resend Code',
-                                  style: TextStyle(
-                                    color: AppTheme.primaryColor,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                                onPressed: _isLoading ? null : _resend,
+                                child: _isLoading
+                                    ? CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                                      )
+                                    : Text(
+                                        'Resend Code',
+                                        style: TextStyle(
+                                          color: AppTheme.primaryColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                               ),
                             ),
-                            // Removed SizedBox(height: 32) before button
                           ],
                         ),
                       ),
@@ -171,12 +212,11 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Verify Button
                             SizedBox(
                               width: double.infinity,
                               height: 56,
                               child: ElevatedButton(
-                                onPressed: () => Navigator.pushNamed(context, 'verificationComplete'),
+                                onPressed: _isLoading ? null : _verify,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
                                   shape: RoundedRectangleBorder(
@@ -184,19 +224,21 @@ class _SignUpStep3PageState extends State<SignUpStep3Page> {
                                   ),
                                   elevation: 0,
                                 ),
-                                child: const Text(
-                                  'Verify',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: _isLoading
+                                    ? CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      )
+                                    : const Text(
+                                        'Verify',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                               ),
                             ),
-                            const SizedBox(height: 32), // Kept SizedBox after button
-
-                            // Step Indicator
+                            const SizedBox(height: 32),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

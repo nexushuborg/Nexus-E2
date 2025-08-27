@@ -1,7 +1,10 @@
-// Sign Up Step 1: Profile Information
+// ================== Imports ==================
 import 'package:flutter/material.dart';
 import '../../theme.dart';
+import '../../models/signup_data.dart';
+import '../../services/api_service.dart';
 
+// ================== Sign Up Step 1 Page ==================
 class SignUpStep1Page extends StatefulWidget {
   const SignUpStep1Page({super.key});
 
@@ -10,6 +13,12 @@ class SignUpStep1Page extends StatefulWidget {
 }
 
 class _SignUpStep1PageState extends State<SignUpStep1Page> {
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  String? _selectedGender;
+  bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -28,7 +37,7 @@ class _SignUpStep1PageState extends State<SignUpStep1Page> {
         body: SafeArea(
           child: Column(
             children: [
-              // Top Bar
+              // ================== Top Bar ==================
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 24, 0),
                 child: Row(
@@ -50,18 +59,19 @@ class _SignUpStep1PageState extends State<SignUpStep1Page> {
                 ),
               ),
 
+              // ================== Form & Stepper ==================
               Expanded(
                 child: CustomScrollView(
                   slivers: [
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32), // Original padding
+                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Part 1: Form Content
+                            // ================== Form Content ==================
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -75,17 +85,14 @@ class _SignUpStep1PageState extends State<SignUpStep1Page> {
                                   style: AppTheme.themeData.textTheme.displaySmall,
                                 ),
                                 const SizedBox(height: 24),
-
-                                // Form Fields
                                 TextField(
+                                  controller: _fullNameController,
                                   style: TextStyle(color: Colors.grey.shade600),
                                   decoration: const InputDecoration(
                                     hintText: 'Enter your full name',
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-
-                                // Gender Dropdown
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 24),
                                   decoration: BoxDecoration(
@@ -99,23 +106,26 @@ class _SignUpStep1PageState extends State<SignUpStep1Page> {
                                       items: ['Male', 'Female', 'Other']
                                           .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                                           .toList(),
-                                      onChanged: (value) {},
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedGender = value;
+                                        });
+                                      },
+                                      value: _selectedGender,
                                       style: AppTheme.themeData.textTheme.bodyLarge?.copyWith(color: AppTheme.primaryColor),
                                       dropdownColor: Colors.white,
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-
-                                // Email Field
                                 TextField(
+                                  controller: _emailController,
                                   style: TextStyle(color: Colors.grey.shade600),
                                   decoration: const InputDecoration(
                                     hintText: 'Enter your email address',
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                // Email Warning
                                 Row(
                                   children: [
                                     Icon(Icons.warning, color: AppTheme.primaryColor, size: 16),
@@ -127,9 +137,8 @@ class _SignUpStep1PageState extends State<SignUpStep1Page> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-
-                                // Password Fields
                                 TextField(
+                                  controller: _passwordController,
                                   style: TextStyle(color: Colors.grey.shade600),
                                   obscureText: _obscurePassword,
                                   decoration: InputDecoration(
@@ -145,6 +154,7 @@ class _SignUpStep1PageState extends State<SignUpStep1Page> {
                                 ),
                                 const SizedBox(height: 16),
                                 TextField(
+                                  controller: _confirmPasswordController,
                                   style: TextStyle(color: Colors.grey.shade600),
                                   obscureText: _obscureConfirmPassword,
                                   decoration: InputDecoration(
@@ -160,7 +170,7 @@ class _SignUpStep1PageState extends State<SignUpStep1Page> {
                                 ),
                               ],
                             ),
-                            // Part 2: Button and Indicator
+                            // ================== Button and Step Indicator ==================
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -168,19 +178,20 @@ class _SignUpStep1PageState extends State<SignUpStep1Page> {
                                   width: double.infinity,
                                   height: 56,
                                   child: ElevatedButton(
-                                    onPressed: () => Navigator.pushNamed(context, 'signupStep2'),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: const [
-                                        Text('Next'),
-                                        SizedBox(width: 8),
-                                        Icon(Icons.arrow_forward, color: Colors.white),
-                                      ],
-                                    ),
+                                    onPressed: _isLoading ? null : _submit,
+                                    child: _isLoading
+                                        ? CircularProgressIndicator(color: Colors.white)
+                                        : Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: const [
+                                              Text('Next'),
+                                              SizedBox(width: 8),
+                                              Icon(Icons.arrow_forward, color: Colors.white),
+                                            ],
+                                          ),
                                   ),
                                 ),
                                 const SizedBox(height: 32),
-                                // Step Indicator
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -231,5 +242,35 @@ class _SignUpStep1PageState extends State<SignUpStep1Page> {
         ),
       ),
     );
+  }
+
+  Future<void> _submit() async {
+    setState(() { _isLoading = true; });
+    final fullName = _fullNameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+    final gender = _selectedGender;
+    if (fullName.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty || gender == null) {
+      setState(() { _isLoading = false; });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill all fields.')),
+      );
+      return;
+    }
+    if (password != confirmPassword) {
+      setState(() { _isLoading = false; });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Passwords do not match.')),
+      );
+      return;
+    }
+    final signupData = SignupData()
+      ..fullName = fullName
+      ..email = email
+      ..password = password
+      ..gender = gender;
+    setState(() { _isLoading = false; });
+    Navigator.pushNamed(context, 'signupStep2', arguments: signupData);
   }
 }

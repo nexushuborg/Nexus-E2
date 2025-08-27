@@ -1,10 +1,11 @@
-// Teacher's Profile screen
+// ================== Imports ==================
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets/arcanum_logo.dart';
 import '../widgets/common_widgets.dart';
 import '../utils/ui_constants.dart';
 
+// ================== Profile Page ==================
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
@@ -23,7 +24,7 @@ class ProfilePage extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              // Top Bar
+              // ================== Top Bar ==================
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 24, 24),
                 child: Row(
@@ -34,7 +35,7 @@ class ProfilePage extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
-                    const SizedBox(width: UIConstants.spacingMedium), // Added space
+                    const SizedBox(width: UIConstants.spacingMedium),
                     Text(
                       'Your Profile',
                       style: TextStyle(
@@ -54,31 +55,31 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: UIConstants.spacingXLarge), // Added spacing
+              const SizedBox(height: UIConstants.spacingXLarge),
 
-              // Avatar and Name
+              // ================== Avatar and Name ==================
               Stack(
                 clipBehavior: Clip.none,
-                alignment: Alignment.center, // Center the AvatarCircle within the border Container
+                alignment: Alignment.center,
                 children: [
                   Container(
-                    width: 190.0 + 0.0 * 2, // avatar size + border width * 2
+                    width: 190.0 + 0.0 * 2,
                     height: 190.0 + 4.0 * 2,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppTheme.primaryColor.withAlpha(128), // Semi-transparent violet
+                        color: AppTheme.primaryColor.withAlpha(128),
                         width: 8.0,
                       ),
                     ),
                   ),
                   AvatarCircle(
-                    size: 190.0, // Increased size
+                    size: 190.0,
                     onTap: () {},
                   ),
                   Positioned(
-                    right: 15.0, 
-                    bottom: 15.0, 
+                    right: 15.0,
+                    bottom: 15.0,
                     child: CameraButton(onTap: () {}),
                   ),
                 ],
@@ -92,17 +93,17 @@ class ProfilePage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: UIConstants.spacingSmall), 
+              const SizedBox(height: UIConstants.spacingSmall),
               Text(
-                'Professor', 
+                'Professor',
                 style: TextStyle(
-                  color: AppTheme.primaryColor.withAlpha(204), 
-                  fontSize: 16, // Smaller font size
+                  color: AppTheme.primaryColor.withAlpha(204),
+                  fontSize: 16,
                 ),
               ),
-              const SizedBox(height: UIConstants.spacingXLarge), 
+              const SizedBox(height: UIConstants.spacingXLarge),
 
-              // Profile Details Card
+              // ================== Profile Details Card ==================
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: UIConstants.spacingLarge),
                 child: GlassCard(
@@ -119,15 +120,6 @@ class ProfilePage extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          // const Spacer(),
-                          // GestureDetector(
-                          //   onTap: () {},
-                          //   child: Icon(
-                          //     Icons.edit,
-                          //     color: AppTheme.primaryColor,
-                          //     size: UIConstants.iconSizeMedium,
-                          //   ),
-                          // ),
                         ],
                       ),
                       const Divider(height: UIConstants.spacingXLarge),
@@ -161,7 +153,7 @@ class ProfilePage extends StatelessWidget {
               ),
 
               const Spacer(),
-              // Logo at bottom
+              // ================== Logo at Bottom ==================
               Padding(
                 padding: const EdgeInsets.only(bottom: UIConstants.spacingLarge),
                 child: ArcanumLogo(color: Colors.white),
@@ -174,6 +166,7 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
+// ================== Profile Detail Row ==================
 class _ProfileDetailRow extends StatelessWidget {
   final String label;
   final String value;
@@ -197,7 +190,7 @@ class _ProfileDetailRow extends StatelessWidget {
           child: Text(
             value,
             style: TextStyle(
-              color: AppTheme.primaryColor.withAlpha(204), // Fixed: Replaced withOpacity with withAlpha
+              color: AppTheme.primaryColor.withAlpha(204),
             ),
           ),
         ),
@@ -206,6 +199,7 @@ class _ProfileDetailRow extends StatelessWidget {
   }
 }
 
+// ================== Section Chip ==================
 class _SectionChip extends StatelessWidget {
   final String label;
 
