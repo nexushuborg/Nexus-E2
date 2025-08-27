@@ -1,9 +1,10 @@
-// Get Started screen shown after loading
+// ================== Imports ==================
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets/glass_frame.dart';
 
+// ================== Card Data Model ==================
 class CardData {
   final String title;
   final String prominentTitle;
@@ -16,6 +17,7 @@ class CardData {
   });
 }
 
+// ================== Get Started Page ==================
 class GetStartedPage extends StatefulWidget {
   const GetStartedPage({super.key});
 
@@ -61,7 +63,6 @@ class _GetStartedPageState extends State<GetStartedPage> {
     });
     _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (!mounted) return;
-      // Directly get the current page from the controller for decision making
       int pageForDecision = _pageController.page?.round() ?? 0;
       if (pageForDecision < _cardData.length - 1) {
         _pageController.nextPage(
@@ -70,7 +71,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
         );
       } else {
         _pageController.animateToPage(
-          0, // Loop to the first page
+          0,
           duration: const Duration(milliseconds: 400),
           curve: Curves.easeInOut,
         );
@@ -85,6 +86,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
     super.dispose();
   }
 
+  // ================== Page Indicator ==================
   Widget _buildPageIndicator() {
     List<Widget> indicators = [];
     for (int i = 0; i < _cardData.length; i++) {
@@ -106,13 +108,14 @@ class _GetStartedPageState extends State<GetStartedPage> {
     );
   }
 
+  // ================== Card Item Builder ==================
   Widget _buildCardItem(BuildContext context, int index) {
     final card = _cardData[index];
     return Padding(
-      padding: const EdgeInsets.fromLTRB(32, 40, 32, 0), // Reduced bottom padding
+      padding: const EdgeInsets.fromLTRB(32, 40, 32, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // To ensure column doesn't expand excessively
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             card.title,
@@ -146,14 +149,11 @@ class _GetStartedPageState extends State<GetStartedPage> {
     );
   }
 
+  // ================== Build Method ==================
   @override
   Widget build(BuildContext context) {
-    // Calculate the height for the PageView content area
-    // This is an estimate, you might need to adjust it based on actual content height
-    // Or use a more dynamic way to calculate height if cards have varying content.
-    // For now, estimating based on typical content height.
     final screenHeight = MediaQuery.of(context).size.height;
-    final contentHeight = screenHeight * 0.35; // Approx 45% of screen for text content
+    final contentHeight = screenHeight * 0.35;
 
     return Container(
       decoration: BoxDecoration(
@@ -167,7 +167,6 @@ class _GetStartedPageState extends State<GetStartedPage> {
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            // Main content area, including PageView, page indicator and button
             Positioned(
               left: 0,
               right: 0,
@@ -175,13 +174,12 @@ class _GetStartedPageState extends State<GetStartedPage> {
               child: GlassFrame(
                 borderRadius: 32,
                 child: Padding(
-                  // Overall padding for the GlassFrame content
                   padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min, // Important for Column in Positioned
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       SizedBox(
-                        height: contentHeight, // Provide a height for PageView
+                        height: contentHeight,
                         child: PageView.builder(
                           controller: _pageController,
                           itemCount: _cardData.length,
@@ -190,10 +188,9 @@ class _GetStartedPageState extends State<GetStartedPage> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 24), // Spacing before page indicator
+                      const SizedBox(height: 24),
                       _buildPageIndicator(),
                       const SizedBox(height: 32),
-                      // Get Started Button - padding moved here for better control
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 32),
                         child: SizedBox(
@@ -201,7 +198,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
                           height: 56,
                           child: ElevatedButton(
                             onPressed: () {
-                              _timer?.cancel(); // Stop timer on navigation
+                              _timer?.cancel();
                               Navigator.pushReplacementNamed(context, 'login');
                             },
                             style: ElevatedButton.styleFrom(

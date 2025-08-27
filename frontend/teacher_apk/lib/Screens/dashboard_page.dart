@@ -1,9 +1,10 @@
-// Dashboard screen for teacher after login/signup
+// ================== Imports ==================
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets/arcanum_logo.dart';
-import './upload_notes.dart'; // Added import for UploadNotesScreen
+import './upload_notes.dart';
 
+// ================== Dashboard Page ==================
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
@@ -12,7 +13,7 @@ class DashboardPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.white.withAlpha(230), // Semi-transparent white
+          backgroundColor: Colors.white.withAlpha(230),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -64,7 +65,6 @@ class DashboardPage extends StatelessWidget {
     const String noticeFullContent =
         'Dear students and faculty, please be advised that the institution will be closed on DD/MM/YYYY in observance of [Holiday Name].\n\nAll classes and administrative activities will be suspended on this day. Regular operations will resume on the following day, DD/MM/YYYY.\n\nWe encourage everyone to observe the holiday safely. For any urgent matters, please contact [Contact Person/Department] at [Email/Phone]. Further updates, if any, will be communicated through the official channels.';
 
-
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -76,15 +76,14 @@ class DashboardPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: SingleChildScrollView( // Added SingleChildScrollView
+          child: SingleChildScrollView(
             child: Column(
               children: [
-                // Search and Actions Bar
+                // ================== Search and Actions Bar ==================
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                   child: Row(
                     children: [
-                      // Search Bar
                       Expanded(
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -117,7 +116,6 @@ class DashboardPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // Action Buttons
                       IconButton(
                         iconSize: 35.0,
                         icon: Icon(Icons.notifications_none, color: AppTheme.primaryColor),
@@ -133,7 +131,7 @@ class DashboardPage extends StatelessWidget {
                   ),
                 ),
 
-                // Welcome Card
+                // ================== Welcome Card ==================
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: GestureDetector(
@@ -155,12 +153,12 @@ class DashboardPage extends StatelessWidget {
                       child: Row(
                         children: [
                           CircleAvatar(
-                            radius: 24, // Which makes the diameter 48
+                            radius: 24,
                             backgroundColor: AppTheme.primaryColor,
                             child: Icon(
                               Icons.person,
                               color: Colors.white,
-                              size: 28, // Slightly smaller than the avatar radius for padding
+                              size: 28,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -191,7 +189,7 @@ class DashboardPage extends StatelessWidget {
                   ),
                 ),
 
-                // Dashboard Grid
+                // ================== Dashboard Grid ==================
                 GridView.count(
                   shrinkWrap: true,
                   primary: false,
@@ -228,7 +226,7 @@ class DashboardPage extends StatelessWidget {
                   ],
                 ),
 
-                // New Container with Heading
+                // ================== Notice Board ==================
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                   child: Container(
@@ -278,9 +276,7 @@ class DashboardPage extends StatelessWidget {
                             const SizedBox(width: 8),
                             IconButton(
                               icon: Icon(Icons.filter_list, color: AppTheme.primaryColor.withAlpha(204)),
-                              onPressed: () {
-                                // Handle filter action
-                              },
+                              onPressed: () {},
                             ),
                           ],
                         ),
@@ -289,7 +285,6 @@ class DashboardPage extends StatelessWidget {
                           child: SingleChildScrollView( 
                             child: Column(
                               children: [
-                                // Notice Preview Card
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
@@ -298,7 +293,7 @@ class DashboardPage extends StatelessWidget {
                                   ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min, // To make Column wrap content
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Row(
                                         children: [
@@ -336,7 +331,7 @@ class DashboardPage extends StatelessWidget {
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      const SizedBox(height: 4), // Space before the arrow
+                                      const SizedBox(height: 4),
                                       Align(
                                         alignment: Alignment.bottomRight,
                                         child: IconButton(
@@ -345,8 +340,8 @@ class DashboardPage extends StatelessWidget {
                                             color: AppTheme.primaryColor.withAlpha(204),
                                             size: 16,
                                           ),
-                                          padding: EdgeInsets.zero, // Reduce padding around icon
-                                          constraints: const BoxConstraints(), // Reduce tap area to icon size
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
                                           onPressed: () {
                                             _showNoticeDetailsDialog(context, noticeTitle, noticeFullContent);
                                           },
@@ -364,7 +359,7 @@ class DashboardPage extends StatelessWidget {
                   ),
                 ),
 
-                // Logo
+                // ================== Logo ==================
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 40),
                   child: ArcanumLogo(color: Colors.white),
@@ -378,6 +373,7 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
+// ================== Dashboard Card ==================
 class _DashboardCard extends StatelessWidget {
   final IconData icon;
   final String label;

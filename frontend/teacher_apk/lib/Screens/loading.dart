@@ -1,9 +1,11 @@
+// ================== Imports ==================
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:teacher_apk/theme.dart'; // Import AppTheme
-import 'package:teacher_apk/widgets/triangle_logo.dart'; // Import TriangleLogo
-import 'package:teacher_apk/widgets/arcanum_logo.dart'; // Import ArcanumLogo
+import 'package:teacher_apk/theme.dart';
+import 'package:teacher_apk/widgets/triangle_logo.dart';
+import 'package:teacher_apk/widgets/arcanum_logo.dart';
 
+// ================== Loading Screen ==================
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
 
@@ -12,6 +14,7 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  // ================== Init State ==================
   @override
   void initState() {
     super.initState();
@@ -22,6 +25,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
     });
   }
 
+  // ================== Build Method ==================
   @override
   Widget build(BuildContext context) {
     return Scaffold(

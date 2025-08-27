@@ -1,4 +1,3 @@
-// Main entry point for the teacher_apk Flutter app
 import 'package:flutter/material.dart';
 import 'theme.dart';
 import 'screens/login.dart';

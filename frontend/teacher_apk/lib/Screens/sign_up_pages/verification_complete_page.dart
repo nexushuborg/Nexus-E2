@@ -1,4 +1,4 @@
-// Verification Complete screen after sign up
+// Verification Complete Page: Shown after successful sign up
 import 'package:flutter/material.dart';
 import '../../theme.dart';
 import '../../widgets/arcanum_logo.dart';
@@ -14,9 +14,8 @@ class _VerificationCompletePageState extends State<VerificationCompletePage> {
   @override
   void initState() {
     super.initState();
-    // Auto-navigate to dashboard after 2 seconds
     Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) { // Add this check
+      if (mounted) {
         Navigator.pushReplacementNamed(context, 'dashboard');
       }
     });
@@ -37,7 +36,6 @@ class _VerificationCompletePageState extends State<VerificationCompletePage> {
         body: SafeArea(
           child: Stack(
             children: [
-              // Top Bar
               Positioned(
                 top: 16,
                 left: 8,
@@ -60,24 +58,20 @@ class _VerificationCompletePageState extends State<VerificationCompletePage> {
                   ],
                 ),
               ),
-
-              // Content Card
               Positioned(
                 top: 170,
                 bottom: 170,
                 left: 5,
                 right: 5,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32), // Adjusted padding
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
                   decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(51), // Changed from withOpacity(0.2)
+                    color: Colors.white.withAlpha(51),
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center, // Center content vertically
-                    // mainAxisSize: MainAxisSize.min, // Removed: Column will now expand
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Success Message
                       Text(
                         'Verification Complete!',
                         style: TextStyle(
@@ -88,12 +82,11 @@ class _VerificationCompletePageState extends State<VerificationCompletePage> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 40),
-                      // Check Icon with Circle
                       Container(
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(51), // Changed from withOpacity(0.2)
+                          color: Colors.white.withAlpha(51),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -106,9 +99,8 @@ class _VerificationCompletePageState extends State<VerificationCompletePage> {
                   ),
                 ),
               ),
-              // Logo at the bottom
               Positioned(
-                bottom: 60, // Adjust as needed
+                bottom: 60,
                 left: 0,
                 right: 0,
                 child: Center(

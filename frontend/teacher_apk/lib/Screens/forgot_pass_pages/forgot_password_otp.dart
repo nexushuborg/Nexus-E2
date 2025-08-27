@@ -1,4 +1,4 @@
-// OTP Verification Screen (adapted from SignUpStep3Page)
+// Forgot Password OTP Verification Page
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
@@ -32,8 +32,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   void _onCodeDigitChanged(int index, String value) {
     if (value.length == 1 && index < 5) {
       _focusNodes[index + 1].requestFocus();
-    }
-    if (value.isEmpty && index > 0) {
+    } else if (value.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
     }
   }
@@ -53,7 +52,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              // Top Bar
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 24, 0),
                 child: Row(
@@ -63,17 +61,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       onPressed: () => Navigator.pop(context),
                     ),
                     const Spacer(),
-                    // Profile Avatar (copied from forgot_password_email.dart)
                     IconButton(
                       icon: CircleAvatar(
                         backgroundColor: AppTheme.primaryColor,
                         radius: UIConstants.iconSizeLarge / 1.5,
                         child: const TriangleLogo(size: UIConstants.iconSizeLarge / 1.5, isWhite: true),
                       ),
-                      onPressed: () {
-                        // Handle profile icon tap
-                        // Example: Navigator.pushNamed(context, '/profile');
-                      },
+                      onPressed: () {},
                     ),
                   ],
                 ),
@@ -84,9 +78,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Heading
                       Text(
-                        'Enter the OTP sent to your registered email', // Changed Title
+                        'Enter the OTP sent to your registered email',
                         style: TextStyle(
                           color: AppTheme.primaryColor,
                           fontSize: 28,
@@ -94,8 +87,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ),
                       ),
                       const SizedBox(height: 40),
-
-                      // OTP Input Fields
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: List.generate(
@@ -126,8 +117,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-
-                      // Resend Code
                       Center(
                         child: RichText(
                           text: TextSpan(
@@ -141,17 +130,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                                 recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    // TODO: Implement resend logic
-                                  },
+                                  ..onTap = () {},
                               ),
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 40),
-
-                      // Verify Button
                       SizedBox(
                         width: double.infinity,
                         height: 50,
@@ -163,7 +148,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             ),
                           ),
                           onPressed: () {
-                            // Validate OTP here
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const NewPasswordScreen()),
