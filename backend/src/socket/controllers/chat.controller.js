@@ -52,7 +52,16 @@ export class ChatController {
                 const Room = await Doubt.findOne({
                     roomId
                 })
-                if(!Room.isStudent(userId)){
+                if(!Room.isMember(userId,0)){
+                    if (typeof ack === 'function') ack({ ok: false,message:"You are not a member" });
+                }
+            }
+            
+            if(socket.userType === "teacher"){
+                const Room = await Doubt.findOne({
+                    roomId
+                })
+                if(!Room.isMember(userId,1)){
                     if (typeof ack === 'function') ack({ ok: false,message:"You are not a member" });
                 }
             }
