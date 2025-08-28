@@ -50,13 +50,11 @@ export class ChatController {
             socket.data.roomId = roomId;
             socket.data.doubtStatus = doubtStatus || 'unresolved';
 
-            // Prompt client to fetch offline items
-            socket.emit('check_missed_messages', { userId });
+
             await MongoRedisLike.setUserSession(userId, {
                 userid: userId,
                 socketId: socket.id,
                 status: 'online',
-                role: userType
             });
             if (typeof ack === 'function') ack({ ok: true, roomId });
         } catch (error) {
@@ -130,15 +128,17 @@ export class ChatController {
 
     static async handleCheckMissedMessages(socket, data, ack) {
         try {
-            console.log("Event occurred");
-            const { userId } = JSON.parse(data);
+            const userId = socket?.userid;
 
             const pending = await MongoRedisLike.getPendingMessages(userId);
-            console.log("pending",pending);
+            console.log("Pending messages count:", pending?.length || 0);
 
             if (pending && pending.length > 0) {
                 for (const p of pending) {
-                    socket.emit('new_message', p.payload);
+                    const id = p?.userId;
+                    if (id === userId) {
+                        socket.emit('new_message', p.payload);
+                    }
                 }
                 await MongoRedisLike.clearPendingMessages(userId);
             }
@@ -163,8 +163,9 @@ export class ChatController {
 
     static async handleDisconnect(socket) {
         try {
-            if (socket.userId) {
-                await MongoRedisLike.setUserSession(socket.userId, {
+            console.log("mark1")
+            if (socket?.userid) {
+                await MongoRedisLike.setUserSession(socket?.userid, {
                     status: 'offline',
                     socketId: socket.id
                 });

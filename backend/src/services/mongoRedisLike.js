@@ -36,6 +36,19 @@ export class MongoRedisLike {
         }
     }
 
+    // static async setUserOffline(userId) {
+    //    const session = await Session.findOneAndUpdate(
+    //     {userId},
+    //     {
+    //         status:"offline"
+    //     }
+    //    )
+    //    if(!session){
+    //     console.log("Not found")
+    //    }
+    //    return session;
+    // }
+
     static async getUserSession(userId) {
         return await Session.findOne({ userId });
     }
