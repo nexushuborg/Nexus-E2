@@ -1,6 +1,7 @@
 import { MongoRedisLike } from '../../services/mongoRedisLike.js';
 import { encryptMessage } from '../../services/messageEncryption.js';
 import { uploadFile, getFileLink } from '../../services/chatService.js';
+import Doubt from '../../models/doubt.model.js';
 
 export class ChatController {
     static async handleTest(socket, data, ack) {
@@ -44,6 +45,16 @@ export class ChatController {
             // Leave previous rooms except own socket room
             for (const room of socket.rooms) {
                 if (room !== socket.id) socket.leave(room);
+            }
+
+
+            if(socket.userType === "student"){
+                const Room = await Doubt.findOne({
+                    roomId
+                })
+                if(!Room.isStudent(userId)){
+                    if (typeof ack === 'function') ack({ ok: false,message:"You are not a member" });
+                }
             }
 
             await socket.join(roomId);
