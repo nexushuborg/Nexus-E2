@@ -45,5 +45,13 @@ const doubtSchema = new Schema({
   timestamps: true,
 });
 
+doubtSchema.methods.isMember = function(userId,num) {
+  if(num === 0){
+    return this.student.equals(userId);
+  }else{
+    return this.teacher.equals(userId);
+  }
+}
+
 const Doubt = createModel("Doubt", doubtSchema, "main");
 export default Doubt;
