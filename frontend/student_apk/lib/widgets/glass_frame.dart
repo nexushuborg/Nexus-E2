@@ -1,19 +1,16 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../theme.dart';
 
 class GlassFrame extends StatelessWidget {
   final Widget child;
-  final EdgeInsetsGeometry? padding;
   final BorderRadius? borderRadius;
-  final double opacity;
-  final EdgeInsetsGeometry? margin;
+  final EdgeInsets? margin;
 
   const GlassFrame({
     super.key,
     required this.child,
-    this.padding,
     this.borderRadius,
-    this.opacity = 0.15,
     this.margin,
   });
 
@@ -22,16 +19,15 @@ class GlassFrame extends StatelessWidget {
     return Container(
       margin: margin,
       child: ClipRRect(
-        borderRadius: borderRadius ?? BorderRadius.circular(24),
+        borderRadius: borderRadius ?? BorderRadius.circular(20),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            padding: padding ?? const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(opacity),
-              borderRadius: borderRadius ?? BorderRadius.circular(24),
+              color: AppTheme.withOpacity(Colors.white, 0.1),
+              borderRadius: borderRadius ?? BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withAlpha(51),
+                color: AppTheme.withOpacity(Colors.white, 0.1),
                 width: 1.5,
               ),
             ),

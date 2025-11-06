@@ -8,6 +8,30 @@
       <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/android/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/android/app/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/android/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/routes.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/routes.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/forgot_pass_pages/forgot_password_step1.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/forgot_pass_pages/forgot_password_step1.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/forgot_pass_pages/forgot_password_step2.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/forgot_pass_pages/forgot_password_step2.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/forgot_pass_pages/forgot_password_step3.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/forgot_pass_pages/forgot_password_step3.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/login.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/materials_pages/files_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/materials_pages/files_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/materials_pages/materials_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/materials_pages/materials_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/materials_pages/subject_content_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/materials_pages/subject_content_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/materials_pages/subject_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/materials_pages/subject_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/profile_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/profile_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/settings_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/settings_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/signup_step1_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/signup_step1_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/signup_step2_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/signup_step2_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/signup_step3_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/signup_step3_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/signup_step4_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/signup_step4_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/verification_complete_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/screens/sign_up_pages/verification_complete_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/theme.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/lib/widgets/glass_frame.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/lib/widgets/glass_frame.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/student_apk/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student_apk/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/android/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step1_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step1_page.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step2_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step2_page.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step3_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/teacher_apk/lib/Screens/sign_up_pages/signup_step3_page.dart" afterDir="false" />
@@ -19,6 +43,18 @@
   </component>
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand />
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -47,18 +83,22 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;android.gradle.sync.needed&quot;: &quot;true&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
     &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;aritra&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;rohit/dev&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;E:/Flutter/Nexus-E2/frontend/student_apk/lib/screens&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.github.copilot.settings.chat.ChatConfigurable&quot;,
     &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
 }</component>

@@ -1,10 +1,66 @@
 // Teacher's Profile screen
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../theme.dart';
 import '../routes.dart';
+import '../services/api_service.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  bool _isLoading = true;
+  Map<String, dynamic>? _profileData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final apiService = ApiService();
+      final data = await apiService.getProfile();
+      if (!mounted) return;
+      setState(() {
+        _profileData = data['data'];
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+  }
+
+  Future<void> _uploadProfileImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image == null) return;
+
+      setState(() => _isLoading = true);
+      final apiService = ApiService();
+      await apiService.uploadProfileImage(File(image.path));
+      await _loadProfile(); // Reload profile to get new image
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,117 +92,127 @@ class ProfilePage extends StatelessWidget {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              // Profile Image
-              Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: const Icon(
-                        Icons.person_outline,
-                        size: 80,
-                        color: AppTheme.textColor2,
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: AppTheme.buttonBg,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          size: 20,
-                          color: AppTheme.textColor2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Name
-              const Text(
-                'Rituparna Pradhan',
-                style: TextStyle(
-                  color: AppTheme.textColor,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Profile Details
-              Container(
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Profile Details',
-                      style: TextStyle(
-                        color: AppTheme.textColor,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                    // Profile Image
+                    Center(
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              image: _profileData?['profile_picture'] != null
+                                  ? DecorationImage(
+                                      image: NetworkImage(
+                                        _profileData!['profile_picture'],
+                                      ),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: _profileData?['profile_picture'] == null
+                                ? const Icon(
+                                    Icons.person_outline,
+                                    size: 80,
+                                    color: AppTheme.textColor2,
+                                  )
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: _uploadProfileImage,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: AppTheme.buttonBg,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  size: 20,
+                                  color: AppTheme.textColor2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _buildDetailRow('Registration Number', '2341xxxxxx'),
-                    const SizedBox(height: 16),
-                    _buildDetailRow('Degree', 'B Tech'),
-                    const SizedBox(height: 16),
-                    _buildDetailRow('Academic Year', '3rd year'),
-                    const SizedBox(height: 16),
-                    _buildDetailRow('Branch', 'CSIT'),
-                    const SizedBox(height: 16),
-                    _buildDetailRow('Section', 'C2'),
+
+                    // Name
+                    Text(
+                      _profileData?['full_name'] ?? 'Loading...',
+                      style: const TextStyle(
+                        color: AppTheme.textColor,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Profile Details
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildProfileRow(
+                              'Registration No', _profileData?['reg_number']),
+                          _buildProfileRow(
+                              'Degree', _profileData?['degree']?['name']),
+                          _buildProfileRow(
+                              'Branch', _profileData?['branch']?['name']),
+                          _buildProfileRow('Section', _profileData?['section']),
+                          _buildProfileRow(
+                              'Academic Year', _profileData?['academic_year']),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppTheme.textColor,
-            fontSize: 16,
+  Widget _buildProfileRow(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppTheme.textColor,
+              fontSize: 14,
+            ),
           ),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            color: AppTheme.buttonBg,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+          const SizedBox(height: 4),
+          Text(
+            value ?? 'N/A',
+            style: const TextStyle(
+              color: AppTheme.textColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
