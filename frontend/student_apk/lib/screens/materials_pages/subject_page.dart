@@ -111,7 +111,7 @@ class SubjectPage extends StatelessWidget {
     return InkWell(
       onTap: () => Navigator.pushNamed(
         context,
-        Routes.subjectContent,
+        Routes.chapterPage,  // Changed from subjectContent to chapterPage
         arguments: {
           'subject': subject,
           'type': title,

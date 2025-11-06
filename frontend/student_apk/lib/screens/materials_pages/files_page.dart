@@ -6,16 +6,17 @@ class FilesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
     final chapter = args?['chapter'] ?? '';
     final type = args?['type'] ?? '';
     final subject = args?['subject'] ?? '';
 
     String getTitle() {
       if (type == 'Project') {
-        return 'Project Files';
+        return '$subject - Project Files';
       } else {
-        return '$chapter - $type';
+        return '$subject - $chapter - $type';
       }
     }
 
@@ -61,13 +62,15 @@ class FilesPage extends StatelessWidget {
                         style: const TextStyle(color: AppTheme.textColor),
                         decoration: InputDecoration(
                           hintText: 'Search for files and many more',
-                          hintStyle: TextStyle(color: AppTheme.textColor.withAlpha(128)),
+                          hintStyle: TextStyle(
+                              color: AppTheme.textColor.withAlpha(128)),
                           border: InputBorder.none,
                         ),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.download, color: AppTheme.textColor),
+                      icon:
+                          const Icon(Icons.download, color: AppTheme.textColor),
                       onPressed: () {},
                     ),
                     const Padding(
@@ -91,14 +94,16 @@ class FilesPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: AppTheme.buttonBg.withAlpha(25),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.picture_as_pdf, color: AppTheme.buttonBg),
+                          child: const Icon(Icons.picture_as_pdf,
+                              color: AppTheme.buttonBg),
                         ),
                         title: const Text(
                           'File Name',
@@ -115,7 +120,8 @@ class FilesPage extends StatelessWidget {
                             fontSize: 12,
                           ),
                         ),
-                        trailing: const Icon(Icons.download, color: AppTheme.textColor),
+                        trailing: const Icon(Icons.download,
+                            color: AppTheme.textColor),
                       ),
                     ),
                   );

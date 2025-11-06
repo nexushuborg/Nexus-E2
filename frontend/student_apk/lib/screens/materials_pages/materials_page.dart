@@ -1,159 +1,154 @@
 import 'package:flutter/material.dart';
 import '../../theme.dart';
 import '../../routes.dart';
+import '../../services/api_service.dart';
 
-class MaterialsPage extends StatelessWidget {
+class MaterialsPage extends StatefulWidget {
   const MaterialsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final subjects = ['AAD-2', 'COA', 'ALA', 'IM', 'IDM'];
+  State<MaterialsPage> createState() => _MaterialsPageState();
+}
 
-    return Container(
-      decoration: const BoxDecoration(gradient: AppTheme.mainGradient),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppTheme.textColor),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'Materials',
-            style: TextStyle(
-              color: AppTheme.textColor,
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined, color: AppTheme.textColor),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.person_outline, color: AppTheme.textColor),
-              onPressed: () {},
-            ),
-          ],
-        ),
-        body: Column(
+class _MaterialsPageState extends State<MaterialsPage> {
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _subjects = [];
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSubjects();
+  }
+
+  Future<void> _fetchSubjects() async {
+    try {
+      final apiService = ApiService();
+      final response = await apiService.getAllSubjects();
+      setState(() {
+        _subjects = List<Map<String, dynamic>>.from(response['subjects']);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(25),
-                  borderRadius: BorderRadius.circular(32),
-                ),
-                child: Row(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 16),
-                      child: Icon(Icons.search, color: AppTheme.textColor),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        style: const TextStyle(color: AppTheme.textColor),
-                        decoration: InputDecoration(
-                          hintText: 'Search for notes, subjects and more',
-                          hintStyle: TextStyle(color: AppTheme.textColor.withAlpha(128)),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(right: 16),
-                      child: Icon(Icons.tune, color: AppTheme.textColor),
-                    ),
-                  ],
-                ),
-              ),
+            Text(
+              'Error: $_error',
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
             ),
-            Expanded(
-              child: GridView.count(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                children: subjects.map((subject) => _buildSubjectCard(context, subject)).toList(),
-              ),
-            ),
-            const Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 40),
-                child: Text(
-                  'Arcanum',
-                  style: TextStyle(
-                    color: AppTheme.textColor,
-                    fontSize: 16,
-                    fontFamily: 'MajorMonoDisplay',
-                    letterSpacing: 4,
-                  ),
-                ),
-              ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _isLoading = true;
+                  _error = null;
+                });
+                _fetchSubjects();
+              },
+              child: const Text('Retry'),
             ),
           ],
         ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _fetchSubjects,
+      child: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 1.0,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: _subjects.length,
+        itemBuilder: (context, index) {
+          final subject = _subjects[index];
+          return _SubjectCard(
+            subjectName: subject['subjectName'] ?? '',
+            subjectCode: subject['subjectCode'] ?? '',
+            onTap: () => Navigator.pushNamed(
+              context,
+              Routes.chapterPage,
+              arguments: {
+                'subjectId': subject['subjectId'],
+                'subjectName': subject['subjectName'],
+              },
+            ),
+          );
+        },
       ),
     );
   }
+}
 
-  Widget _buildSubjectCard(BuildContext context, String subject) {
+class _SubjectCard extends StatelessWidget {
+  final String subjectName;
+  final String subjectCode;
+  final VoidCallback onTap;
+
+  const _SubjectCard({
+    required this.subjectName,
+    required this.subjectCode,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.pushNamed(context, Routes.subject, arguments: subject),
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withAlpha(25),
+          gradient: AppTheme.cardGradient,
           borderRadius: BorderRadius.circular(16),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 12,
-              right: 12,
-              child: IconButton(
-                icon: const Icon(Icons.more_vert, color: AppTheme.textColor),
-                onPressed: () {},
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.withOpacity(Colors.black, 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      border: Border.all(color: AppTheme.textColor, width: 2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.folder_outlined, color: AppTheme.textColor),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    subject,
-                    style: const TextStyle(
-                      color: AppTheme.textColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '24 files',
-                    style: TextStyle(
-                      color: AppTheme.textColor.withAlpha(128),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.book,
+              size: 48,
+              color: Theme.of(context).primaryColor,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subjectName,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              subjectCode,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppTheme.withOpacity(Colors.grey[600]!, 1.0),
               ),
             ),
           ],
