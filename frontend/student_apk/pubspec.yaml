@@ -12,6 +12,15 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
+  flutter_secure_storage: ^9.0.0
+  http: ^1.1.0
+  image_picker: ^1.2.0
+  shared_preferences: ^2.5.3
+  intl: ^0.18.1
+  path_provider: ^2.1.1
+  permission_handler: ^11.0.0
+  lottie: ^2.7.0
+  animated_text_kit: ^4.2.2
 
 dev_dependencies:
   flutter_test:
@@ -22,6 +31,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/animations/
     - assets/images/
     - assets/fonts/
 

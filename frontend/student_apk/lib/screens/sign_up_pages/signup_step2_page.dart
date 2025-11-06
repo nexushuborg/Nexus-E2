@@ -1,19 +1,80 @@
 import 'package:flutter/material.dart';
-import '../../theme.dart';
 import '../../routes.dart';
-import '../../widgets/glass_frame.dart';
+import '../../models/signup_data.dart';
+import '../../theme.dart';
+import '../../mixins/form_styling_mixin.dart';
+import '../../services/api_service.dart';
 
 class SignUpStep2Page extends StatefulWidget {
-  const SignUpStep2Page({super.key});
+  final SignupData signupData;
+
+  const SignUpStep2Page({
+    super.key,
+    required this.signupData,
+  });
 
   @override
   State<SignUpStep2Page> createState() => _SignUpStep2PageState();
 }
 
-class _SignUpStep2PageState extends State<SignUpStep2Page> {
-  String? _academicYear;
-  String? _degree;
-  String? _department;
+class _SignUpStep2PageState extends State<SignUpStep2Page>
+    with FormStylingMixin {
+  final _formKey = GlobalKey<FormState>();
+  final _registrationController = TextEditingController();
+  String? _selectedDegree;
+  String? _selectedYear;
+  String? _selectedDepartment;
+  final _sectionController = TextEditingController();
+  bool _isLoading = false;
+
+  // Define degree options and their corresponding years and graduation offsets
+  final Map<String, Map<String, dynamic>> degreeConfig = {
+    'BTech': {'years': 4, 'name': 'BTech'},
+    'MTech': {'years': 2, 'name': 'MTech'},
+    'BCA': {'years': 3, 'name': 'BCA'},
+  };
+
+  // Define departments
+  final Map<String, List<String>> degreeDepartments = {
+    'BTech': ['CSE', 'ECE', 'ME', 'CE', 'EE', 'EEE'],
+    'MTech': ['CSE', 'ECE', 'ME', 'CE', 'EE', 'EEE'],
+  };
+
+  List<int> _getBatchList(String? degree) {
+    if (degree == null) return [];
+    return [2026, 2027, 2028, 2029];
+  }
+
+  List<String> _getDepartmentsList() {
+    if (_selectedDegree == null) return [];
+    return degreeDepartments[_selectedDegree!] ?? [];
+  }
+
+  bool _showDepartment() {
+    return _selectedDegree != null && _selectedDegree != 'BCA';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    print('SignUpStep2Page initState: ${widget.signupData.toJson()}');
+    // Pre-populate fields from signupData if coming back from next step
+    if (widget.signupData.regNo != null) {
+      _registrationController.text = widget.signupData.regNo!;
+    }
+    if (widget.signupData.degree != null) {
+      _selectedDegree = widget.signupData.degree;
+    }
+    if (widget.signupData.batch != null) {
+      _selectedYear = widget.signupData.batch.toString();
+    }
+    if (widget.signupData.branch != null) {
+      _selectedDepartment = widget.signupData.branch;
+    }
+    if (widget.signupData.slno != null) {
+      _sectionController.text = widget.signupData.slno!;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,237 +85,378 @@ class _SignUpStep2PageState extends State<SignUpStep2Page> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 16, 24, 0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: AppTheme.textColor),
-                      onPressed: () => Navigator.pushReplacementNamed(context, Routes.signupStep1),
-                    ),
-                    const Spacer(),
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.textColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Text('Δ', style: TextStyle(color: AppTheme.backgroundGradientStart, fontSize: 24)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(24, 24, 24, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Create Your Profile',
-                      style: TextStyle(
-                        color: AppTheme.textColor,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Academic Information',
-                      style: TextStyle(
-                        color: AppTheme.textColor,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 24),
-                  child: GlassFrame(
-                    borderRadius: BorderRadius.circular(40),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
-                      child: Column(
-                        children: [
-                          // Registration Number
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: const TextField(
-                              style: TextStyle(color: AppTheme.textColor2),
-                              decoration: InputDecoration(
-                                hintText: 'Enter your college registration number',
-                                hintStyle: TextStyle(color: Colors.grey),
-                                border: InputBorder.none,
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Back button and logo
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 16, 24, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back,
+                              color: AppTheme.textColor),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: AppTheme.textColor,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Δ',
+                              style: TextStyle(
+                                color: AppTheme.backgroundGradientStart,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
-
-                          // Academic Year Dropdown
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                isExpanded: true,
-                                hint: const Text('Choose your academic year', style: TextStyle(color: Colors.grey)),
-                                value: _academicYear,
-                                icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
-                                items: ['1st Year', '2nd Year', '3rd Year', '4th Year']
-                                    .map((e) => DropdownMenuItem(
-                                          value: e,
-                                          child: Text(e, style: const TextStyle(color: AppTheme.textColor2)),
-                                        ))
-                                    .toList(),
-                                onChanged: (value) => setState(() => _academicYear = value),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Degree Dropdown
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                isExpanded: true,
-                                hint: const Text('Choose your degree', style: TextStyle(color: Colors.grey)),
-                                value: _degree,
-                                icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
-                                items: ['B.Tech', 'M.Tech', 'PhD']
-                                    .map((e) => DropdownMenuItem(
-                                          value: e,
-                                          child: Text(e, style: const TextStyle(color: AppTheme.textColor2)),
-                                        ))
-                                    .toList(),
-                                onChanged: (value) => setState(() => _degree = value),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Department Dropdown
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                isExpanded: true,
-                                hint: const Text('Choose your department', style: TextStyle(color: Colors.grey)),
-                                value: _department,
-                                icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
-                                items: ['CSE', 'ECE', 'EE', 'ME', 'CE']
-                                    .map((e) => DropdownMenuItem(
-                                          value: e,
-                                          child: Text(e, style: const TextStyle(color: AppTheme.textColor2)),
-                                        ))
-                                    .toList(),
-                                onChanged: (value) => setState(() => _department = value),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Section Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: const TextField(
-                              style: TextStyle(color: AppTheme.textColor2),
-                              decoration: InputDecoration(
-                                hintText: 'Enter your section',
-                                hintStyle: TextStyle(color: Colors.grey),
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-
-                          // Next button
-                          Container(
-                            width: double.infinity,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: AppTheme.buttonBg,
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            child: TextButton(
-                              onPressed: () => Navigator.pushReplacementNamed(context, Routes.signupStep3),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Next',
-                                    style: TextStyle(
-                                      color: AppTheme.textColor2,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Icon(Icons.arrow_forward, color: AppTheme.textColor2),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-                          // Step Indicator
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(4, (index) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: index == 1 ? AppTheme.textColor : AppTheme.textColor.withAlpha(76),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Step 2 of 4',
-                            style: TextStyle(
-                              color: AppTheme.textColor,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+
+                  // Form content
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Create Your Profile',
+                          style: TextStyle(
+                            color: AppTheme.textColor,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Academic Information',
+                          style: TextStyle(
+                            color: AppTheme.textColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        TextFormField(
+                          controller: _registrationController,
+                          style: inputTextStyle,
+                          decoration: getInputDecoration(
+                            labelText:
+                                'Enter your registration number (e.g., 2023BTCSE00)',
+                          ),
+                          validator: (value) {
+                            print('Validating registration number: $value');
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your registration number';
+                            }
+                            if (!RegExp(r'^\d{4}[A-Z]{2,}[A-Z0-9]+$')
+                                .hasMatch(value)) {
+                              return 'Please enter a valid registration number format (e.g., 2023BTCSE00)';
+                            }
+                            return null;
+                          },
+                          onSaved: (value) {
+                            print('Saving registration number: $value');
+                            widget.signupData.regNo = value!;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _selectedDegree,
+                          style: inputTextStyle,
+                          decoration: getInputDecoration(
+                            labelText: 'Choose your degree',
+                          ),
+                          dropdownColor: Colors.white,
+                          items: degreeConfig.keys
+                              .map((degree) => DropdownMenuItem(
+                                    value: degree,
+                                    child: Text(
+                                      degree,
+                                      style: const TextStyle(
+                                        color: AppTheme.textColor2,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedDegree = value;
+                              _selectedYear = null;
+                              _selectedDepartment = null;
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please select your degree';
+                            }
+                            return null;
+                          },
+                          onSaved: (value) => widget.signupData.degree = value!,
+                        ),
+                        const SizedBox(height: 16),
+                        if (_selectedDegree != null) ...[
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              DropdownButtonFormField<String>(
+                                value: _selectedYear,
+                                style: inputTextStyle,
+                                decoration: getInputDecoration(
+                                  labelText: 'Choose your batch',
+                                ),
+                                dropdownColor: Colors.white,
+                                items: _getBatchList(_selectedDegree)
+                                    .map((year) => DropdownMenuItem(
+                                          value: year.toString(),
+                                          child: Text(
+                                            year.toString(),
+                                            style: const TextStyle(
+                                              color: AppTheme.textColor2,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ))
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedYear = value;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please select your graduation year';
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) =>
+                                    widget.signupData.batch = int.parse(value!),
+                              ),
+                              const SizedBox(height: 4),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: Text(
+                                  'Select the year you will graduate',
+                                  style: TextStyle(
+                                    color: Colors.white.withAlpha(178),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (_showDepartment()) ...[
+                          DropdownButtonFormField<String>(
+                            value: _selectedDepartment,
+                            style: inputTextStyle,
+                            decoration: getInputDecoration(
+                              labelText: 'Choose your department',
+                            ),
+                            dropdownColor: Colors.white,
+                            items: _getDepartmentsList()
+                                .map((dept) => DropdownMenuItem(
+                                      value: dept,
+                                      child: Text(
+                                        dept,
+                                        style: const TextStyle(
+                                          color: AppTheme.textColor2,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedDepartment = value;
+                              });
+                            },
+                            validator: (value) {
+                              if (_showDepartment() &&
+                                  (value == null || value.isEmpty)) {
+                                return 'Please select your department';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) =>
+                                widget.signupData.branch = value,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        TextFormField(
+                          controller: _sectionController,
+                          style: inputTextStyle,
+                          decoration: getInputDecoration(
+                            labelText: 'Enter your class serial number (1-100)',
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your class serial number';
+                            }
+                            if (!RegExp(r'^\d+$').hasMatch(value)) {
+                              return 'Please enter a valid number';
+                            }
+                            final number = int.parse(value);
+                            if (number < 1 || number > 100) {
+                              return 'Serial number must be between 1 and 100';
+                            }
+                            return null;
+                          },
+                          onSaved: (value) =>
+                              widget.signupData.slno = value?.trim(),
+                        ),
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    if (_formKey.currentState!.validate()) {
+                                      setState(() => _isLoading = true);
+                                      _formKey.currentState!.save();
+                                      try {
+                                        final apiService = ApiService();
+                                        print(
+                                            'Sending signup data: ${widget.signupData.toJson()}');
+                                        final response = await apiService
+                                            .signup(widget.signupData.toJson());
+                                        print('Signup response: $response');
+
+                                        if (response['success'] == true) {
+                                          if (!mounted) return;
+                                          Navigator.pushNamed(
+                                            context,
+                                            Routes.signupStep3,
+                                            arguments: widget.signupData,
+                                          );
+                                        } else {
+                                          if (!mounted) return;
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                  response['message'] ??
+                                                      'Registration failed'),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        print('Signup error: $e');
+                                        if (!mounted) return;
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(e.toString()),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => _isLoading = false);
+                                        }
+                                      }
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.buttonBg,
+                              foregroundColor: AppTheme.textColor2,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppTheme.textColor2),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Next',
+                                        style: TextStyle(
+                                          color: AppTheme.textColor2,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.arrow_forward, size: 20),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.3),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppTheme.buttonBg,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.3),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: Text(
+                            'Step 2 of 3',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
